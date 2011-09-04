@@ -142,7 +142,7 @@ class Hopstance
 
         # ooops....
       else
-        raise SyntaxErrHopError(line)
+        raise SyntaxErrHopError.new #(line)
       end # case
     end
   end  # ~createNewRetLineNum
@@ -211,7 +211,8 @@ class VarStor
       @cortegeStore[hopid]=Hash.new
     end
 
-    @cortegeStore[hopid][name]=''
+    @cortegeStore[hopid][name]={}
+    warn ">>ADD #{name} (#{hopid})"
   end
 
   def self.getScalar(ex, name)
@@ -230,10 +231,12 @@ class VarStor
     @scalarStore[hopid][name]=val
   end
 
-  def self.setCortege(ex, name, *val)
-    hopid=searchIdForVar(@scalarStore,ex,name)
+  def self.setCortege(ex, name, val)
+#@@    warn ">>SET0: #{name} = #{val}"
+    hopid=searchIdForVar(@cortegeStore,ex,name)
     val.each_pair{|key,value|
-      @scalarStore[hopid][name][key]=value
+      warn ">>SET: #{hopid} #{name}.#{key} = #{value}"
+      @cortegeStore[hopid][name][key]=value
     }
   end
 
@@ -241,6 +244,7 @@ class VarStor
   # where search (hash), executor, varname
   def self.searchIdForVar(store,ex,name)
     while not ex.nil? do;
+#@@      warn ">>SEARCH #{name} (#{ex.hopid})"
       if not store[ex.hopid].nil?
         if not store[ex.hopid][name].nil?
           return ex.hopid
@@ -248,7 +252,8 @@ class VarStor
       end
       ex=ex.parent
     end
-    raise VarNotFoundHopError
+    warn "SERARCH FAIL #{name}"
+    raise VarNotFoundHopError.new(name)
   end
 
 end
@@ -301,6 +306,87 @@ class YieldHopstance < Hopstance
     @parent.do_yield(ret)
   end
 
+end
+
+class EachHopstance < Hopstance
+
+  def createNewRetLineNum(text,pos)
+    line=text[pos]
+
+    raise UnexpectedEOFHopError if line.nil?
+    line=line.strip
+    unless line =~ /^(\S+)\s*=\s*each\s+(\S+)\s+in\s+(\S+)(\s+where\s+(.*))?/
+      raise SyntaxErrHopError.new(line)
+    end
+
+    @streamvar,@current_var,@source,@where=$1,$2,$3,$5
+    VarStor.addCortege(self, @streamvar)
+    VarStor.addCortege(self, @current_var)
+
+    pos+=1
+    # now create execution chains for body and final sections
+    begin
+      while true
+        hopstance,pos=super(text,pos)
+        @mainChain.add hopstance
+      end
+    rescue SyntaxErrHopError
+      line=text[pos]
+      if line == 'final'
+        # process final section!
+        begin
+          while true
+            hopstance,pos=super(text,pos)
+            @finalChain.add hopstance
+          end
+        rescue SyntaxErrHopError
+          line=text[pos]
+          if line == 'end'
+            return self,pos+1
+          end
+        end
+      elsif line == 'end'
+        return self,pos+1
+      end
+    end
+    raise SyntaxErrHopError.new(line)
+
+  end
+
+  def hop
+    while self.readSource
+      # process body
+      @mainChain.hop
+    end
+    # process final section
+    @finalChain.hop
+  end
+
+  # read next source line and write it into @source_var
+  def readSource
+    if @source_in.nil?
+      @source_in = open @source
+      head=@source_in.readline.strip
+      @heads=head.split /\s*,\s*/
+    end
+
+    begin
+      line=@source_in.readline.strip
+      datas=line.split /\s*,\s*/
+
+      i=0
+      value={}
+      @heads.each {|h|
+        value[h]=datas[i]
+        i+=1
+      }
+      # now store variable!
+      VarStor.setCortege(self, @current_var, value)
+    rescue EOFError
+      return nil
+    end
+      line
+  end
 end
 
 class HopExpression
@@ -367,7 +453,12 @@ class HopExpression
           val=VarStor.getScalar(ex,el.value)
         else
           # cortege field
-          val=VarStor.getCortege(ex,var).try(:[],field)
+          begin
+            val=VarStor.getCortege(ex,var)[field]
+          rescue
+            warn ">> Opppps: #{var}.#{field}"
+            nil
+          end
         end
         @stack.push val
 
@@ -380,8 +471,8 @@ class HopExpression
         when '+'
           a1=@stack.pop
           a2=@stack.pop
-          raise SyntaxErrHopError if a2.nil?
           warn ">>PLUS: #{a1},#{a2}"
+          raise SyntaxErrHopError if a2.nil?
           @stack.push a1.to_f+a2.to_f
         when '*'
           a1=@stack.pop
@@ -391,6 +482,7 @@ class HopExpression
         when '-'
           a1=@stack.pop
           a2=@stack.pop
+          warn ">>MINUS: #{a1},#{a2}"
           raise SyntaxErrHopError if a2.nil?
           @stack.push a2.to_f-a1.to_f
         when '/'
@@ -408,7 +500,7 @@ class HopExpression
         end
       end #~case
     end # ~each expression
-    raise SyntaxErrHopError if @stack.size>1
+    raise SyntaxErrHopError.new(@expr.to_s+' ('+@stack.to_s+')') if @stack.size>1
 
     return @stack.pop
   end

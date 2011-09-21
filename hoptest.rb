@@ -1,7 +1,5 @@
 #!/usr/bin/ruby
 
-#require 'ruby-debug'
-#debugger
 require './hoplang.rb'
 
 

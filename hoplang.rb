@@ -43,11 +43,11 @@ class HopChain
   end
 
   def hop
-    @chain.each {|element| element.hop}
+    @chain.each {|el| el.hop}
   end
 end
 
-class Hopstance
+class Statement
 #  @input
 #  @output
 #  @finished
@@ -120,7 +120,7 @@ class Hopstance
 
         # yield
       when /^yield(\s*(.*))/
-        ret=YieldHopstance.new(self)
+        ret=YieldStatement.new(self)
         return ret.createNewRetLineNum(text, startLine)
 
         # scalar variable
@@ -152,7 +152,7 @@ class Hopstance
   end
 end
 
-class TopHopstance < Hopstance
+class TopHopstance < Statement
   def createNewRetLineNum(text,startLine)
     begin
       while true
@@ -231,11 +231,14 @@ class VarStor
     @scalarStore[hopid][name]=val
   end
 
+#TODO!!!!!
+# stream variables: via pipes.
+
   def self.setCortege(ex, name, val)
 #@@    warn ">>SET0: #{name} = #{val}"
     hopid=searchIdForVar(@cortegeStore,ex,name)
     val.each_pair{|key,value|
-      warn ">>SET: #{hopid} #{name}.#{key} = #{value}"
+      warn ">>SET #{name}: #{hopid} #{name}.#{key} = #{value}"
       @cortegeStore[hopid][name][key]=value
     }
   end
@@ -258,8 +261,18 @@ class VarStor
 
 end
 
+class Hopstance < Statement
+  def initialize(parent,inPipe)
+    super
+    @outPipe=HopPipe.new
+    @inPipe=inPipe
+  end
 
-class YieldHopstance < Hopstance
+  attr_accessor :outPipe, :inPipe
+
+end
+
+class YieldStatement < Statement
   def initialize(parent)
     @parent=parent
     @id=Hopstance.nextId
@@ -308,7 +321,7 @@ class YieldHopstance < Hopstance
 
 end
 
-class EachHopstance < Hopstance
+class EachHopstance < Statement
 
   def createNewRetLineNum(text,pos)
     line=text[pos]
@@ -360,6 +373,11 @@ class EachHopstance < Hopstance
     end
     # process final section
     @finalChain.hop
+  end
+
+  def do_yield(hash)
+    # push data into out pipe
+    @outPipe.put(hash)
   end
 
   # read next source line and write it into @source_var

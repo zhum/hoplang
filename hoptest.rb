@@ -20,7 +20,7 @@ class ArrayReader
 end
 
 
-ex=TopHopstance.new
+ex=TopStatement.new
 a= ArrayReader.new ""#("scalar abc\n#  test\nabc=1\n yield abc 1 +\n")
 ex.connectInput a
 ex.connectOutput a
@@ -28,9 +28,10 @@ text=[
 "scalar abc\n",
 "#  test\n","abc=1\n",
 "yield abc 1 + , 10\n",
-"out = each x in ttt",
-" yield x.end x.start - , x.user",
-"end"
+"out = each x in ttt\n",
+" yield x.end x.start - , x.user\n",
+" final\n"," yield 55 , \"petya\"\n",
+"end\n"
 ]
 ex.createNewRetLineNum(text,0)
 ex.hop

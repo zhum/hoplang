@@ -20,6 +20,10 @@ end
 out2 = each y in out
   yield y.field_1 1 + , y.field_2
 end
+
+out3 = each z in testbase
+  yield z.a , z.b
+end
 _PROGRAM
 
 text=raw_text.split "\n"

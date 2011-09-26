@@ -603,6 +603,8 @@ module Hopsa
 
       if(VarStor.testStream(parent, source)) then
         hopstance=StreamEachHopstance.new(parent)
+      elsif(Config["db_type_#{source}"]=='MyDatabase') then
+        hopstance=MyDatabaseEachHopstance.new(parent)
       else
         hopstance=EachHopstance.new(parent)
       end
@@ -676,6 +678,7 @@ module Hopsa
     def readSource
       if @source_in.nil?
         @source_in = open @source
+        # fields titles
         head=@source_in.readline.strip
         @heads=head.split /\s*,\s*/
       end
@@ -704,6 +707,38 @@ module Hopsa
     def readSource
       value=VarStor.get(self,@source)
       VarStor.set(self, @current_var, value)
+    end
+  end
+
+  # DUMMY DATABASE ACCESS CLASS
+  class MyDatabaseEachHopstance <EachHopstance
+    # read next source line and write it into @source_var
+    def readSource
+      super
+    end
+  end
+
+  class Config
+    CONFIG_FILE='./hopsa.conf'
+    @data=Hash.new
+
+    class << self
+      def load
+        open CONFIG_FILE {|file|
+          line=file.readline.strip
+          line =~ /(^=)+\s*=\s*(.*)/
+          @data[$1]=$2
+        }
+      end
+
+      def [](key)
+        begin
+          return @data[key]
+        rescue
+          warn "Warning: config key '#{key}' not found"
+          return nil
+        end
+      end
     end
   end
 

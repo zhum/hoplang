@@ -1,16 +1,4 @@
 module Hopsa
-  class BadHop < StandardError
-  end
-
-  class UnexpectedEOF < StandardError
-  end
-
-  class SyntaxError < StandardError
-  end
-
-  class VarNotFound < StandardError
-  end
-
   class HopPipe
     def get
       begin
@@ -396,7 +384,7 @@ module Hopsa
 
     # creates new Hopstance and returns it and next text line
     # ret: Hopstance,newStartLine
-    def self.createNewRetLineNum(text,startLine)
+    def self.createNewRetLineNum(parent,text,startLine)
       startLine -=1
       while (true)
         startLine+=1
@@ -412,36 +400,36 @@ module Hopsa
 #!! simplify regexp
           # each
         when /^((\S+)\s*=\s*)?each\s+(\S+)(\s+where\s+(.*))?/
-          return EachHopstance.createNewRetLineNum(self, text, startLine)
+          return EachHopstance.createNewRetLineNum(parent, text, startLine)
 
 #!! simplify regexp
           # group by
         when /^((\S+)\s*=\s*)?group\s+(\S+)\s+by\s+(\S+)(\s+where\s+(.*))?/
-          return GroupHopstance.createNewRetLineNum(self, text, startLine)
+          return GroupHopstance.createNewRetLineNum(parent, text, startLine)
 
           # while cycle
         when /^\s*while\s+/
-          return WhileHopstance.createNewRetLineNum(self, text, startLine)
+          return WhileHopstance.createNewRetLineNum(parent, text, startLine)
 
           # yield
         when /^yield\s+/
-          return YieldStatement.createNewRetLineNum(self, text, startLine)
+          return YieldStatement.createNewRetLineNum(parent, text, startLine)
 
           # scalar variable
         when /^scalar\s+(\S+)/
           # add new var in store
-          VarStor.addScalar(self, $1)
+          VarStor.addScalar(parent, $1)
           redo
 
           # cortege variable
         when /^data\s+(\S+)/
           # add new var in store
-          VarStor.addCortege(self, $1)
+          VarStor.addCortege(parent, $1)
           redo
 
           # let
         when /^(\S+)\s*=\s*(.)/
-          return LetStatement.createNewRetLineNum(self, text, startLine)
+          return LetStatement.createNewRetLineNum(parent, text, startLine)
 
           # ooops....
         else
@@ -466,11 +454,17 @@ module Hopsa
 
   class LetStatement < Statement
     def self.createNewRetLineNum(parent,text,startLine)
-      ret=LetStatement.new parent
+
       text[startLine] =~ /^(\S+)\s*=\s*(.*)/
-      ret.varname=$1
-      ret.expression,dummy=HopExpression.line2expr($2)
+      expression,* = HopExpression.line2expr($2)
+      ret = LetStatement.new parent, $1, expression
       return ret,startLine+1
+    end
+
+    def initialize(parent,var,expr)
+      super(parent)
+      @varname=var
+      @expression=expr
     end
 
     def hop
@@ -481,10 +475,7 @@ module Hopsa
       VarStor.set(@parent, @varname, value)
     end
 
-    protected
-    attr :variable, :expression
   end
-
 
   # Statement, which process stream.
   # So, it has inPipe, which is connected to previous Hopstance output.
@@ -500,10 +491,14 @@ module Hopsa
   end
 
   class TopStatement < Hopstance
-    def self.createNewRetLineNum(text,startLine)
+    def self.createNewRetLineNum(parent,text,startLine)
+      return TopStatement.new.createNewRetLineNum(parent,text,startLine)
+    end
+
+    def createNewRetLineNum(parent,text,startLine)
       begin
         while true
-          hopstance,startLine=super
+          hopstance,startLine=Hopstance.createNewRetLineNum(self,text,startLine)
           @mainChain.add hopstance
         end
       rescue UnexpectedEOF
@@ -586,6 +581,7 @@ module Hopsa
     end
 
   end
+
 
   class EachHopstance < Hopstance
 
@@ -698,5 +694,18 @@ module Hopsa
     end
   end
 
+  class BadHop < StandardError
+  end
+
+  class UnexpectedEOF < StandardError
+  end
+
+  class SyntaxError < StandardError
+  end
+
+  class VarNotFound < StandardError
+  end
+=begin
+=end
 end
 

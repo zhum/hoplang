@@ -16,6 +16,10 @@ out = each x in ttt
 final
  yield 55 , "petya"
 end
+
+out2 = each y in out
+  yield y.field_1 1 + , y.field_2
+end
 _PROGRAM
 
 text=raw_text.split "\n"

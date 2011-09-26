@@ -601,7 +601,7 @@ module Hopsa
 
       streamvar,current_var,source,where=$1,$2,$3,$5
 
-      if(VarStor.testStream(parent, current_var)) then
+      if(VarStor.testStream(parent, source)) then
         hopstance=StreamEachHopstance.new(parent)
       else
         hopstance=EachHopstance.new(parent)
@@ -696,6 +696,14 @@ module Hopsa
         return nil
       end
         line
+    end
+  end
+
+  class StreamEachHopstance <EachHopstance
+    # read next source line and write it into @source_var
+    def readSource
+      value=VarStor.get(self,@source)
+      VarStor.set(self, @current_var, value)
     end
   end
 

@@ -17,6 +17,6 @@ end
 _PROGRAM
 
 text=raw_text.split "\n"
-ex=TopStatement.createNewRetLineNum(nil,text,0)
+ex=load_program(text)
 ex.hop
 

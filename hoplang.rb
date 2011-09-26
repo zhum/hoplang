@@ -1,4 +1,9 @@
 module Hopsa
+
+  def load_program(text)
+    return TopStatement.createNewRetLineNum(nil,text,0)
+  end
+
   class HopPipe
     def get
       begin

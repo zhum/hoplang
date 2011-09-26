@@ -460,7 +460,8 @@ module Hopsa
   class LetStatement < Statement
     def self.createNewRetLineNum(parent,text,startLine)
 
-      text[startLine] =~ /^(\S+)\s*=\s*(.*)/
+      line,startLine=nextLine(text,startLine)
+      line =~ /^(\S+)\s*=\s*(.*)/
       expression,* = HopExpression.line2expr($2)
       ret = LetStatement.new parent, $1, expression
       return ret,startLine+1
@@ -603,7 +604,6 @@ module Hopsa
       if(VarStor.testStream(parent, current_var)) then
         hopstance=StreamEachHopstance.new(parent)
       else
-        warn "NEW!"
         hopstance=EachHopstance.new(parent)
       end
 

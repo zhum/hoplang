@@ -10,7 +10,9 @@ scalar abc
 abc=1
 yield abc 1 + , 10
 out = each x in ttt
- yield x.end x.start - , x.user
+ scalar delta
+ delta=x.end x.start -
+ yield delta , x.user
 final
  yield 55 , "petya"
 end

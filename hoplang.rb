@@ -1,14 +1,19 @@
 module Hopsa
 
+  require 'yaml'
+
   def load_program(text)
+    Hopsa::Config.load
     return TopStatement.createNewRetLineNum(nil,text,0)
   end
 
   class HopPipe
     def get
       begin
+#        warn "PIPE: #{@buffer[0]}"
         return @buffer.shift
       rescue
+#        warn "PIPE IS NIL"
         return nil
       end
     end
@@ -43,19 +48,20 @@ module Hopsa
       @chain.each {|el| el.hop}
     end
 
+    def to_s
+      "#HopChain(#{@chain.size})"
+    end
   end
 
   class VarStor
 
-  #  def initialize
-      @scalarStore=Hash.new
-      @cortegeStore=Hash.new
-      @streamStore=Hash.new
-  #  end
+    @scalarStore=Hash.new
+    @cortegeStore=Hash.new
+    @streamStore=Hash.new
 
     def self.addScalar(ex,name)
       hopid=ex.hopid
-      warn "ADD_SCALAR: #{name} (#{hopid}/#{ex})\n"
+#      warn "ADD_SCALAR: #{name} (#{hopid}/#{ex})\n"
       if @scalarStore[hopid].nil?
         @scalarStore[hopid]=Hash.new
       end
@@ -79,7 +85,7 @@ module Hopsa
       end
 
       @cortegeStore[hopid][name]={}
-      warn ">>ADD #{name} (#{hopid})"
+#      warn ">>ADD #{name} (#{hopid})"
     end
 
     def self.getScalar(ex, name)
@@ -117,6 +123,25 @@ module Hopsa
       @streamStore[hopid][name].put val
     end
 
+    def self.canRead?(ex,name)
+      begin
+        hopid=searchIdForVar(@streamStore,ex,name)
+        not @streamStore[hopid][name].empty?
+      rescue VarNotFound
+        begin
+          hopid=searchIdForVar(@cortegeStore,ex,name)
+          true
+        rescue VarNotFound
+          begin
+            hopid=searchIdForVar(@scalarStore,ex,name)
+            true
+          rescue VarNotFound
+            false
+          end
+        end
+      end
+    end
+
     def self.set(ex, name, val)
       begin
         hopid=searchIdForVar(@streamStore,ex,name)
@@ -146,8 +171,7 @@ module Hopsa
 #            warn "#{hopid}."
             return @scalarStore[hopid][name]
           rescue
-            warn "Var not found: #{name} (#{hopid}/#{ex})"
-            raise VarNotFound
+            raise VarNotFound "Var not found: #{name} (#{hopid}/#{ex})"
           end
         end
       end
@@ -205,8 +229,8 @@ module Hopsa
         end
         ex=ex.parent
       end
-  #    warn "SEARCH FAIL #{name}"
-      raise VarNotFound.new(name)
+#      warn "SEARCH FAIL #{name}"
+      raise VarNotFound.new name
     end
 
   end
@@ -591,6 +615,8 @@ module Hopsa
 
   class EachHopstance < Hopstance
 
+    attr_reader :streamvar
+
     def self.createNewRetLineNum(parent,text,pos)
       line,pos=Statement.nextLine(text,pos)
 
@@ -605,7 +631,16 @@ module Hopsa
         hopstance=StreamEachHopstance.new(parent)
       elsif(Config["db_type_#{source}"]=='MyDatabase') then
         hopstance=MyDatabaseEachHopstance.new(parent)
+      elsif(Config["db_type_#{source}"]=='split') then
+        i=1
+        types_list=Array.new
+        while name=Config["n_#{i}_#{source}"] do
+          types_list << {:n => i, :name => name}
+          i+=1
+        end
+        hopstance=SplitEachHopstance.new(parent, types_list)
       else
+        warn "DEFAULT Each"
         hopstance=EachHopstance.new(parent)
       end
 
@@ -615,12 +650,17 @@ module Hopsa
       return hopstance.init(text,pos,streamvar,current_var,source,where)
     end
 
+    def to_s
+      "#EachHopstance(#{@streamvar}<-#{@source})"
+    end
+    # ret: self, new_pos
     def init(text,pos,streamvar,current_var,source,where)
       @streamvar,@current_var=streamvar,current_var
       @source,@where=source,where
 
       pos+=1
       warn ":: #{text[pos]}"
+      warn "EACH: #{streamvar},#{current_var},#{source},#{where}"
       # now create execution chains for body and final sections
       begin
         while true
@@ -644,7 +684,7 @@ module Hopsa
               return self,pos+1
             end
           end
-        elsif line == 'end'
+      elsif line == 'end'
           return self,pos+1
         end
       end
@@ -652,20 +692,20 @@ module Hopsa
     end
 
     def hop
-      print "START\n"
+      warn "START (#{@mainChain})\n"
       while self.readSource
         # process body
         @mainChain.hop
       end
       # process final section
-      print "FINAL\n"
+      warn "FINAL\n"
       @finalChain.hop
 
-      print "FINISHED!\n-------------------------------\n"
+      warn "FINISHED!\n-------------------------------\n"
       while false #val=outPipe.get
-        print ":>> "
-        print val.map {|key,val| "#{key} => #{val}"} .join("; ")
-        print "\n"
+        warn ":>> "
+        warn val.map {|key,val| "#{key} => #{val}"} .join("; ")
+        warn "\n"
       end
     end
 
@@ -716,23 +756,97 @@ module Hopsa
     def readSource
       super
     end
+
+  end
+
+  # Read several sources...
+  class SplitEachHopstance <EachHopstance
+
+    def initialize(parent, sources)
+      super(parent)
+      warn "SPLIT #{sources.size}"
+      @sources=sources
+    end
+
+    def init(text,pos,streamvar,current_var,source,where)
+      @hopsources=Array.new
+      @streamvar,@current_var,@source=streamvar,current_var,source
+      pos2=0
+
+      @sources.each_with_index{|s,i|
+
+        # deep clone...
+        text_s=Marshal.load(Marshal.dump(text))
+
+        #change 'each' statement...
+        if streamvar=='' then
+          text_s[pos]=''
+        else
+          text_s[pos]="#{streamvar}__#{i}="
+        end
+        text_s[pos]+="each #{current_var} in #{s[:name]}"
+        text_s[pos]+=" where #{where}" if where !=''
+
+        hopstance,pos2=EachHopstance.createNewRetLineNum(self,text_s,pos)
+        @hopsources << hopstance
+      }
+      @current_source=-1
+      return self,pos2+1
+    end
+
+#    def hop
+#      warn "SplitHOP"
+#    end
+
+    # read next source line and write it into @source_var
+    def readSource
+      saved_source=@current_source
+
+      begin
+        @current_source+=1
+        @current_source=0 if @current_source>=@hopsources.size
+
+#        warn "->RRRRRRRRRRRRRRRRRRRRRR #{@hopsources[@current_source]}"
+
+        #!!!! Must be deleted on thread version!!!
+        @hopsources[@current_source].hop
+
+#        warn "<-RRRRRRRRRRRRR #{@current_source}/#{@current_var}: #{@hopsources[@current_source]}(#{@hopsources[@current_source].streamvar})"
+        if VarStor.canRead?(@hopsources[@current_source],
+                            @hopsources[@current_source].streamvar) then
+          value=VarStor.get(@hopsources[@current_source],
+                            @hopsources[@current_source].streamvar)
+          #@outPipe.put value
+          VarStor.set(self, @streamvar, value)
+#          warn "R_R #{value}"
+          return value
+        end
+#        warn "RR #{saved_source} #{@current_source}"
+      end while saved_source!=@current_source
+      return nil
+    end
   end
 
   class Config
     CONFIG_FILE='./hopsa.conf'
-    @data=Hash.new
+#    @data=Hash.new
 
     class << self
       def load
-        open CONFIG_FILE {|file|
-          line=file.readline.strip
-          line =~ /(^=)+\s*=\s*(.*)/
-          @data[$1]=$2
-        }
+        @data=YAML.load(File.open("./hopsa.conf"))
+#        File.open(CONFIG_FILE,"r") do |file|
+#          file.each {|line|
+#            line.strip!
+#            line =~ /([^= ]+)\s*=\s*(.*)/
+#            warn "CONF: '#{$1}' = '#{$2}' (#{line})"
+#            @data[$1]=$2
+#          }
+#        end
       end
 
       def [](key)
         begin
+          warn "CONFIG: #{key}=#{@data[key]}"
           return @data[key]
         rescue
           warn "Warning: config key '#{key}' not found"

@@ -3,6 +3,7 @@
 require './hoplang.rb'
 include Hopsa
 
+
 #ex=TopStatement.new
 raw_text = <<_PROGRAM
 scalar abc
@@ -21,8 +22,10 @@ out2 = each y in out
   yield y.field_1 1 + , y.field_2
 end
 
-out3 = each z in testbase
-  yield z.a , z.b
+out3 = each z in testsplit
+  scalar temp
+  temp = 20 10 +
+  yield temp , z.user , z.np
 end
 _PROGRAM
 

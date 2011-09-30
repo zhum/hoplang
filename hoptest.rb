@@ -1,38 +1,36 @@
 #!/usr/bin/ruby
 
 require './hoplang.rb'
+include Hopsa
 
+#ex=TopStatement.new
+raw_text = <<_PROGRAM
+#scalar abc
+#  test
+#abc=1
+#yield abc 1 + , 10
+#out = each x in ttt
+# scalar delta
+# delta=x.end x.start -
+# yield delta , x.user
+#final
+# yield 55 , "petya"
+#end
 
-class ArrayReader
-  def initialize(str)
-    @array=str.split "\n"
-    @cur=0
-  end
+#out2 = each y in out
+#  yield y.field_1 1 + , y.field_2
+#end
 
-  def get
-    @cur+=1
-    @array[@cur-1]
-  end
+# out3 = each z in testbase
+#   yield z.a , z.b
+# end
 
-  def put val
-    pp val
-  end
+out3 = each t in tasks
+  yield t.user
 end
+_PROGRAM
 
-
-ex=TopStatement.new
-a= ArrayReader.new ""#("scalar abc\n#  test\nabc=1\n yield abc 1 +\n")
-ex.connectInput a
-ex.connectOutput a
-text=[
-"scalar abc\n",
-"#  test\n","abc=1\n",
-"yield abc 1 + , 10\n",
-"out = each x in ttt\n",
-" yield x.end x.start - , x.user\n",
-" final\n"," yield 55 , \"petya\"\n",
-"end\n"
-]
-ex.createNewRetLineNum(text,0)
+text=raw_text.split "\n"
+ex=load_program(text)
 ex.hop
 

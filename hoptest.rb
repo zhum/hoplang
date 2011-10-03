@@ -21,9 +21,9 @@ raw_text = <<_PROGRAM
 #  yield y.field_1 1 + , y.field_2
 #end
 
-# out3 = each z in testbase
-#   yield z.a , z.b
-# end
+out2 = each z in testbase
+  yield z.a , z.b
+end
 
 out3 = each t in tasks
   yield t.user

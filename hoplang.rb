@@ -631,13 +631,16 @@ module Hopsa
       streamvar,current_var,source,where=$1,$2,$3,$5
 
       cfg_entry = Config["db_type_#{source}"]
+      src=Config.varmap[source]
+      type=src.nil? ? nil : src['type']
       if(VarStor.testStream(parent, source)) then
         hopstance=StreamEachHopstance.new(parent)
-      elsif(Config["db_type_#{source}"]=='MyDatabase') then
+#      elsif(Config["db_type_#{source}"]=='csv') then
+      elsif(type=='csv') then
         hopstance=MyDatabaseEachHopstance.new(parent)
-      elsif(Config["db_type_#{source}"]=='Cassandra') then
+      elsif(type=='Cassandra') then
         hopstance=CassandraHopstance.new(parent)
-      elsif(Config["db_type_#{source}"]=='split') then
+      elsif(type=='split') then
         i=1
         types_list=Array.new
         while name=Config["n_#{i}_#{source}"] do
@@ -896,6 +899,11 @@ module Hopsa
           warn "Warning: config key '#{key}' not found"
           return nil
         end
+      end
+
+      def varmap
+#        warn ">>>>>>>>> #{@data.keys}"
+        return @data["varmap"]
       end
     end
   end

@@ -23,7 +23,12 @@ module Hopsa
 
     def put(value)
       @buffer ||= Array.new
-      @buffer.push(value)
+      if(value.class == Hash){
+        @buffer.push(value.flatten.join(';'))
+      }
+      else{
+        @buffer.push(value)
+      }
     end
 
     def empty?

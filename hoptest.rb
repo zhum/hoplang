@@ -3,6 +3,8 @@
 require './hoplang.rb'
 include Hopsa
 
+
+
 #ex=TopStatement.new
 raw_text = <<_PROGRAM
 #scalar abc
@@ -22,12 +24,14 @@ raw_text = <<_PROGRAM
 #end
 
 out2 = each z in testbase
-  yield z.a , z.b
+  yield z.np , z.user
 end
 
-out3 = each t in tasks
-  yield t.user
-end
+include test_include.hpl
+
+#out3 = each t in tasks
+#  yield t.user
+#end
 _PROGRAM
 
 text=raw_text.split "\n"

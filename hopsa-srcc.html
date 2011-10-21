@@ -1,0 +1,78 @@
+<html><head><title></title>
+<LINK href="/hopsa-web.css" rel="stylesheet" type="text/css"></head>
+<body><center>
+<script type='text/javascript' src='/jquery.js'></script>
+<script type='text/javascript'src='/och2.js'></script>
+
+<style type="text/css">
+table td.node {
+  width: 10px;
+  height: 10px;
+  font-size: 5px;
+  border: 1px dotted blue;
+  text-align: center;
+}
+table.wrapper {
+  width:160px;
+  margin:5px 0 0 0;
+  padding:0 5px 0 0;
+  float:left;
+}
+
+</style>
+
+<form onSubmit="return false">
+<select name='mode' id="sensors_type">
+<option type="radio" id="sensors_type" value="received_IB">Received via IB</option>
+<option type="radio" id="sensors_type" value="sent_IB">Sent via IB</option>
+<option type="radio" id="sensors_type" value="received_eth">Received via Ethernet</option>
+<option type="radio" id="sensors_type" value="sent_eth">Sent via Ethernet</option>
+<option type="radio" id="sensors_type" value="cpu_temp">Temperature</option>
+<option type="radio" id="sensors_type" value="user_time">User time</option>
+<option type="radio" id="sensors_type" value="idle_time">Idle time</option>
+<option type="radio" id="sensors_type" value="io_wait">System time/IO time</option>
+<option type="radio" id="sensors_type" value="err_ib">Errors in IB</option>
+</select>
+<button id="update_button">Update</button>
+<label for="reload_check">Regular update</label> <input name="reload_check" id="reload_check" type="checkbox" />
+</form>
+
+<table><tr>
+<td>Average: <span id="summary">&nbsp;</span></td>
+<td>Min: <span id="min">&nbsp;</span></td>
+<td>Max: <span id="max">&nbsp;</span></td>
+<td>Current value: <span id="current">&nbsp;</span></td>
+</tr></table>
+
+<center>
+<table width="90%"><tr><td>
+<table class="wrapper">
+<tr>
+<td class=node id="10_0_244_31" label="10_0_244_31">&nbsp;</td>
+<td class=node id="10_0_244_32" label="10_0_244_32">&nbsp;</td>
+<td class=node id="10_0_244_33" label="10_0_244_33">&nbsp;</td>
+<td class=node id="10_0_244_34" label="10_0_244_34">&nbsp;</td>
+<td class=node id="10_0_244_35" label="10_0_244_35">&nbsp;</td>
+<td class=node id="10_0_244_36" label="10_0_244_36">&nbsp;</td>
+<td class=node id="10_0_244_37" label="10_0_244_37">&nbsp;</td>
+<td class=node id="10_0_244_38" label="10_0_244_38">&nbsp;</td>
+<td class=node id="10_0_244_39" label="10_0_244_39">&nbsp;</td>
+<td class=node id="10_0_244_40" label="10_0_244_40">&nbsp;</td></tr>
+
+<tr>
+<td class=node id="g_10_0_244_31" label="10_0_244_31">&nbsp;</td>
+<td class=node id="g_10_0_244_32" label="10_0_244_32">&nbsp;</td>
+<td class=node id="g_10_0_244_33" label="10_0_244_33">&nbsp;</td>
+<td class=node id="g_10_0_244_34" label="10_0_244_34">&nbsp;</td>
+<td class=node id="g_10_0_244_35" label="10_0_244_35">&nbsp;</td>
+<td class=node id="g_10_0_244_36" label="10_0_244_36">&nbsp;</td>
+<td class=node id="g_10_0_244_37" label="10_0_244_37">&nbsp;</td>
+<td class=node id="g_10_0_244_38" label="10_0_244_38">&nbsp;</td>
+<td class=node id="g_10_0_244_39" label="10_0_244_39">&nbsp;</td>
+<td class=node id="g_10_0_244_40" label="10_0_244_40">&nbsp;</td></tr>
+</table>
+</td></tr></table>
+</center>
+
+</body></html>
+

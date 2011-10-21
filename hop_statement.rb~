@@ -41,7 +41,7 @@ module Hopsa
     def self.createNewRetLineNum(parent,text,startLine)
       startLine -=1
       while (true)
-        #warn "PROCESS #{text[startLine]}"
+        warn "PROCESS #{text[startLine]}"
         startLine+=1
         line,startLine=Statement.nextLine(text,startLine)
 

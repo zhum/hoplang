@@ -1,5 +1,6 @@
 require 'rubygems'
 require 'yaml'
+#require 'cassandra/0.8'
 
 #TODO: correct implementation
 class Hash

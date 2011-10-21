@@ -1,0 +1,12 @@
+varmap: {
+  tasks: {
+    type: Cassandra
+  },
+  testbase: {
+    type: csv
+
+  }
+},
+
+db_type_tasks: Cassandra
+

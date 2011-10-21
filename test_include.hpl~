@@ -1,6 +1,0 @@
-# just comment
-
-out_new = each zz in testbase
-  yield * 2 zz.np , zz.user
-end
-

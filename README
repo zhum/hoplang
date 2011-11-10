@@ -11,3 +11,6 @@ Revolutional data processing language. World domination toolset component...
    and return created Hopstance and new position in text
 5. do_yield method = do yield :)
 
+*Required modules (rubygems) *
+
+- citrus - used for expression grammar

@@ -11,6 +11,7 @@ Revolutional data processing language. World domination toolset component...
    and return created Hopstance and new position in text
 5. do_yield method = do yield :)
 
-*Required modules (rubygems) *
+*Required modules (rubygems)*
 
+- cassandra - used to interact with Cassandra DB
 - citrus - used for expression grammar

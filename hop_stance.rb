@@ -192,13 +192,15 @@ module Hopsa
       }
       VarStor.each_stream(self){|name, var|
         warn "Output Stream: #{name}"
-        while(v=var.get)
-          warn "-> #{v}"
+        while(v=var.get)     
+          if v.class == Hash
+            warn "-> #{v.to_csv}"
+          else
+            warn "-> #{v}"
+          end
         end
       }
 
     end
   end
-
 end
-

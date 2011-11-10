@@ -12,12 +12,15 @@ module Hopsa
 
     def put(value)
       @buffer ||= Array.new
+      @buffer.push value
+# removed zhumcode begin
 #      warn "PIPE put: #{value}"
-      if(value.class == Hash)
-        @buffer.push(value.to_csv)
-      else
-        @buffer.push(value)
-      end
+#      if(value.class == Hash)
+#        @buffer.push(value.to_csv)
+#      else
+#        @buffer.push(value)
+#      end
+# removed zhumcode end
     end
 
     def empty?

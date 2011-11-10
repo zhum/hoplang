@@ -84,6 +84,7 @@ module Hopsa
 
           # let
         when /^(\S+)\s*=\s*(.)/
+          puts 'creating let statement'
           return LetStatement.createNewRetLineNum(parent, text, startLine)
 
           # include
@@ -131,15 +132,18 @@ module Hopsa
     def self.createNewRetLineNum(parent,text,startLine)
 
       line,startLine=nextLine(text,startLine)
-      line =~ /^(\S+)\s*=\s*(.*)/
-      expression,* = HopExpression.line2expr($2)
-      ret = LetStatement.new parent, $1, expression
+      #line =~ /^(\S+)\s*=\s*(.*)/
+      #expression,* = HopExpression.line2expr($2)
+      expression = HopExpr.parse(line)
+      #puts expression.inspect
+      #ret = LetStatement.new parent, $1, expression
+      ret = LetStatement.new parent, expression
       return ret,startLine+1
     end
 
-    def initialize(parent,var,expr)
+    def initialize(parent, expr)
       super(parent)
-      @varname=var
+      # @varname=var
       @expression=expr
     end
 
@@ -147,8 +151,9 @@ module Hopsa
       #!!!!!!!!!!!!!!!!TODO!!!!!!!!!!!!!!!!!!
       #!!!!!! scalar/cortege !!!!!!!!!!!!!!!!
 
-      value=@expression.evaluate(@parent)
-      VarStor.set(@parent, @varname, value)
+      #value=@expression.evaluate(@parent)
+      #VarStor.set(@parent, @varname, value)
+      @expression.eval @parent
     end
 
   end
@@ -165,44 +170,60 @@ module Hopsa
     end
 
     def createNewRetLineNum(text,pos)
+      puts 'creating yield statement'
       line,pos=Statement.nextLine(text,pos)
       field_num=1
+      # maps names to expressions
       @fields=Hash.new
 
       raise UnexpectedEOF if line.nil?
       raise (SyntaxError) if(not line.match /^yield(\s*(.*))/)
-
-      ret=$2
-      while not ret.nil?;
-        expr,ret = HopExpression.line2expr(ret)
-        ret.match /^(=>\s*(\S+))?(.*)/
-        unless $1.nil?
-          # named field
-          field_name=$2
-        else
-          # generate field name
-          field_name="field_#{field_num}"
-          field_num+=1
+      
+      # parse expressions
+      #puts $2
+      elist = HopExpr.parse_list $2
+      #puts elist
+      elist.each do |e|
+        name = e.name
+        if name == ''
+          name = "field_#{field_num}"
         end
-        @fields[field_name]=expr
-
-        ret=$3
-        # remove separators...
-        unless ret.nil?
-          ret.match /^\s*,(.*)/
-          ret=$1
-        end
+        field_num += 1
+        @fields[name] = e
       end
+
+# removed zhumcode begin
+      # ret=$2
+      # while not ret.nil?;
+      #   expr,ret = HopExpression.line2expr(ret)
+      #   ret.match /^(=>\s*(\S+))?(.*)/
+      #   unless $1.nil?
+      #     # named field
+      #     field_name=$2
+      #   else
+      #     # generate field name
+      #     field_name="field_#{field_num}"
+      #     field_num+=1
+      #   end
+      #   @fields[field_name]=expr
+
+      #   ret=$3
+      #   # remove separators...
+      #   unless ret.nil?
+      #     ret.match /^\s*,(.*)/
+      #     ret=$1
+      #   end
+      # end
+# removed zhumcode end
 
       return self,pos+1
     end
 
     def hop
-      ret={}
-      @fields.map {|key,val| ret[key] = val.evaluate(self)}
+      ret = {}
+      @fields.map {|name, expr| ret[name] = expr.eval(self)}
       @parent.do_yield(ret)
     end
 
   end
 end
-

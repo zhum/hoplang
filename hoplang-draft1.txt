@@ -41,3 +41,18 @@ read ...
 #AGGREGATE_EXPRESSION
 min max sum avg top bottom
 
+#EXPRESSION TABLE
+Operators with higher precedence are listed first. Associativity is left, right,
+unary (not applicable) or none (means that only one operator is
+allowed). Parentheses may be used to override default precedence
+
+Group				Operators				 Associativity		Remarks
+Post				f(x,y),x.n			 unary						
+Unary				-,not						 unary						
+Mul					*,/,%						 left							
+Add					+,-							 left							also string concatenation
+Rel					<,>,<=,=>,==,!=	 none
+And					and							 left							short-circuit
+Or					or,xor					 left							short-circuit or
+Named				n => e					 none							naming expressions for yielding
+Ass					=								 none

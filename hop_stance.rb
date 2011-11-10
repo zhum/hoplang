@@ -34,6 +34,8 @@ module Hopsa
 #      elsif(Config["db_type_#{source}"]=='csv') then
       elsif(type=='csv') then
         hopstance=MyDatabaseEachHopstance.new(parent)
+      elsif(type=='cassandra') then
+        hopstance=CassandraHopstance.new parent, source
       elsif(type=='split') then
         i=1
         types_list=Array.new

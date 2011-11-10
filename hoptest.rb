@@ -31,7 +31,7 @@ end
 #include test_include.hpl
 
 #out3 = each t in tasks
-#  yield t.user
+#  yield 'task ' + t.key + ' from ' + t.user
 #end
 _PROGRAM
 

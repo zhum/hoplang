@@ -84,7 +84,7 @@ module Hopsa
 
           # let
         when /^(\S+)\s*=\s*(.)/
-          puts 'creating let statement'
+          # puts 'creating let statement'
           return LetStatement.createNewRetLineNum(parent, text, startLine)
 
           # include
@@ -170,7 +170,7 @@ module Hopsa
     end
 
     def createNewRetLineNum(text,pos)
-      puts 'creating yield statement'
+      # puts 'creating yield statement'
       line,pos=Statement.nextLine(text,pos)
       field_num=1
       # maps names to expressions

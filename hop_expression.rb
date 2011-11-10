@@ -110,9 +110,9 @@ module Hopsa
     end
     def eval(ex)
       o = @obj.eval(ex)
-      puts "obj = #{o.inspect}"
+      # puts "obj = #{o.inspect}"
       r = o[@field_name]
-      puts "obj.#{field_name} = #{r}"
+      # puts "obj.#{field_name} = #{r}"
       @obj.eval(ex)[@field_name]
     end
     def ass(ex, val)

@@ -17,7 +17,7 @@ out = each x in ttt
  delta = x.end + x.start
  yield d => delta, x.user
 final
- yield d => 55, 'petya'
+ yield d => 55, "petya"
 end
 
 out2 = each y in out

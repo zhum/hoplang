@@ -4,10 +4,10 @@
 # *op - specific operator
 grammar HopExprGram
 				rule expr
-						 (space assexpr) { assexpr.value }
+						 (spacecom assexpr) { assexpr.value }
 				end
 				rule topexprlist
-						 (space exprlist) { exprlist.value }
+						 (spacecom exprlist) { exprlist.value }
 				end
 				rule assexpr
 						 (namedexpr (assop orexpr)?) {
@@ -84,49 +84,58 @@ grammar HopExprGram
 						 number | string
 				end
 				rule number
-						 ([0-9]+ space) { to_i }
+						 ([0-9]+ spacecom) { to_i }
 				end
 				rule string
-						 ("\'" str:([^"\'"]*) "\'" space) { str.to_s }
+						 ("\'" str:([^"\'"]*) "\'" spacecom) { str.to_s }
+						 | ("\"" str:([^"\""]*) "\"" spacecom) { str.to_s }						 
 				end			
 				rule name
-						 ([a-zA-Z_][a-zA-Z0-9_]* space) { to_s.strip }
+						 ([a-zA-Z_][a-zA-Z0-9_]* spacecom) { to_s.strip }
 				end
 				rule dot
-						 ('.' space) { '.' }
+						 ('.' spacecom) { '.' }
 				end
 				rule comma
-						 (',' space) { ',' }
+						 (',' spacecom) { ',' }
 				end
 				rule lparen
-						 ('(' space) { '(' }
+						 ('(' spacecom) { '(' }
 				end
 				rule rparen
-						 (')' space) { ')' }
+						 (')' spacecom) { ')' }
 				end
 				rule assop
-						 ('=' space) { '=' }
+						 ('=' spacecom) { '=' }
 				end
 				rule orlop
-						 (('or' | 'xor') space) { to_s.strip }
+						 (('or' | 'xor') spacecom) { to_s.strip }
 				end
 				rule andop
-						 ('and' space) { 'and' }
+						 ('and' spacecom) { 'and' }
 				end
 				rule relop
-						 (('<' | '<=' | '>' | '>=' | '==' | '!=') space) { to_s.strip }
+						 (('<' | '<=' | '>' | '>=' | '==' | '!=') spacecom) { to_s.strip }
 				end
 				rule addlop
-						 ([-+] space) { to_s.strip }
+						 ([-+] spacecom) { to_s.strip }
 				end
 				rule mulop
-						 ([*/%] space) { to_s.strip }
+						 ([*/%] spacecom) { to_s.strip }
 				end
 				rule unlop
-						 (('-' | 'not') space) { to_s.strip } 
+						 (('-' | 'not') spacecom) { to_s.strip } 
 				end
 				rule arrow
-						 ('=>' space) { to_s.strip }
+						 ('=>' spacecom) { to_s.strip }
+				end
+				# spaces and comments
+				rule spacecom
+						 space comment?
+				end			
+				rule comment
+						 '#' .*
+
 				end
 				rule space
 						 [ \t\n\r]*

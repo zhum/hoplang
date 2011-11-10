@@ -48,7 +48,7 @@ module Hopsa
         raise UnexpectedEOF if line.nil?
         case line
           # comment
-        when /^#/, /^$/
+        when /^\s*#/, /^$/
           warn "Comment #{line.chomp}"
           redo
 
@@ -67,7 +67,8 @@ module Hopsa
           return WhileHopstance.createNewRetLineNum(parent, text, startLine)
 
           # yield
-        when /^yield\s+/
+        when /^\s*yield\s+/
+          #puts 'matched yield statement'
           return YieldStatement.createNewRetLineNum(parent, text, startLine)
 
           # scalar variable
@@ -170,14 +171,14 @@ module Hopsa
     end
 
     def createNewRetLineNum(text,pos)
-      # puts 'creating yield statement'
+      #puts 'creating yield statement'
       line,pos=Statement.nextLine(text,pos)
       field_num=1
       # maps names to expressions
       @fields=Hash.new
 
       raise UnexpectedEOF if line.nil?
-      raise (SyntaxError) if(not line.match /^yield(\s*(.*))/)
+      raise (SyntaxError) if(not line.match /^\s*yield(\s*(.*))/)
       
       # parse expressions
       #puts $2

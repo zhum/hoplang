@@ -50,9 +50,21 @@ Group				Operators				 Associativity		Remarks
 Post				f(x,y),x.n			 unary						
 Unary				-,not						 unary						
 Mul					*,/,%						 left							
-Add					+,-							 left							also string concatenation
-Rel					<,>,<=,=>,==,!=	 none
+Add					+,&,-						 left							& is string concatenation
+Rel					<,>,<=,=>,==,!=	 none							
 And					and							 left							short-circuit
 Or					or,xor					 left							short-circuit or
 Named				n => e					 none							naming expressions for yielding
-Ass					=								 none
+Ass					=								 none							
+
+Objects and results of operators are either strings or tuples (implemented as
+ruby hashes). When performing numeric operators, objects are first converted to
+64-bit floating-point numbers, the operator is performed on them, and the
+returned result is converted back into string. Most operators are numeric,
+except for f(), ., =>, &, =, logical and comparison operators. For comparison
+operators <, >, <=, >= the objects are first converted into doubles, but the
+result is a logical value. For == and !=, the result is also a logical value,
+but no conversion is performed. For ., the left-side object must be a hash, or
+an error will occur. For => operator, the left side must be an id, and the right
+side can be any expression. & is an operator which does concatenation on
+strings. 

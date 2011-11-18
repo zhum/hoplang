@@ -110,6 +110,7 @@ module Hopsa
     end
     def eval(ex)
       o = @obj.eval(ex)
+      warn 'applying . to an object which is not a tuple' if o.class != Hash
       # puts "obj = #{o.inspect}"
       r = o[@field_name]
       # puts "obj.#{field_name} = #{r}"
@@ -130,7 +131,7 @@ module Hopsa
       val = @expr.eval(ex)
       case @op
         when '-'
-        return -val
+        return (-val.to_f).to_s
         when 'not'
         return !val
         else
@@ -141,12 +142,21 @@ module Hopsa
   end # UnaryExpr
 
   class BinaryExpr < HopExpr
+    # operators which are short-circuit
+    SHORT_OPS = ['and', 'or']
+    # pre-conversion operators
+    PRECONV_OPS = ['*', '/', '+', '-', '<=', '>=', '<', '>']
+    # post-conversion operators
+    POSTCONV_OPS = ['*', '/', '+', '-']
+    # relational operators
     attr_reader :op, :expr1, :expr2, :short
     def initialize(expr1, op, expr2) 
       @op = op
       @expr1 = expr1
       @expr2 = expr2
-      @short = op == 'and' or op == 'or'
+      @short = SHORT_OPS.include? op
+      @pre_conv = PRECONV_OPS.include? op
+      @post_conv = POSTCONV_OPS.include? op
     end
     def eval(ex)
       if @short
@@ -165,35 +175,42 @@ module Hopsa
         #full evaluation
         val1 = @expr1.eval(ex)
         val2 = @expr2.eval(ex)
+        if @pre_conv
+          val1 = val1.to_f
+          val2 = val2.to_f
+        end
+        res = nil
         case @op
           when '*' 
-          return val1 * val2
+          res = val1 * val2
           when '/' 
-          return val1 / val2
-          when '%'
-          return val1 % val2
+          res = val1 / val2
           when '+'
-          return val1 + val2
+          res = val1 + val2
           when '-'
-          return val1 - val2
+          res = val1 - val2
+          when '&'
+          # string concatenation
+          res = val1 + val2 
           when '<'
-          return val1 < val2
+          res = val1 < val2
           when '>'
-          return val1 > val2
+          res = val1 > val2
           when '<='
-          return val1 <= val2
+          res = val1 <= val2
           when '>='
-          return val1 >= val2
+          res = val1 >= val2
           when '=='
-          return val1 == val2
+          res = val1 == val2
           when '!='
-          return val1 != val2
+          res = val1 != val2
           when 'xor'
-          return val1 ^ val2
+          res = val1 ^ val2
           else
           warn "#{@op}: unsupported binary operator"
           return nil
         end # case(op)
+        res = res.to_s if @post_conv
       end
     end # eval
   end # BinaryExpr

@@ -14,7 +14,7 @@ yield abc + 1, 10
 out = each x in ttt
  scalar delta
 # must somehow become ints
- delta = x.end + x.start
+ delta = x.end - x.start * 1 + 0
  yield d => delta, x.user
 final
  yield d => 55, "petya"
@@ -31,7 +31,7 @@ end
 #include test_include.hpl
 
 #out3 = each t in tasks
-#  yield 'task ' + t.key + ' from ' + t.user
+#  yield 'task ' & t.key & ' from ' & t.user
 #end
 _PROGRAM
 

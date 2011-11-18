@@ -84,7 +84,7 @@ grammar HopExprGram
 						 number | string
 				end
 				rule number
-						 ([0-9]+ spacecom) { to_i }
+						 ([0-9]+ spacecom) { to_s.strip }
 				end
 				rule string
 						 ("\'" str:([^"\'"]*) "\'" spacecom) { str.to_s }
@@ -118,10 +118,10 @@ grammar HopExprGram
 						 (('<' | '<=' | '>' | '>=' | '==' | '!=') spacecom) { to_s.strip }
 				end
 				rule addlop
-						 ([-+] spacecom) { to_s.strip }
+						 ([-+&] spacecom) { to_s.strip }
 				end
 				rule mulop
-						 ([*/%] spacecom) { to_s.strip }
+						 ([*/] spacecom) { to_s.strip }
 				end
 				rule unlop
 						 (('-' | 'not') spacecom) { to_s.strip } 

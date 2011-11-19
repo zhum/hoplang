@@ -13,9 +13,13 @@ abc = 1
 yield abc + 1, 10
 out = each x in ttt where x.np > 15
  scalar delta
-# must somehow become ints
  delta = x.end - x.start * 1 + 0
- yield d => delta, x.user
+ scalar i
+ i = 0
+ while i < 3
+  yield d => delta, x.user
+  i = i + 1
+ end
 final
  yield d => 55, "petya"
 end

@@ -64,7 +64,7 @@ module Hopsa
 
           # while cycle
         when /^\s*while\s+/
-          return WhileHopstance.createNewRetLineNum(parent, text, startLine)
+          return WhileStatement.createNewRetLineNum(parent, text, startLine)
 
           # yield
         when /^\s*yield\s+/
@@ -128,6 +128,45 @@ module Hopsa
     end
   end
 
+  # represents while statement
+  class WhileStatement < Statement
+    def self.createNewRetLineNum(parent,text,startLine)
+      return WhileStatement.new(parent).createNewRetLineNum(parent,text,startLine)
+    end
+
+    def createNewRetLineNum(parent,text,startLine)
+      line,pos = Statement.nextLine(text,startLine);
+      raise SyntaxError if !line.match /\s*while\s+(.*)/
+      @cond_expr = HopExpr.parse_cond $1
+      puts @cond_expr.inspect
+      pos += 1
+      begin
+        while true
+          # it may be better to pass self as parent to nested statements
+          # and hopstances. However, currently no variable declarations are 
+          # allowed in while, that's why we pass parent
+          hopstance,pos = Hopstance.createNewRetLineNum(parent,text,pos)
+          @mainChain.add hopstance
+        end
+      rescue UnexpectedEOF
+        return self, pos
+      rescue SyntaxError
+        line,pos = Statement.nextLine(text, pos)
+        if line == 'end'
+          return self, pos + 1
+        else
+          raise
+        end
+      end # begin
+      return self,startLine
+    end # createNewRetLineNum
+
+    def hop
+      while @cond_expr.eval(@parent) 
+        @mainChain.hop
+      end
+    end
+  end # WhileStatement
 
   class LetStatement < Statement
     def self.createNewRetLineNum(parent,text,startLine)

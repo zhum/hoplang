@@ -4,7 +4,6 @@ module Hopsa
 
   class CassandraHopstance < EachHopstance
 
-    #def init(text,pos,streamvar,current_var,source,where)
     def initialize(parent, source)
       super(parent)
       cfg = Config['varmap'][source]

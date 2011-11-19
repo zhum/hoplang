@@ -67,8 +67,11 @@ module Hopsa
     end
     # ret: self, new_pos
     def init(text,pos,streamvar,current_var,source,where)
-      @streamvar,@current_var=streamvar,current_var
-      @source,@where=source,where
+      @streamvar,@current_var,@source=streamvar,current_var,source
+
+      # parse predicate expression, if any
+      @where_expr = HopExpr.parse_cond where if where
+      #puts @where_expr.inspect if @where_expr
 
       pos+=1
       warn ":: #{text[pos]}"
@@ -106,6 +109,10 @@ module Hopsa
     def hop
       warn "START main chain (#{@mainChain})"
       while self.readSource
+        if @where_expr && !@where_expr.eval(self)
+          puts @where_expr.eval(self)
+          next
+        end
         # process body
         @mainChain.hop
       end

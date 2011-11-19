@@ -11,7 +11,7 @@ scalar abc
 #  test
 abc = 1
 yield abc + 1, 10
-out = each x in ttt
+out = each x in ttt where x.np > 15
  scalar delta
 # must somehow become ints
  delta = x.end - x.start * 1 + 0

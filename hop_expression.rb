@@ -42,6 +42,11 @@ module Hopsa
       HopExprGram.parse(line, :root => :expr).value
     end
 
+    # parses a conditional expression, such as allowed in while, if and where
+    def self.parse_cond(line)
+      HopExprGram.parse(line, :root => :condexpr).value
+    end
+
     # parses a list of expressions
     def self.parse_list(line) 
       HopExprGram.parse(line, :root => :topexprlist).value
@@ -211,6 +216,7 @@ module Hopsa
           return nil
         end # case(op)
         res = res.to_s if @post_conv
+        return res
       end
     end # eval
   end # BinaryExpr

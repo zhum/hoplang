@@ -3,11 +3,17 @@
 # *lop - one operator from the list (short for * "level op")
 # *op - specific operator
 grammar HopExprGram
+				# target non-terminal for expressions, including assignments
 				rule expr
 						 (spacecom assexpr) { assexpr.value }
 				end
+				# target non-terminal for expression lists
 				rule topexprlist
 						 (spacecom exprlist) { exprlist.value }
+				end
+				# target non-terminal for conditional expressions
+				rule condexpr
+						 (spacecom orexpr) { orexpr.value }
 				end
 				rule assexpr
 						 (namedexpr (assop orexpr)?) {

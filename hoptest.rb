@@ -16,16 +16,20 @@ out = each x in ttt where x.np > 15
  delta = x.end - x.start * 1 + 0
  scalar i
  i = 0
- while i < 3
-  yield d => delta, x.user
+ while i < 2
+  if i == 0
+    yield d => delta, x.user, i => i
+  else
+    yield d => delta, x.user, i => i + 1 
+  end
   i = i + 1
  end
 final
- yield d => 55, "petya"
+ yield d => 55, "petya", i => 3
 end
 
 out2 = each y in out
-  yield d => y.d, y.field_2
+  yield d => y.d, y.field_2, y.i
 end
 
 #out2 = each z in testbase

@@ -62,9 +62,13 @@ module Hopsa
         when /^((\S+)\s*=\s*)?group\s+(\S+)\s+by\s+(\S+)(\s+where\s+(.*))?/
           return GroupHopstance.createNewRetLineNum(parent, text, startLine)
 
-          # while cycle
+          # while loop
         when /^\s*while\s+/
           return WhileStatement.createNewRetLineNum(parent, text, startLine)
+
+          # if-else statement
+        when /^\s*if\s+/
+          return IfStatement.createNewRetLineNum(parent, text, startLine)
 
           # yield
         when /^\s*yield\s+/
@@ -128,6 +132,59 @@ module Hopsa
     end
   end
 
+  # represents if ... [ else ... ] end statement
+  class IfStatement < Statement
+    def if_chain
+      @mainChain
+    end
+    def else_chain
+      @finalChain
+    end
+    def self.createNewRetLineNum(parent,text,startLine)
+      return IfStatement.new(parent).createNewRetLineNum(parent,text,startLine)
+    end
+    def createNewRetLineNum(parent,text,startLine)
+      line,pos = Statement.nextLine(text,startLine);
+      raise SyntaxError if !line.match /\s*if\s+(.*)/
+      @cond_expr = HopExpr.parse_cond $1
+      puts @cond_expr.inspect
+      pos += 1
+      cur_chain = if_chain
+      while true
+        # second while for processing after switching to else chain
+        begin
+          while true
+            # it may be better to pass self as parent to nested statements
+            # and hopstances. However, currently no variable declarations are 
+            # allowed in while, that's why we pass parent
+            hopstance,pos = Hopstance.createNewRetLineNum(parent,text,pos)
+            cur_chain.add hopstance
+          end
+        rescue SyntaxError
+          line, pos = Statement.nextLine(text, pos)
+          if line == 'else'
+            raise if cur_chain == else_chain
+            cur_chain = else_chain
+            pos += 1          
+          elsif line == 'end'
+            return self, pos + 1
+          else
+            raise
+          end
+        end # begin
+      end # outer while true
+      # must not reach here
+    end # createNewRetLineNum
+
+    def hop
+      if @cond_expr.eval(@parent)
+        if_chain.hop
+      else
+        else_chain.hop
+      end
+    end
+  end # IfStatement
+
   # represents while statement
   class WhileStatement < Statement
     def self.createNewRetLineNum(parent,text,startLine)
@@ -148,8 +205,6 @@ module Hopsa
           hopstance,pos = Hopstance.createNewRetLineNum(parent,text,pos)
           @mainChain.add hopstance
         end
-      rescue UnexpectedEOF
-        return self, pos
       rescue SyntaxError
         line,pos = Statement.nextLine(text, pos)
         if line == 'end'
@@ -158,7 +213,7 @@ module Hopsa
           raise
         end
       end # begin
-      return self,startLine
+      # must not reach here
     end # createNewRetLineNum
 
     def hop

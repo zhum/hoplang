@@ -119,7 +119,8 @@ module Hopsa
       # puts "obj = #{o.inspect}"
       r = o[@field_name]
       # puts "obj.#{field_name} = #{r}"
-      @obj.eval(ex)[@field_name]
+      warn "no field #{@field_name} in object" if !r
+      r
     end
     def ass(ex, val)
       @obj.eval(ex)[@field_name] = val

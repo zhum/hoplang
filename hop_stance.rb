@@ -110,7 +110,7 @@ module Hopsa
       warn "START main chain (#{@mainChain})"
       while self.readSource
         if @where_expr && !@where_expr.eval(self)
-          puts @where_expr.eval(self)
+          #puts @where_expr.eval(self)
           next
         end
         # process body

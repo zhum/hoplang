@@ -9,38 +9,38 @@ include Hopsa
 raw_text = <<_PROGRAM
 scalar abc
 #  test
-#abc = 1
-#yield abc + 1, 10
-#out = each x in ttt where x.np > 15
-# scalar delta
-# delta = x.end - x.start * 1 + 0
-# scalar i
-# i = 0
-# while i < 2
-#  if i == 0
-#    yield d => delta, x.user, i => i
-#  else
-#    yield d => delta, x.user, i => i + 1 
-#  end
-#  i = i + 1
-# end
-#final
-# yield d => 55, "petya", i => 3
-#end
+abc = 1
+yield abc + 1, 10
+out = each x in ttt where x.np > 15
+ scalar delta
+ delta = x.end - x.start * 1 + 0
+ scalar i
+ i = 0
+ while i < 2
+  if i == 0
+    yield d => delta, x.user, i => i
+  else
+    yield d => delta, x.user, i => i + 1 
+  end
+  i = i + 1
+ end
+final
+ yield d => 55, "petya", i => 3
+end
 
-#out2 = each y in out
-#  yield d => y.d, y.field_2, y.i
-#end
+out2 = each y in out
+  yield d => y.d, y.field_2, y.i
+end
 
-#out2 = each z in testbase
-#  yield z.np, z.user
-#end
+out2 = each z in testbase
+  yield z.np, z.user
+end
 
 #include test_include.hpl
 
-out3 = each t in tasks where t.ncpus > 8
-  yield t.key, t.user, t.ncpus
-end
+#out3 = each t in tasks where t.queue == 'regular6' and t.ncpus >= 4096
+#  yield t.key, t.user, t.ncpus
+#end
 _PROGRAM
 
 text=raw_text.split "\n"

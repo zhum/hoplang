@@ -1,3 +1,4 @@
+# TODO: deprecate all 'Cortege' things and remove them in future versions
 module Hopsa
   class VarStor
     @scalarStore=Hash.new

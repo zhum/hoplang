@@ -20,7 +20,9 @@ module Hopsa
       line,pos=Statement.nextLine(text,pos)
 
       raise UnexpectedEOF if line.nil?
-      unless line =~ /^(\S+)\s*=\s*each\s+(\S+)\s+in\s+(\S+)(\s+where\s+(.*))?/
+      unless((line =~
+      /^(\S+)\s*=\s*each\s+(\S+)\s+in\s+(\S+)(\s+where\s+(.*))?/) || (line =~ /^(\S+)\s*=\s*seq\s+(\S+)\s+in\s+(\S+)(\s+where\s+(.*))?/))
+          
         raise SyntaxError.new(line)
       end
 
@@ -56,7 +58,7 @@ module Hopsa
         hopstance=EachHopstance.new(parent)
       end
 
-      VarStor.addCortege(hopstance, current_var)
+      VarStor.addScalar(hopstance, current_var)
       VarStor.addStream(parent, streamvar)
 
       return hopstance.init(text,pos,streamvar,current_var,source,where)
@@ -161,12 +163,18 @@ module Hopsa
     end
   end
 
-  class StreamEachHopstance <EachHopstance
+  class StreamEachHopstance < EachHopstance
     # read next source line and write it into @source_var
     def readSource
       value=VarStor.get(self,@source)
       VarStor.set(self, @current_var, value)
     end
+  end
+
+  # a special hopstance which processes elements in strict sequential order
+  # can be used, for instance, for easy implementation of accumulators
+  # currently, just an empty class
+  class SeqHopstance < StreamEachHopstance
   end
 
   class TopStatement < Hopstance

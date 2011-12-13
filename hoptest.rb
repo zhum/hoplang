@@ -3,33 +3,33 @@
 require './hoplang.rb'
 include Hopsa
 
-
-
 #ex=TopStatement.new
 raw_text = <<_PROGRAM
-scalar abc
+var abc
 #  test
 abc = 1
 yield abc + 1, 10
 out = each x in ttt where x.np > 15
- scalar delta
+ var delta
  delta = x.end - x.start * 1 + 0
- scalar i
+ var i
  i = 0
  while i < 2
   if i == 0
-    yield d => delta, x.user, i => i
+    yield d => delta, u => x.user, i => i
   else
-    yield d => delta, x.user, i => i + 1 
+    yield d => delta, u => x.user, i => i + 1 
   end
   i = i + 1
  end
-final
- yield d => 55, "petya", i => 3
 end
 
-out2 = each y in out
-  yield d => y.d, y.field_2, y.i
+out2 = seq y in out
+ var s, n
+ s = s + y.d
+ n = n + 1
+final
+ yield sum => s, avg => s / n
 end
 
 out2 = each z in testbase
@@ -38,9 +38,19 @@ end
 
 #include test_include.hpl
 
-#out3 = each t in tasks where t.queue == 'regular6' and t.ncpus >= 4096
-#  yield t.key, t.user, t.ncpus
+# compute total and average number of serdyuk's CPUs
+#out3 = each t in tasks where t.user == 'serdyuk'
+# yield key => t.key, ncpus => t.ncpus
 #end
+
+#out4 = seq t in out3 
+# var ncpus, n
+# ncpus = ncpus + t.ncpus
+# n = n + 1
+#final
+# yield ncpus, n, ncpus / n
+#end
+
 _PROGRAM
 
 text=raw_text.split "\n"

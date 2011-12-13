@@ -57,6 +57,10 @@ module Hopsa
         when /^((\S+)\s*=\s*)?each\s+(\S+)(\s+where\s+(.*))?/
           return EachHopstance.createNewRetLineNum(parent, text, startLine)
 
+          # sequential each
+        when /^((\S+)\s*=\s*)?seq\s+(\S+)(\s+where\s+(.*))?/
+          return EachHopstance.createNewRetLineNum(parent, text, startLine)
+
 #!! simplify regexp
           # group by
         when /^((\S+)\s*=\s*)?group\s+(\S+)\s+by\s+(\S+)(\s+where\s+(.*))?/
@@ -76,16 +80,22 @@ module Hopsa
           return YieldStatement.createNewRetLineNum(parent, text, startLine)
 
           # scalar variable
-        when /^scalar\s+(\S+)/
-          # add new var in store
-          VarStor.addScalar(parent, $1)
+          # sevaral comma-separated variable names allowed
+        when /^var\s+(\S.*)/
+          $1.split(',').each do |vname|
+            # add new var in store
+            VarStor.addScalar parent, vname.strip
+          end
           redo
 
+          # removed zhumcode begin
           # cortege variable
-        when /^data\s+(\S+)/
+          # TODO: deprecate, so that it it the same as scalar variable
+        #when /^data\s+(\S+)/
           # add new var in store
-          VarStor.addCortege(parent, $1)
-          redo
+          #VarStor.addCortege(parent, $1)
+         # redo
+         # removed zhumcode end
 
           # let
         when /^(\S+)\s*=\s*(.)/
@@ -245,12 +255,13 @@ module Hopsa
     def hop
       #!!!!!!!!!!!!!!!!TODO!!!!!!!!!!!!!!!!!!
       #!!!!!! scalar/cortege !!!!!!!!!!!!!!!!
+      # TODO: support expression lists for tuple assignments
+      # right now, it is not implemented
 
       #value=@expression.evaluate(@parent)
       #VarStor.set(@parent, @varname, value)
       @expression.eval @parent
     end
-
   end
 
   class YieldStatement < Statement

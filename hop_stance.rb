@@ -2,13 +2,26 @@ module Hopsa
   # Statement, which process stream.
   # So, it has inPipe, which is connected to previous Hopstance output.
   class Hopstance < Statement
-    def initialize(parent,inPipe=nil)
+ 
+    include Vars
+    
+    def initialize(parent) #,inPipe=nil)
       super(parent)
-      @outPipe=HopPipe.new
-      @inPipe=inPipe
+      #@outPipe=HopPipe.new
+      #@inPipe=inPipe
+      
+      initVarStore(parent.nil? ? nil : parent.varStore)
     end
 
-    attr_accessor :outPipe, :inPipe
+    def var_set(var,val)
+      @myVarStore.set(self, var, val)
+    end
+    
+    def var_get(var)
+      @myVarStore.get(self, var)
+    end
+        
+#    attr_accessor :outPipe, :inPipe
 
   end
 
@@ -31,7 +44,9 @@ module Hopsa
       cfg_entry = Config["db_type_#{source}"]
       src=Config.varmap[source]
       type=src.nil? ? nil : src['type']
-      if(VarStor.testStream(parent, source)) then
+      
+      #!!! TODO make "generic" hopstance creation
+      if(parent.testStream(parent, source)) then
         hopstance=StreamEachHopstance.new(parent)
 #      elsif(Config["db_type_#{source}"]=='csv') then
       elsif(type=='csv') then
@@ -58,8 +73,8 @@ module Hopsa
         hopstance=EachHopstance.new(parent)
       end
 
-      VarStor.addScalar(hopstance, current_var)
-      VarStor.addStream(parent, streamvar)
+      hopstance.addScalar(hopstance, current_var)
+      hopstance.addStream(parent, streamvar)
 
       return hopstance.init(text,pos,streamvar,current_var,source,where)
     end
@@ -109,30 +124,32 @@ module Hopsa
     end
 
     def hop
-      warn "START main chain (#{@mainChain})"
-      while self.readSource
-        if @where_expr && !@where_expr.eval(self)
-          #puts @where_expr.eval(self)
-          next
+      hop_thread=Thread.new do
+        
+        warn "START main chain (#{@mainChain})"
+        while self.readSource
+          if @where_expr && !@where_expr.eval(self)
+            #puts @where_expr.eval(self)
+            next
+          end
+          # process body
+          @mainChain.hop
         end
-        # process body
-        @mainChain.hop
-      end
-      # process final section
-      warn "START final chain (#{@finalChain})"
-      @finalChain.hop
+        # process final section
+        warn "START final chain (#{@finalChain})"
+        @finalChain.hop
 
-      warn "FINISHED!\n-------------------------------"
-      while val=outPipe.get
-        warn ":>> "
-        warn val.map {|key,val| "#{key} => #{val}"} .join("; ")
-        warn "\n"
-      end
+        warn "FINISHED!\n-------------------------------"
+        while val=outPipe.get
+          warn ":>> "
+          warn val.map {|key,val| "#{key} => #{val}"} .join("; ")
+          warn "\n"
+        end
+      end # ~ Thread code
     end
-
     def do_yield(hash)
       # push data into out pipe
-      VarStor.set(self,@streamvar,hash)
+      var_set(self,@streamvar,hash)
     end
 
     # read next source line and write it into @source_var
@@ -155,7 +172,7 @@ module Hopsa
           i+=1
         }
         # now store variable!
-        VarStor.set(self, @current_var, value)
+        var_set(@current_var, value)
       rescue EOFError
         return nil
       end
@@ -166,8 +183,8 @@ module Hopsa
   class StreamEachHopstance < EachHopstance
     # read next source line and write it into @source_var
     def readSource
-      value=VarStor.get(self,@source)
-      VarStor.set(self, @current_var, value)
+      value=var_get(@source)
+      var_set(@current_var, value)
     end
   end
 
@@ -199,15 +216,15 @@ module Hopsa
     end
 
     def initialize
-      super(nil,HopPipe.new)
+      super(nil)
     end
 
     def hop
       super
-      VarStor.each(self){|var|
+      @myVarStore.each(self){|var|
         warn "VAR: #{var.to_s}"
       }
-      VarStor.each_stream(self){|name, var|
+      @myVarStore.each_stream(self){|name, var|
         warn "Output Stream: #{name}"
         while(v=var.get)     
           if v.class == Hash

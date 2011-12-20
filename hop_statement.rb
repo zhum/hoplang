@@ -52,7 +52,7 @@ module Hopsa
           warn "Comment #{line.chomp}"
           redo
 
-#!! simplify regexp
+#!! TODO: simplify regexp
           # each
         when /^((\S+)\s*=\s*)?each\s+(\S+)(\s+where\s+(.*))?/
           return EachHopstance.createNewRetLineNum(parent, text, startLine)
@@ -61,7 +61,7 @@ module Hopsa
         when /^((\S+)\s*=\s*)?seq\s+(\S+)(\s+where\s+(.*))?/
           return EachHopstance.createNewRetLineNum(parent, text, startLine)
 
-#!! simplify regexp
+#!! TODO: simplify regexp
           # group by
         when /^((\S+)\s*=\s*)?group\s+(\S+)\s+by\s+(\S+)(\s+where\s+(.*))?/
           return GroupHopstance.createNewRetLineNum(parent, text, startLine)
@@ -84,7 +84,7 @@ module Hopsa
         when /^var\s+(\S.*)/
           $1.split(',').each do |vname|
             # add new var in store
-            VarStor.addScalar parent, vname.strip
+            parent.addScalar parent, vname.strip
           end
           redo
 

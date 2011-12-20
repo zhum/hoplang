@@ -82,12 +82,13 @@ module Hopsa
     def initialize(rname) 
       @rname = rname
     end
+    
     def eval(ex)
-      VarStor.get(ex, @rname)
+      parent.var_get(ex, @rname)
     end
     # assigns result to a variable
     def ass(ex, val)
-      VarStor.set(ex, @rname, val)
+      parent.var_set(ex, @rname, val)
       return nil
     end
   end # RefExpr

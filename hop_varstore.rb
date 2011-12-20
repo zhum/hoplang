@@ -1,10 +1,72 @@
 # TODO: deprecate all 'Cortege' things and remove them in future versions
 module Hopsa
+
+  module Vars
+    def var_get(var)
+      @myVarStore.get(self,var)
+    end
+
+    def var_set(var,val)
+      @myVarStore.set(self,var,val)
+    end
+    
+    def initVarStore(vs=nil)
+      if vs.nil? then
+        @myVarStore=VarStor.new
+      else
+        @myVarStore=vs.copy
+      end
+    end
+    
+    def addScalar(ex,name)
+      @myVarStore.addScalar(ex,name)
+    end
+
+    def addStream(ex,name)
+      @myVarStore.addStream(ex,name)
+    end
+
+    def addCortege(ex,name)
+      @myVarStore.addCortege(ex,name)
+    end
+
+    def testScalar(ex,name)
+      @myVarStore.testScalar(ex,name)
+    end
+
+    def testStream(ex,name)
+      @myVarStore.testStream(ex,name)
+    end
+
+    def testCortege(ex,name)
+      @myVarStore.testCortege(ex,name)
+    end
+
+    protected
+    attr_reader :varStore
+  end
+  
+  
   class VarStor
-    @scalarStore=Hash.new
-    @cortegeStore=Hash.new
-    @streamStore=Hash.new
-    def self.addScalar(ex,name)
+
+    protected
+      attr_reader :scalarStore, :cortegeStore, :streamStore
+      
+    public
+    
+    def initialize()
+      @scalarStore=Hash.new
+      @cortegeStore=Hash.new
+      @streamStore=Hash.new
+    end
+    
+    def copy(vs)
+      @scalarStore=vs.scalarStore
+      @cortegeStore=vs.cortegeStore
+      @streamStore=vs.streamStore
+    end
+
+    def addScalar(ex,name)
       hopid=ex.hopid
   #    warn "ADD_SCALAR: #{name} (#{hopid}/#{ex})\n"
       if @scalarStore[hopid].nil?
@@ -12,14 +74,14 @@ module Hopsa
       end
       @scalarStore[hopid][name]=''
     end
-    def self.addStream(ex,name)
+    def addStream(ex,name)
       hopid=ex.hopid
       if @streamStore[hopid].nil?
         @streamStore[hopid]=Hash.new
       end
       @streamStore[hopid][name]=HopPipe.new
     end
-    def self.addCortege(ex,name)
+    def addCortege(ex,name)
       hopid=ex.hopid
       if @cortegeStore[hopid].nil?
         @cortegeStore[hopid]=Hash.new
@@ -27,20 +89,20 @@ module Hopsa
       @cortegeStore[hopid][name]={}
   #    warn ">>ADD #{name} (#{hopid})"
     end
-    def self.getScalar(ex, name)
+    def getScalar(ex, name)
       hopid=searchIdForVar(@scalarStore,ex,name)
       warn ">>Read #{name} = #{@scalarStore[hopid][name]}"
       @scalarStore[hopid][name]
     end
-    def self.getCortege(ex, name)
+    def getCortege(ex, name)
       hopid=searchIdForVar(@cortegeStore,ex,name)
       @cortegeStore[hopid][name]
     end
-    def self.setScalar(ex, name, val)
+    def setScalar(ex, name, val)
       hopid=searchIdForVar(@scalarStore,ex,name)
       @scalarStore[hopid][name]=val
     end
-    def self.setCortege(ex, name, val)
+    def setCortege(ex, name, val)
   #      warn ">>SET0: #{name} = #{val}"
       hopid=searchIdForVar(@cortegeStore,ex,name)
       val.each_pair{|key,value|
@@ -48,15 +110,15 @@ module Hopsa
         @cortegeStore[hopid][name][key]=value
       }
     end
-    def self.getStream(ex, name)
+    def getStream(ex, name)
       hopid=searchIdForVar(@streamStore,ex,name)
       @streamStore[hopid][name].get
     end
-    def self.setScalar(ex, name, val)
+    def setScalar(ex, name, val)
       hopid=searchIdForVar(@streamStore,ex,name)
       @streamStore[hopid][name].put val
     end
-    def self.canRead?(ex,name)
+    def canRead?(ex,name)
       begin
         hopid=searchIdForVar(@streamStore,ex,name)
         not @streamStore[hopid][name].empty?
@@ -74,7 +136,7 @@ module Hopsa
         end
       end
     end
-    def self.set(ex, name, val)
+    def set(ex, name, val)
       begin
         hopid=searchIdForVar(@streamStore,ex,name)
         @streamStore[hopid][name].put val
@@ -88,7 +150,7 @@ module Hopsa
         end
       end
     end
-    def self.get(ex, name)
+    def get(ex, name)
       begin
         hopid=searchIdForVar(@streamStore,ex,name)
         return  @streamStore[hopid][name].get
@@ -108,32 +170,32 @@ module Hopsa
       end
     end
     # variables iterator
-    def self.each_scalar(ex, &block)
+    def each_scalar(ex, &block)
       begin
         @scalarStore[ex.hopid].each &block
       rescue
       end
     end
     # variables iterator
-    def self.each_cortege(ex, &block)
+    def each_cortege(ex, &block)
       begin
         @cortegeStore[ex.hopid].each &block
       rescue
       end
     end
     # variables iterator
-    def self.each_stream(ex, &block)
+    def each_stream(ex, &block)
       begin
         @streamStore[ex.hopid].each &block
       rescue
       end
     end
-    def self.each(ex, &block)
+    def each(ex, &block)
       each_stream(ex,&block)
       each_cortege(ex,&block)
       each_scalar(ex,&block)
     end
-    def self.testStream(ex, name)
+    def testStream(ex, name)
       begin
         hopid=searchIdForVar(@streamStore,ex,name)
         return true
@@ -143,7 +205,7 @@ module Hopsa
     end
     private
     # where search (hash), executor, varname
-    def self.searchIdForVar(store,ex,name)
+    def searchIdForVar(store,ex,name)
       while not ex.nil? do;
         if not store[ex.hopid].nil?
   #        warn "Trace: #{name} #{ex.hopid} = #{store[ex.hopid][name]} "

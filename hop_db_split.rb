@@ -52,12 +52,12 @@ module Hopsa
         @hopsources[@current_source].hop
 
 #        warn "<-RRRRRRRRRRRRR #{@current_source}/#{@current_var}: #{@hopsources[@current_source]}(#{@hopsources[@current_source].streamvar})"
-        if VarStor.canRead?(@hopsources[@current_source],
+        if myVarStore.canRead?(@hopsources[@current_source],
                             @hopsources[@current_source].streamvar) then
-          value=VarStor.get(@hopsources[@current_source],
+          value=myVarStore.get(@hopsources[@current_source],
                             @hopsources[@current_source].streamvar)
           #@outPipe.put value
-          VarStor.set(self, @streamvar, value)
+          var_set(@streamvar, value)
 #          warn "R_R #{value}"
           return value
         end

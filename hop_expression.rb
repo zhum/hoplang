@@ -84,11 +84,11 @@ module Hopsa
     end
     
     def eval(ex)
-      parent.var_get(ex, @rname)
+      ex.var_get(@rname)
     end
     # assigns result to a variable
     def ass(ex, val)
-      parent.var_set(ex, @rname, val)
+      ex.var_set(@rname, val)
       return nil
     end
   end # RefExpr

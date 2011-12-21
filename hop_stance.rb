@@ -126,7 +126,7 @@ module Hopsa
     def hop
       hop_thread=Thread.new do
         
-        warn "START main chain (#{@mainChain})"
+        warn "START each body (#{@mainChain})"
         while self.readSource
           if @where_expr && !@where_expr.eval(self)
             #puts @where_expr.eval(self)
@@ -136,23 +136,26 @@ module Hopsa
           @mainChain.hop
         end
         # process final section
-        warn "START final chain (#{@finalChain})"
+        warn "START each final (#{@finalChain})"
         @finalChain.hop
 
         warn "FINISHED!\n-------------------------------"
-        while val=outPipe.get
-          warn ":>> "
-          warn val.map {|key,val| "#{key} => #{val}"} .join("; ")
-          warn "\n"
+        warn "VARS: "
+        @myVarStore.each(self) do |val|
+          warn "#{val} => #{var_get(val)}"
         end
+        warn "\n"
       end # ~ Thread code
+      hop_thread.join
+      warn "Thread #{hop_thread} ended..."
     end
     def do_yield(hash)
       # push data into out pipe
-      var_set(self,@streamvar,hash)
+      warn "YIELD: #{@streamvar} = #{hash.inspect}"
+      var_set(@streamvar,hash)
     end
 
-    # read next source line and write it into @source_var
+    # read next source line and write it into @current_var
     def readSource
       if @source_in.nil?
         @source_in = open @source
@@ -181,8 +184,9 @@ module Hopsa
   end
 
   class StreamEachHopstance < EachHopstance
-    # read next source line and write it into @source_var
+    # read next source line and write it into @current_var
     def readSource
+      warn "READ_SOURCE #{@source}"
       value=var_get(@source)
       var_set(@current_var, value)
     end
@@ -221,8 +225,10 @@ module Hopsa
 
     def hop
       super
+
+      
       @myVarStore.each(self){|var|
-        warn "VAR: #{var.to_s}"
+        warn "TOP VAR: #{var.to_s}"
       }
       @myVarStore.each_stream(self){|name, var|
         warn "Output Stream: #{name}"
@@ -234,7 +240,7 @@ module Hopsa
           end
         end
       }
-
+      warn "TOP ----------------------------"
     end
   end
 end

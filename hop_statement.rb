@@ -17,6 +17,27 @@ module Hopsa
       @output=output
     end
 
+    def var_set(name,val)
+      warn "statement var_set #{name}=#{val}\n"
+      if parent.nil?
+        warn "GLOBAL OUT: #{name} = #{val}\n"
+      else
+        parent.var_set(name,val)
+      end
+    end
+    
+    def var_get(name)
+      warn "statement var_get #{name}\n"
+      if parent.nil?
+        warn "Var #{name} is requested in global context\n"
+        nil
+#        raise VarNotFound.new "Var #{name} is requested in global context\n"
+      else
+        parent.var_get(name)
+      end
+    end
+
+
     # parent = top block
     def initialize(parent=nil)
       warn ">>Statement #{parent.class.to_s}:#{self.class.to_s}"

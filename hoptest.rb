@@ -9,7 +9,7 @@ var abc
 #  test
 abc = 1
 yield abc + 1, 10
-out = each x in ttt where x.np > 15
+out = each x in testbase where x.np > 15
  var delta
  delta = x.end - x.start * 1 + 0
  var i
@@ -24,16 +24,20 @@ out = each x in ttt where x.np > 15
  end
 end
 
-out2 = seq y in out
- var s, n
- s = s + y.d
- n = n + 1
-final
- yield sum => s, avg => s / n
-end
+#out2 = seq y in out
+# var s, n
+# s = s + y.d
+# n = n + 1
+#final
+# yield sum => s, avg => s / n
+#end
 
 out2 = each z in testbase
   yield z.np, z.user
+end
+
+out22 = seq t in out2 where t.np >10
+ yield key => t.user, task => t.task
 end
 
 #include test_include.hpl

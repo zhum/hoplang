@@ -9,17 +9,16 @@ module Hopsa
       super(parent)
       #@outPipe=HopPipe.new
       #@inPipe=inPipe
-      
       initVarStore(parent.nil? ? nil : parent.varStore)
     end
 
-    def var_set(var,val)
-      @myVarStore.set(self, var, val)
-    end
+    #def var_set(var,val)
+    #  @myVarStore.set(self, var, val)
+    #end
     
-    def var_get(var)
-      @myVarStore.get(self, var)
-    end
+    #def var_get(var)
+    #  @myVarStore.get(self, var)
+    #end
         
 #    attr_accessor :outPipe, :inPipe
 
@@ -33,24 +32,25 @@ module Hopsa
       line,pos=Statement.nextLine(text,pos)
 
       raise UnexpectedEOF if line.nil?
-      unless((line =~
-      /^(\S+)\s*=\s*each\s+(\S+)\s+in\s+(\S+)(\s+where\s+(.*))?/) || (line =~ /^(\S+)\s*=\s*seq\s+(\S+)\s+in\s+(\S+)(\s+where\s+(.*))?/))
-          
+      line =~ /^(\S+)\s*=\s*(\S+)\s+(\S+)\s+in\s+(\S+)(\s+where\s+(.*))?/
+      
+      streamvar,partyp,current_var,source,where=$1,$2,$3,$4,$6
+      unless partyp == 'each' || partyp == 'seq'
         raise SyntaxError.new(line)
       end
-
-      streamvar,current_var,source,where=$1,$2,$3,$5
 
       cfg_entry = Config["db_type_#{source}"]
       src=Config.varmap[source]
       type=src.nil? ? nil : src['type']
       
       #!!! TODO make "generic" hopstance creation
-      if(parent.testStream(parent, source)) then
-        hopstance=StreamEachHopstance.new(parent)
+      if partyp=='seq' then
+        hopstance=SeqHopstance.new parent
+      elsif(parent.testStream(parent, source)) then
+        hopstance=StreamEachHopstance.new parent
 #      elsif(Config["db_type_#{source}"]=='csv') then
       elsif(type=='csv') then
-        hopstance=MyDatabaseEachHopstance.new(parent)
+        hopstance=MyDatabaseEachHopstance.new parent
       elsif(type=='cassandra') then
         hopstance=CassandraHopstance.new parent, source
       elsif(type=='split') then
@@ -88,7 +88,6 @@ module Hopsa
 
       # parse predicate expression, if any
       @where_expr = HopExpr.parse_cond where if where
-      #puts @where_expr.inspect if @where_expr
 
       pos+=1
       warn ":: #{text[pos]}"
@@ -158,6 +157,7 @@ module Hopsa
     # read next source line and write it into @current_var
     def readSource
       if @source_in.nil?
+        puts "opening source #{@source}"
         @source_in = open @source
         # fields titles
         head=@source_in.readline.strip

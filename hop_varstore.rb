@@ -11,10 +11,9 @@ module Hopsa
     end
     
     def initVarStore(vs=nil)
-      if vs.nil? then
-        @myVarStore=VarStor.new
-      else
-        @myVarStore=vs.copy
+      @myVarStore = VarStor.new
+      unless vs.nil?
+        @myVarStore.copyFrom vs
       end
     end
     
@@ -43,7 +42,11 @@ module Hopsa
     end
 
     protected
-    attr_reader :varStore
+
+    # for the name to be correct
+    def varStore
+      @myVarStore
+    end
   end
   
   
@@ -60,7 +63,7 @@ module Hopsa
       @streamStore=Hash.new
     end
     
-    def copy(vs)
+    def copyFrom(vs)
       @scalarStore=vs.scalarStore
       @cortegeStore=vs.cortegeStore
       @streamStore=vs.streamStore
@@ -164,7 +167,7 @@ module Hopsa
   #          warn "#{hopid}."
             return @scalarStore[hopid][name]
           rescue
-            raise VarNotFound "Var not found: #{name} (#{hopid}/#{ex})"
+            raise VarNotFound.new "Var not found: #{name} (#{hopid}/#{ex})"
           end
         end
       end

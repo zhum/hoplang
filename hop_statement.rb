@@ -54,7 +54,6 @@ module Hopsa
     #TODO !!!!!!!!!!!!! Add field names !!!!!!!!!!!!!
     def hop
       @mainChain.hop
-
     end
 
     # creates new Hopstance and returns it and next text line
@@ -97,7 +96,6 @@ module Hopsa
 
           # yield
         when /^\s*yield\s+/
-          #puts 'matched yield statement'
           return YieldStatement.createNewRetLineNum(parent, text, startLine)
 
           # scalar variable
@@ -120,7 +118,6 @@ module Hopsa
 
           # let
         when /^(\S+)\s*=\s*(.)/
-          # puts 'creating let statement'
           return LetStatement.createNewRetLineNum(parent, text, startLine)
 
           # include
@@ -178,7 +175,6 @@ module Hopsa
       line,pos = Statement.nextLine(text,startLine);
       raise SyntaxError if !line.match /\s*if\s+(.*)/
       @cond_expr = HopExpr.parse_cond $1
-      puts @cond_expr.inspect
       pos += 1
       cur_chain = if_chain
       while true
@@ -226,7 +222,6 @@ module Hopsa
       line,pos = Statement.nextLine(text,startLine);
       raise SyntaxError if !line.match /\s*while\s+(.*)/
       @cond_expr = HopExpr.parse_cond $1
-      puts @cond_expr.inspect
       pos += 1
       begin
         while true
@@ -261,7 +256,6 @@ module Hopsa
       #line =~ /^(\S+)\s*=\s*(.*)/
       #expression,* = HopExpression.line2expr($2)
       expression = HopExpr.parse(line)
-      #puts expression.inspect
       #ret = LetStatement.new parent, $1, expression
       ret = LetStatement.new parent, expression
       return ret,startLine+1
@@ -287,8 +281,7 @@ module Hopsa
 
   class YieldStatement < Statement
     def initialize(parent)
-      @parent=parent
-      @id=Hopstance.nextId
+      super(parent)
       @started=false
     end
 
@@ -297,7 +290,6 @@ module Hopsa
     end
 
     def createNewRetLineNum(text,pos)
-      #puts 'creating yield statement'
       line,pos=Statement.nextLine(text,pos)
       field_num=1
       # maps names to expressions
@@ -307,9 +299,7 @@ module Hopsa
       raise (SyntaxError) if(not line.match /^\s*yield(\s*(.*))/)
       
       # parse expressions
-      #puts $2
       elist = HopExpr.parse_list $2
-      #puts elist
       elist.each do |e|
         name = e.name
         if name == ''

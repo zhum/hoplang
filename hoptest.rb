@@ -24,19 +24,19 @@ out = each x in testbase where x.np > 15
  end
 end
 
-#out2 = seq y in out
-# var s, n
-# s = s + y.d
-# n = n + 1
-#final
-# yield sum => s, avg => s / n
-#end
-
-out2 = each z in testbase
-  yield z.np, z.user
+out12 = seq y in out
+ var s, n
+ s = s + y.d
+ n = n + 1
+final
+ yield sum => s, avg => s / n
 end
 
-out22 = seq t in out2 where t.np >10
+out2 = each z in testbase
+ yield np => z.np, user => z.user
+end
+
+out22 = seq t in out2 where t.np > 10
  yield key => t.user, task => t.task
 end
 

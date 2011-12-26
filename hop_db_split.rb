@@ -34,10 +34,6 @@ module Hopsa
       return self,pos2+1
     end
 
-#    def hop
-#      warn "SplitHOP"
-#    end
-
     # read next source line and write it into @source_var
     def readSource
       saved_source=@current_source
@@ -46,19 +42,14 @@ module Hopsa
         @current_source+=1
         @current_source=0 if @current_source>=@hopsources.size
 
-#        warn "->RRRRRRRRRRRRRRRRRRRRRR #{@hopsources[@current_source]}"
-
         #!!!! Must be deleted on thread version!!!
         @hopsources[@current_source].hop
 
-#        warn "<-RRRRRRRRRRRRR #{@current_source}/#{@current_var}: #{@hopsources[@current_source]}(#{@hopsources[@current_source].streamvar})"
-        if VarStor.canRead?(@hopsources[@current_source],
+        if @hopsources[@current_source].varStore.canRead?(
                             @hopsources[@current_source].streamvar) then
-          value=VarStor.get(@hopsources[@current_source],
+          value=@hopsources[@current_source].varStore.get(
                             @hopsources[@current_source].streamvar)
-          #@outPipe.put value
-          VarStor.set(self, @streamvar, value)
-#          warn "R_R #{value}"
+          varStore.set(@streamvar, value)
           return value
         end
 #        warn "RR #{saved_source} #{@current_source}"

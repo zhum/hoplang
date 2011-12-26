@@ -9,6 +9,10 @@ module Hopsa
       @@globalId+=1
     end
 
+    def varStore
+      parent.varStore
+    end
+
     def connectInput(input)
       @input=input
     end
@@ -57,6 +61,9 @@ module Hopsa
         when /^((\S+)\s*=\s*)?each\s+(\S+)(\s+where\s+(.*))?/
           return EachHopstance.createNewRetLineNum(parent, text, startLine)
 
+        when /^print\s+(\S+)/
+          return PrintEachHopstance.createNewRetLineNum(parent, text, startLine)
+
           # sequential each
         when /^((\S+)\s*=\s*)?seq\s+(\S+)(\s+where\s+(.*))?/
           return EachHopstance.createNewRetLineNum(parent, text, startLine)
@@ -84,7 +91,7 @@ module Hopsa
         when /^var\s+(\S.*)/
           $1.split(',').each do |vname|
             # add new var in store
-            VarStor.addScalar parent, vname.strip
+            parent.varStore.addScalar vname.strip
           end
           redo
 

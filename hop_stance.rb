@@ -4,12 +4,30 @@ module Hopsa
   class Hopstance < Statement
     def initialize(parent,inPipe=nil)
       super(parent)
-      @outPipe=HopPipe.new
-      @inPipe=inPipe
+#      @outPipe=HopPipe.new
+#      @inPipe=inPipe
+      
+      @varStore=VarStore.new(self)
+      @varStore.initVarStore(parent.nil? ? nil : parent.varStore)
     end
 
-    attr_accessor :outPipe, :inPipe
+    attr_accessor :outPipe, :inPipe, :varStore
 
+    def join_threads
+      @@threads.each do |t|
+        warn "T: #{t} #{t.status}"
+        t.join
+      end
+      @@threads=[]
+    end
+    
+    def new_thread &block
+    
+#      yield
+#      return
+      @@threads ||= []
+      @@threads.push(Thread.new(&block))
+    end
   end
 
   class EachHopstance < Hopstance
@@ -31,7 +49,7 @@ module Hopsa
       cfg_entry = Config["db_type_#{source}"]
       src=Config.varmap[source]
       type=src.nil? ? nil : src['type']
-      if(VarStor.testStream(parent, source)) then
+      if(parent.varStore.testStream(source)) then
         hopstance=StreamEachHopstance.new(parent)
 #      elsif(Config["db_type_#{source}"]=='csv') then
       elsif(type=='csv') then
@@ -58,8 +76,8 @@ module Hopsa
         hopstance=EachHopstance.new(parent)
       end
 
-      VarStor.addScalar(hopstance, current_var)
-      VarStor.addStream(parent, streamvar)
+      hopstance.varStore.addScalar(current_var)
+      parent.varStore.addStream(streamvar)
 
       return hopstance.init(text,pos,streamvar,current_var,source,where)
     end
@@ -109,30 +127,39 @@ module Hopsa
     end
 
     def hop
-      warn "START main chain (#{@mainChain})"
-      while self.readSource
-        if @where_expr && !@where_expr.eval(self)
-          #puts @where_expr.eval(self)
-          next
-        end
-        # process body
-        @mainChain.hop
-      end
-      # process final section
-      warn "START final chain (#{@finalChain})"
-      @finalChain.hop
+      warn "START main chain #{@streamvar} <- #{@source} (#{@mainChain})"
+      new_thread do
+        begin
+          while not (self.readSource).nil?
+            if @where_expr && !@where_expr.eval(self)
+              #puts @where_expr.eval(self)
+              next
+            end
+            # process body
+            @mainChain.hop
+          end
+          # process final section
+          warn "START final chain (#{@finalChain})"
+          @finalChain.hop
 
-      warn "FINISHED!\n-------------------------------"
-      while val=outPipe.get
-        warn ":>> "
-        warn val.map {|key,val| "#{key} => #{val}"} .join("; ")
-        warn "\n"
-      end
+          warn "FINISHED!\n-------------------------------"
+          # write EOF to out stream
+          do_yield(nil)
+#          while not (val=outPipe.get).nil?
+#            warn ":>> "
+#            warn val.map {|key,val| "#{key} => #{val}"} .join("; ")
+#            warn "\n"
+#          end
+        rescue => e
+          warn "Exception #{e}. #{e.backtrace}"
+        end
+      end #~Thread
+      warn "Thread ended #{@streamvar} <- #{@source}"
     end
 
     def do_yield(hash)
       # push data into out pipe
-      VarStor.set(self,@streamvar,hash)
+      varStore.set(@streamvar,hash)
     end
 
     # read next source line and write it into @source_var
@@ -155,8 +182,10 @@ module Hopsa
           i+=1
         }
         # now store variable!
-        VarStor.set(self, @current_var, value)
+        varStore.set(@current_var, value)
       rescue EOFError
+        warn "EOF.....\n"
+        varStore.set(@current_var, nil)
         return nil
       end
         line
@@ -166,8 +195,42 @@ module Hopsa
   class StreamEachHopstance < EachHopstance
     # read next source line and write it into @source_var
     def readSource
-      value=VarStor.get(self,@source)
-      VarStor.set(self, @current_var, value)
+      value=varStore.get(@source)
+      varStore.set(@current_var, value)
+      value
+    end
+  end
+
+  class PrintEachHopstance < EachHopstance
+    # read next source line and write it into @source_var
+    def self.createNewRetLineNum(parent,text,pos)
+      line,pos=Statement.nextLine(text,pos)
+
+      raise UnexpectedEOF if line.nil?
+      unless(line =~ /print\s+(\S+)/)
+        raise SyntaxError.new(line)
+      end
+      
+      hopstance=PrintEachHopstance.new(parent)
+      return hopstance.init($1),pos+1
+    end
+    
+    def init(source)
+      @source=source
+      self
+    end
+    
+    def hop
+      new_thread do
+        while not (self.readSource).nil?
+        end
+      end
+    end
+    
+    def readSource
+      value=varStore.get(@source)
+      puts value.inspect
+      value
     end
   end
 
@@ -203,20 +266,23 @@ module Hopsa
     end
 
     def hop
+      warn "\n\n***********   START   *********************\n"
       super
-      VarStor.each(self){|var|
+      join_threads
+      warn "\n***********   END     *********************\n"
+      varStore.each{|var|
         warn "VAR: #{var.to_s}"
       }
-      VarStor.each_stream(self){|name, var|
-        warn "Output Stream: #{name}"
-        while(v=var.get)     
-          if v.class == Hash
-            warn "-> #{v.to_csv}"
-          else
-            warn "-> #{v}"
-          end
-        end
-      }
+#      varStore.each_stream{|name, var|
+#        warn "Output Stream: #{name}"
+#        while not (v=var.get).nil?
+#          if v.class == Hash
+#            warn "-> #{v.to_csv}"
+#          else
+#            warn "-> #{v}"
+#          end
+#        end
+#      }
 
     end
   end

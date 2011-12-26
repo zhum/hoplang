@@ -151,10 +151,10 @@ module Hopsa
 #            warn "\n"
 #          end
         rescue => e
-          warn "Exception #{e}. #{e.backtrace}"
+          warn "Exception in #{@streamvar} <- #{@source} (#{@mainChain}: #{e}. #{e.backtrace}"
         end
       end #~Thread
-      warn "Thread ended #{@streamvar} <- #{@source}"
+#      warn "Thread ended #{@streamvar} <- #{@source}"
     end
 
     def do_yield(hash)
@@ -229,7 +229,7 @@ module Hopsa
     
     def readSource
       value=varStore.get(@source)
-      puts value.inspect
+      puts "OUT>>",value.inspect
       value
     end
   end

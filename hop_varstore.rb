@@ -27,7 +27,7 @@ module Hopsa
     end
     
     def copy(vs)
-      warn "Copy varstore #{object_id} from #{vs.object_id}. Parent - #{ex}"
+      warn "Copy varstore #{object_id} from #{vs.object_id}. Parent - #{@ex}"
       @scalarStore=vs.scalarStore
       @cortegeStore=vs.cortegeStore
       @streamStore=vs.streamStore
@@ -35,7 +35,7 @@ module Hopsa
     
     def addScalar(name)
       hopid=@ex.hopid
-      warn "ADD_SCALAR: #{name} to #{object_id}/#{ex}"
+      warn "ADD_SCALAR: #{name} to #{object_id}/#{@ex}"
       if @scalarStore[hopid].nil?
         @scalarStore[hopid]=Hash.new
       end
@@ -43,7 +43,7 @@ module Hopsa
     end
     def addStream(name)
       hopid=@ex.hopid
-      warn "ADD_STREAM: #{name} to #{object_id}/#{ex}"
+      warn "ADD_STREAM: #{name} to #{object_id}/#{@ex}"
       if @streamStore[hopid].nil?
         @streamStore[hopid]=Hash.new
       end

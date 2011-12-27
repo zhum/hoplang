@@ -12,6 +12,10 @@ module Hopsa
     end
 
     attr_accessor :outPipe, :inPipe, :varStore
+#    def varStore
+#      warn "GET_VARSTORE: #{self}"
+#      @varStore
+#    end
 
     def join_threads
       @@threads.each do |t|

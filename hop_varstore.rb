@@ -122,6 +122,7 @@ module Hopsa
       
       begin
         hopid=searchIdForVar(@streamStore,name)
+#        warn ">#{hopid}"
         return  @streamStore[hopid][name].get
       rescue VarNotFound
         begin
@@ -130,9 +131,12 @@ module Hopsa
         rescue VarNotFound
           begin
             hopid=searchIdForVar(@scalarStore,name)
-  #          warn "#{hopid}."
             return @scalarStore[hopid][name]
           rescue
+            vars=''
+            warn "#{@ex}/#{@ex.hopid}"
+            @scalarStore[@ex.hopid].each do |x| vars+="#{x.inspect}; "; end
+            warn "oooops. Streams contains: #{vars}"
             raise VarNotFound, "Var not found: #{name} (#{hopid}/#{@ex})"
           end
         end

@@ -4,18 +4,11 @@ module Hopsa
   class Hopstance < Statement
     def initialize(parent,inPipe=nil)
       super(parent)
-#      @outPipe=HopPipe.new
-#      @inPipe=inPipe
       
       @varStore=VarStore.new(self)
-      @varStore.initVarStore(parent.nil? ? nil : parent.varStore)
     end
 
     attr_accessor :outPipe, :inPipe, :varStore
-#    def varStore
-#      warn "GET_VARSTORE: #{self}"
-#      @varStore
-#    end
 
     def join_threads
       @@threads.each do |t|
@@ -27,8 +20,6 @@ module Hopsa
     
     def new_thread &block
     
-#      yield
-#      return
       @@threads ||= []
       @@threads.push(Thread.new(&block))
     end
@@ -49,7 +40,7 @@ module Hopsa
       end
 
       streamvar,current_var,source,where=$1,$2,$3,$5
-
+      
       cfg_entry = Config["db_type_#{source}"]
       src=Config.varmap[source]
       type=src.nil? ? nil : src['type']
@@ -82,6 +73,9 @@ module Hopsa
 
       hopstance.varStore.addScalar(current_var)
       parent.varStore.addStream(streamvar)
+      hopstance.varStore.copyStreamFromParent(streamvar,parent.varStore)
+
+      warn "ADDED STREAM: #{parent.varStore.object_id} #{streamvar}"
 
       return hopstance.init(text,pos,streamvar,current_var,source,where)
     end
@@ -158,7 +152,6 @@ module Hopsa
           warn "Exception in #{@streamvar} <- #{@source} (#{@mainChain}: #{e}. #{e.backtrace}"
         end
       end #~Thread
-#      warn "Thread ended #{@streamvar} <- #{@source}"
     end
 
     def do_yield(hash)
@@ -233,7 +226,7 @@ module Hopsa
     
     def readSource
       value=varStore.get(@source)
-      puts "OUT>>",value.inspect
+      puts "OUT>>#{value.inspect}"
       value
     end
   end

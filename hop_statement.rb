@@ -64,6 +64,9 @@ module Hopsa
         when /^print\s+(\S+)/
           return PrintEachHopstance.createNewRetLineNum(parent, text, startLine)
 
+        when /^debug\s+(\S+)/
+          return DebugStatement.createNewRetLineNum(parent, text, startLine)
+
           # sequential each
         when /^((\S+)\s*=\s*)?seq\s+(\S+)(\s+where\s+(.*))?/
           return EachHopstance.createNewRetLineNum(parent, text, startLine)
@@ -339,4 +342,24 @@ module Hopsa
     end
 
   end
+  
+  
+  # debug EXPR statement
+  class DebugStatement < Statement
+    def self.createNewRetLineNum(parent,text,startLine)
+      return DebugStatement.new(parent).createNewRetLineNum(parent,text,startLine)
+    end
+    def createNewRetLineNum(parent,text,startLine)
+      line,pos = Statement.nextLine(text,startLine);
+      raise SyntaxError if !line.match /debug\s+(.*)/
+      @line=startLine
+      @expr = HopExpr.parse_cond $1
+      puts "debug: #{@expr.inspect}"
+      return self, pos + 1
+    end # createNewRetLineNum
+
+    def hop
+      puts "DEBUG(#{@line}): #{@expr.eval(@parent)}"
+    end
+  end # DebugStatement
 end

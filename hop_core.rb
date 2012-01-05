@@ -2,13 +2,11 @@ module Hopsa
   class HopPipe
 
     def initialize
-      warn "New Pipe #{self}"
       @read_io, @write_io = File.pipe
     end
-    
+
     def get
-    
-#      warn "GET #{object_id}"
+
       if @read_io.eof?
         warn "EOF!"
         return nil
@@ -18,25 +16,24 @@ module Hopsa
       while true do
       begin
         new_data=@read_io.gets
-#        warn "GOT #{object_id} -> #{new_data}"
         if new_data.nil? or /~END~RECORD~/ =~ new_data
           ret=YAML::load data
-          warn "GET #{object_id} VAL: #{ret.inspect}"
+#          warn "PIPE GET #{object_id} VAL: #{ret.inspect}"
           warn "AND EOF!" if new_data.nil?
-          warn "NIL!!! #{ret.class}" if ret.class != Hash
+          warn "PIPE NIL!!! (class=#{ret.class})" if ret.class != Hash
           return ret
         else
           data+=new_data
         end
       rescue EOFError
-        warn "EOF"
+        warn "EOF #{object_id}"
         return YAML::load data
       rescue => e
-        warn "EEEEEEEE (#{data}) #{e}"
+        warn "PIPE Error #{object_id} (#{data}) #{e}"
         return YAML::load data
       end
       end
-            
+
       while true do
         begin
           Thread.critical=true

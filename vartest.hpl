@@ -21,9 +21,10 @@ out2 = seq y in out
  var s, n
  s = s + y.d
  n = n + 1
+# debug n
  yield sum2 => s, avg2 => s / n, u => y.u
 final
- yield sum2 => s, avg2 => s / n, u => y.u
+ yield sum2 => s + 1024, avg2 => s + 1024 / ( n + 1 ), u => 'final_user' 
 end
 
 out3 = seq z in out2

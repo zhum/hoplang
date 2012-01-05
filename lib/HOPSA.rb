@@ -1,3 +1,0 @@
-module Hopsa
-  # Your code goes here...
-end

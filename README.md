@@ -24,3 +24,20 @@ hoprun.rb = hoplang executor. e.g.
 ```bash
  hoprun.rb vartest.hpl
 ```
+
+## Notes about coding
+
+Hopstance - base hoplang block for stream processing. There
+are several Hopstances - each, groupby, sort, etc. Every hopstance
+type is derived from Hopstance class.
+
+Hopstance MUST have methods:
+ - self.createNewRetLineNum(parent,text,pos) - receives parent
+ hopstance, current program text (strings array) and current text
+ position. It must return pair - new hopstance instance and new
+ text position.
+ - hop - start working!
+ - do_yield(hash) - process 'yield' statement. It must write
+ hash into output stream.
+ - readSource -  read next source stream line and write it
+ into @source_var

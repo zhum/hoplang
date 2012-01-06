@@ -117,7 +117,7 @@ module Hopsa
               return self,pos+1
             end
           end
-      elsif line == 'end'
+        elsif line == 'end'
           return self,pos+1
         end
       end

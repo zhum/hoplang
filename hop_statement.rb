@@ -4,6 +4,21 @@ module Hopsa
     attr_accessor :parent, :hopid
 
     @@globalId=0
+    
+    #!!! TODO Make it per-hopstance!!!
+    @@parseExceptions={}
+    
+    def addParseException(ex)
+      @@parseExceptions[ex]+=1
+    end
+
+    def delParseException(ex)
+      @@parseExceptions[ex]-=1 if @@parseExceptions[ex]>0
+    end
+    
+    def checkParseException(ex)
+      @@parseExceptions[ex]>0
+    end
 
     def self.nextId
       @@globalId+=1
@@ -59,6 +74,7 @@ module Hopsa
 #!! simplify regexp
           # each
         when /^((\S+)\s*=\s*)?each\s+(\S+)(\s+where\s+(.*))?/
+          raise SyntaxError.new("each is not allowed here") if checkParseException(:each)
           return EachHopstance.createNewRetLineNum(parent, text, startLine)
 
         when /^print\s+(\S+)/
@@ -69,29 +85,35 @@ module Hopsa
 
           # sequential each
         when /^((\S+)\s*=\s*)?seq\s+(\S+)(\s+where\s+(.*))?/
+          raise SyntaxError.new("seq is not allowed here") if checkParseException(:seq)
           return EachHopstance.createNewRetLineNum(parent, text, startLine)
 
 #!! simplify regexp
           # group by
-        when /^((\S+)\s*=\s*)?group\s+(\S+)\s+by\s+(\S+)(\s+where\s+(.*))?/
+        when /^((\S+)\s*=\s*)?group\s+(\S+)\s+by\s+(.+)\s+in\s+(\S+)(\s+where\s+(.*))?/
+          raise SyntaxError.new("group is not allowed here") if checkParseException(:group)
           return GroupHopstance.createNewRetLineNum(parent, text, startLine)
 
           # while loop
         when /^\s*while\s+/
+          raise SyntaxError.new("while is not allowed here") if checkParseException(:while)
           return WhileStatement.createNewRetLineNum(parent, text, startLine)
 
           # if-else statement
         when /^\s*if\s+/
+          raise SyntaxError.new("if is not allowed here") if checkParseException(:if)
           return IfStatement.createNewRetLineNum(parent, text, startLine)
 
           # yield
         when /^\s*yield\s+/
           #puts 'matched yield statement'
+          raise SyntaxError.new("yield is not allowed here") if checkParseException(:yield)
           return YieldStatement.createNewRetLineNum(parent, text, startLine)
 
           # scalar variable
           # sevaral comma-separated variable names allowed
         when /^var\s+(\S.*)/
+          raise SyntaxError.new("var is not allowed here") if checkParseException(:var)
           $1.split(',').each do |vname|
             # add new var in store
             parent.varStore.addScalar vname.strip

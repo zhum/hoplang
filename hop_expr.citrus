@@ -1,0 +1,153 @@
+# citrus grammar definition for hop expr
+# *expr - expression of specific level
+# *lop - one operator from the list (short for * "level op")
+# *op - specific operator
+grammar HopExprGram
+				# target non-terminal for expressions, including assignments
+				rule expr
+						 (spacecom assexpr) { assexpr.value }
+				end
+				# target non-terminal for expression lists
+				rule topexprlist
+						 (spacecom exprlist) { exprlist.value }
+				end
+				# target non-terminal for conditional expressions
+				rule condexpr
+						 (spacecom orexpr) { orexpr.value }
+				end
+				rule assexpr
+						 (namedexpr (assop orexpr)?) {
+						 				 emlist = captures[:namedexpr] + captures[:orexpr]
+						 				 Hopsa::HopExpr.chain emlist, captures[:assop]
+						 }
+				end
+				rule namedexpr
+						 (name arrow orexpr) {
+						 			 Hopsa::NamedExpr.new name.value, orexpr.value
+						 }
+						 | orexpr
+				end
+				rule orexpr 
+						 (andexpr (orlop andexpr)*) {
+						 				 Hopsa::HopExpr.chain captures[:andexpr], captures[:orlop]
+						 }
+				end
+				rule andexpr
+						 (relexpr (andop relexpr)*) {
+						 				 Hopsa::HopExpr.chain captures[:relexpr], captures[:andop]
+						 }
+				end
+				rule relexpr
+						 (addexpr (relop addexpr)?) {
+						 				 Hopsa::HopExpr.chain captures[:addexpr], captures[:relop]
+						 }
+				end
+				rule addexpr
+						 (mulexpr (addlop mulexpr)*) {
+						 				 Hopsa::HopExpr.chain captures[:mulexpr], captures[:addlop]
+						 }
+				end
+				rule mulexpr
+						 (unexpr (mulop unexpr)*) {
+						 				 Hopsa::HopExpr.chain captures[:unexpr], captures[:mulop]
+						 }
+				end
+				rule unexpr
+						 (unlop unexpr) { Hopsa::UnaryExpr.new unlop.value, unexpr.value} | dotexpr
+								
+				end
+				rule dotexpr
+						 (sufexpr (dot name)*) {
+						 					emlist = captures[:sufexpr] + captures[:name]
+						 					Hopsa::HopExpr.chain emlist, captures[:dot]
+						 }
+				end
+				rule sufexpr
+						 (parenexpr | valexpr | callexpr | refexpr)
+				end
+				rule valexpr
+						 (val empty) { Hopsa::ValExpr.new val.value }
+				end
+				rule refexpr
+						 (name empty) { Hopsa::RefExpr.new name.value }
+				end
+				rule parenexpr
+						 (lparen orexpr rparen)	{ orexpr.value }
+				end
+				rule callexpr
+						 (refexpr lparen exprlist rparen) {
+						 					Hopsa::CallExpr.new refexpr.value, exprlist.value
+						 }
+				end
+				rule exprlist
+						 (namedexpr (comma namedexpr)*) {
+						 				captures[:namedexpr].map do |em|						 
+														em.value	
+										end
+						 }
+				end
+				rule val
+						 number | string
+				end
+				rule number
+						 ([0-9]+ spacecom) { to_s.strip }
+				end
+				rule string
+						 ("\'" str:([^"\'"]*) "\'" spacecom) { str.to_s }
+						 | ("\"" str:([^"\""]*) "\"" spacecom) { str.to_s }						 
+				end			
+				rule name
+						 ([a-zA-Z_][a-zA-Z0-9_]* spacecom) { to_s.strip }
+				end
+				rule dot
+						 ('.' spacecom) { '.' }
+				end
+				rule comma
+						 (',' spacecom) { ',' }
+				end
+				rule lparen
+						 ('(' spacecom) { '(' }
+				end
+				rule rparen
+						 (')' spacecom) { ')' }
+				end
+				rule assop
+						 ('=' spacecom) { '=' }
+				end
+				rule orlop
+						 (('or' | 'xor') spacecom) { to_s.strip }
+				end
+				rule andop
+						 ('and' spacecom) { 'and' }
+				end
+				rule relop
+						 (('<=' | '<' | '>=' | '>' | '==' | '!=') spacecom) { to_s.strip }
+				end
+				rule addlop
+						 ([-+&] spacecom) { to_s.strip }
+				end
+				rule mulop
+						 ([*/] spacecom) { to_s.strip }
+				end
+				rule unlop
+						 (('-' | 'not') spacecom) { to_s.strip } 
+				end
+				rule arrow
+						 ('=>' spacecom) { to_s.strip }
+				end
+				# spaces and comments
+				rule spacecom
+						 space comment?
+				end			
+				rule comment
+						 '#' .*
+
+				end
+				rule space
+						 [ \t\n\r]*
+				end
+				# a special rule which matches nothing but works around a 
+				# 'single-level derive' bug
+				rule empty
+				end
+end

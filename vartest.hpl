@@ -1,10 +1,3 @@
-#!/usr/bin/ruby
-
-require './hoplang.rb'
-include Hopsa
-
-#ex=TopStatement.new
-raw_text = <<_PROGRAM
 var abc
 #  test
 abc = 1
@@ -28,13 +21,25 @@ out2 = seq y in out
  var s, n
  s = s + y.d
  n = n + 1
+# debug n
+ yield sum2 => s, avg2 => s / n, u => y.u
 final
- yield sum => s, avg => s / n
+ yield sum2 => s + 1024, avg2 => s + 1024 / ( n + 1 ), u => 'final_user' 
 end
 
-out2 = each z in testbase
-  yield z.np, z.user
+out3 = seq z in out2
+  var x
+  x = x + z.sum2
+  yield sum3 => x, avg3 => z.avg2, u => z.u
 end
+
+out4 = seq z in out3
+  var y
+  y = y + z.sum3
+  yield sum4 => y, avg4 => z.avg3, u => z.u
+end
+
+print out4
 
 #include test_include.hpl
 
@@ -51,8 +56,3 @@ end
 # yield ncpus, n, ncpus / n
 #end
 
-_PROGRAM
-
-text=raw_text.split "\n"
-ex=load_program(text)
-ex.hop

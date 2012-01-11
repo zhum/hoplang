@@ -1,0 +1,70 @@
+HOPLANG
+
+# таблица-фильтр (вход=таблица, выход=таблица)
+FUNC NAME=
+[let init_var=...]
+
+read    name1,name2,...
+[where  LOGIC_CONDITION]
+[let new_field1[,...]=EXPRESSION] #expr may return many values
+
+foreach f1, f2, ... from SOURCE # тут на каждую прочитанную строку порождается N строк из SOURCE
+[where  LOGIC_CONDITION]
+
+[let new_field1[,...]=EXPRESSION] #expr may return many values
+[sort [+]field1,-field2,...]
+[groupby nameA,nameB,...]
+[aggregate new_fieldX=AGGREGATE_EXPRESSION] # for groupby...
+end #foreach
+
+let ...
+
+return [fieldA,fieldB,...]
+#############################################
+
+
+#-----------------------------------
+# результирующая таблица
+=
+read ...
+....
+
+#EXPRESSION/LOGIC_CONDITION:
+* field1 VAR.fieldX ....
+
+# функции:
++ - * / % neg(унарный -) and or xor not
+
+#условия:
+== != > >= < <=
+
+#AGGREGATE_EXPRESSION
+min max sum avg top bottom
+
+#EXPRESSION TABLE
+Operators with higher precedence are listed first. Associativity is left, right,
+unary (not applicable) or none (means that only one operator is
+allowed). Parentheses may be used to override default precedence
+
+Group				Operators				 Associativity		Remarks
+Post				f(x,y),x.n			 unary						
+Unary				-,not						 unary						
+Mul					*,/,%						 left							
+Add					+,&,-						 left							& is string concatenation
+Rel					<,>,<=,=>,==,!=	 none							
+And					and							 left							short-circuit
+Or					or,xor					 left							short-circuit or
+Named				n => e					 none							naming expressions for yielding
+Ass					=								 none							
+
+Objects and results of operators are either strings or tuples (implemented as
+ruby hashes). When performing numeric operators, objects are first converted to
+64-bit floating-point numbers, the operator is performed on them, and the
+returned result is converted back into string. Most operators are numeric,
+except for f(), ., =>, &, =, logical and comparison operators. For comparison
+operators <, >, <=, >= the objects are first converted into doubles, but the
+result is a logical value. For == and !=, the result is also a logical value,
+but no conversion is performed. For ., the left-side object must be a hash, or
+an error will occur. For => operator, the left side must be an id, and the right
+side can be any expression. & is an operator which does concatenation on
+strings. 

@@ -1,0 +1,7 @@
+*.gem
+.*
+Gemfile.lock
+pkg/*
+*~
+*.bak
+

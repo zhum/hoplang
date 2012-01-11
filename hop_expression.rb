@@ -1,0 +1,255 @@
+require 'citrus'
+
+module Hopsa
+
+  # load HopExpr grammar
+  Citrus.load 'hop_expr'
+
+  # base class for hoplang expression
+  class HopExpr
+
+    # chains expressions (Citrus matches) with operators (Citrus matches), 
+    # returns the resulting hop expression
+    # matches must be of the same precedence
+    def self.chain(emlist, opmlist)
+      elist = emlist.map {|em| em.value}
+      oplist = opmlist.map {|opm| opm.value}
+      self.chain_helper elist, oplist
+    end
+
+    def self.chain_helper(elist, oplist) 
+      if oplist.length == 0
+        elist[0]
+      elsif oplist.length == 1 && oplist[0] == '='
+        AssExpr.new elist[0], elist[1]
+      elsif oplist[0] == '.'
+        elist[1] = DotExpr.new elist[0], elist[1]
+        elist.shift
+        oplist.shift
+        chain_helper elist, oplist
+      else
+        # arbitrary binary operator on expressions
+        elist[1] = BinaryExpr.new elist[0], oplist[0], elist[1]
+        elist.shift
+        oplist.shift
+        chain_helper elist, oplist
+      end
+    end
+
+    # parses expression, returns HopExpr for top expression
+    # in case of error, returns nil and prints error type and location
+    def self.parse(line)
+      HopExprGram.parse(line, :root => :expr).value
+    end
+
+    # parses a conditional expression, such as allowed in while, if and where
+    def self.parse_cond(line)
+      HopExprGram.parse(line, :root => :condexpr).value
+    end
+
+    # parses a list of expressions
+    def self.parse_list(line) 
+      HopExprGram.parse(line, :root => :topexprlist).value
+    end
+
+    # returns the name associated with the expression, default is empty
+    def name
+      ''
+    end
+
+    # eval - evaluate in current execution context
+
+    # ass - assigns a value to the specified reference, available for reference
+    def ass(ex, val) 
+      warn "#{self.class.inspect}: assignment to this value is not supported"
+    end
+  end # HopExpr
+
+  # expression containing a single value
+  class ValExpr < HopExpr
+    attr_reader :val
+    def initialize(val)
+      @val = val
+    end
+    def eval(ex)
+      return @val
+    end
+  end # ValExpr
+
+  class RefExpr < HopExpr 
+    attr_reader :rname
+    # creates a reference expression with a variable
+    def initialize(rname) 
+      @rname = rname
+    end
+    def eval(ex)
+      ex.varStore.get(@rname)
+    end
+    # assigns result to a variable
+    def ass(ex, val)
+      ex.varStore.set(@rname, val)
+      return nil
+    end
+  end # RefExpr
+
+  class CallExpr < HopExpr 
+    attr_reader :fun_expr, :args
+    # function call with function expression (must be RefExpr) and arguments
+    def initialize(fun_name, args) 
+      @fun_name = fun_name
+      @args = args
+    end
+    def eval(ex) 
+      # not implemented
+      warn 'warning: function eval not yet implemented'
+      return nil
+    end
+  end # CallExpr
+
+  class DotExpr < HopExpr
+    attr_reader :obj, :field_name
+    # field reference with object and field name
+    def initialize(obj, field_name)
+      @obj = obj
+      @field_name = field_name
+    end
+    def eval(ex)
+      o = @obj.eval(ex)
+      warn 'applying . to an object which is not a tuple' if o.class != Hash
+      # puts "obj = #{o.inspect}"
+      r = o[@field_name]
+      # puts "obj.#{field_name} = #{r}"
+      warn "no field #{@field_name} in object" if !r
+      r
+    end
+    def ass(ex, val)
+      @obj.eval(ex)[@field_name] = val
+    end
+  end # DotExpr
+
+  class UnaryExpr < HopExpr
+    attr_reader :op, :expr
+    def initialize(op, expr)
+      @op = op
+      @expr = expr
+    end
+    def eval(ex) 
+      val = @expr.eval(ex)
+      case @op
+        when '-'
+        return (-val.to_f).to_s
+        when 'not'
+        return !val
+        else
+        warn "#{@op}: unsupported unary operator"
+        return nil
+      end
+    end
+  end # UnaryExpr
+
+  class BinaryExpr < HopExpr
+    # operators which are short-circuit
+    SHORT_OPS = ['and', 'or']
+    # pre-conversion operators
+    PRECONV_OPS = ['*', '/', '+', '-', '<=', '>=', '<', '>']
+    # post-conversion operators
+    POSTCONV_OPS = ['*', '/', '+', '-']
+    # relational operators
+    attr_reader :op, :expr1, :expr2, :short
+    def initialize(expr1, op, expr2) 
+      @op = op
+      @expr1 = expr1
+      @expr2 = expr2
+      @short = SHORT_OPS.include? op
+      @pre_conv = PRECONV_OPS.include? op
+      @post_conv = POSTCONV_OPS.include? op
+    end
+    def eval(ex)
+      if @short
+        #short-circuit
+        val1 = @expr1.eval(ex)
+        case op 
+          when 'and'
+          return val1 && @expr2.eval(ex)
+          when 'or'
+          return val1 || @expr2.eval(ex)
+          else
+          warn "#{op}: unsupported short-cirtuit binary operator"
+          return nil
+        end
+      else
+        #full evaluation
+        val1 = @expr1.eval(ex)
+        val2 = @expr2.eval(ex)
+        if @pre_conv
+          val1 = val1.to_f
+          val2 = val2.to_f
+        end
+        res = nil
+        case @op
+          when '*' 
+          res = val1 * val2
+          when '/' 
+          res = val1 / val2
+          when '+'
+          res = val1 + val2
+          when '-'
+          res = val1 - val2
+          when '&'
+          # string concatenation
+          res = val1 + val2 
+          when '<'
+          res = val1 < val2
+          when '>'
+          res = val1 > val2
+          when '<='
+          res = val1 <= val2
+          when '>='
+          res = val1 >= val2
+          when '=='
+          res = val1 == val2
+          when '!='
+          res = val1 != val2
+          when 'xor'
+          res = val1 ^ val2
+          else
+          warn "#{@op}: unsupported binary operator"
+          return nil
+        end # case(op)
+        res = res.to_s if @post_conv
+        return res
+      end
+    end # eval
+  end # BinaryExpr
+
+  # named expression 
+  class NamedExpr < HopExpr
+    attr_reader :expr
+    def initialize(name, expr)
+      @name = name
+      @expr = expr
+    end
+    def eval(ex)
+      expr.eval(ex)
+    end
+    # gets the name associated with the expression
+    def name
+      @name
+    end
+  end
+  
+  # assignment expression
+  class AssExpr < HopExpr
+    attr_reader :expr1, :expr2
+    def initialize(expr1, expr2)
+      @expr1 = expr1
+      @expr2 = expr2
+    end
+    # performs assignment and always returns nil
+    def eval(ex)
+      val = expr2.eval(ex)
+      expr1.ass(ex, val)
+      return nil
+    end
+  end # AssExpr
+end

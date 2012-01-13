@@ -73,7 +73,7 @@ module Hopsa
         kv = @enumerator.next
         @items_read += 1
       rescue StopIteration
-        puts "finished iteration"
+        warn "finished iteration"
       end
       if !kv.nil?
         k,v=kv[0],kv[1]
@@ -121,7 +121,7 @@ module Hopsa
       # check leaves and build index clause
       index_clause = []
       has_eq = nil
-      puts @filter_leaves.inspect
+      warn @filter_leaves.inspect
       @filter_leaves.each do |e|
         return nil if !(PUSH_OPS.include? e.op)
         return nil if !(e.expr1.instance_of? DotExpr)

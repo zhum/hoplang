@@ -36,7 +36,7 @@ end
 out4 = seq z in out3
   var y
   y = y + z.sum3
-  yield sum4 => y, avg4 => z.avg3, u => z.u
+  yield u => z.u, sum4 => y, avg4 => z.avg3
 end
 
 print out4

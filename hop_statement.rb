@@ -167,7 +167,7 @@ module Hopsa
       line,pos = Statement.nextLine(text,startLine);
       raise SyntaxError if !line.match /\s*if\s+(.*)/
       @cond_expr = HopExpr.parse_cond $1
-      puts @cond_expr.inspect
+      warn @cond_expr.inspect
       pos += 1
       cur_chain = if_chain
       while true
@@ -175,7 +175,7 @@ module Hopsa
         begin
           while true
             # it may be better to pass self as parent to nested statements
-            # and hopstances. However, currently no variable declarations are 
+            # and hopstances. However, currently no variable declarations are
             # allowed in while, that's why we pass parent
             hopstance,pos = Hopstance.createNewRetLineNum(parent,text,pos)
             cur_chain.add hopstance
@@ -185,7 +185,7 @@ module Hopsa
           if line == 'else'
             raise if cur_chain == else_chain
             cur_chain = else_chain
-            pos += 1          
+            pos += 1
           elsif line == 'end'
             return self, pos + 1
           else
@@ -215,12 +215,12 @@ module Hopsa
       line,pos = Statement.nextLine(text,startLine);
       raise SyntaxError if !line.match /\s*while\s+(.*)/
       @cond_expr = HopExpr.parse_cond $1
-      puts @cond_expr.inspect
+      warn @cond_expr.inspect
       pos += 1
       begin
         while true
           # it may be better to pass self as parent to nested statements
-          # and hopstances. However, currently no variable declarations are 
+          # and hopstances. However, currently no variable declarations are
           # allowed in while, that's why we pass parent
           hopstance,pos = Hopstance.createNewRetLineNum(parent,text,pos)
           @mainChain.add hopstance
@@ -237,7 +237,7 @@ module Hopsa
     end # createNewRetLineNum
 
     def hop
-      while @cond_expr.eval(@parent) 
+      while @cond_expr.eval(@parent)
         @mainChain.hop
       end
     end
@@ -294,7 +294,7 @@ module Hopsa
 
       raise UnexpectedEOF if line.nil?
       raise (SyntaxError) if(not line.match /^\s*yield(\s*(.*))/)
-      
+
       # parse expressions
       #puts $2
       elist = HopExpr.parse_list $2
@@ -307,6 +307,7 @@ module Hopsa
         field_num += 1
         @fields[name] = e
       end
+      @fields['__hoplang_cols_order']=elist.map{|e| e.name}.join(',')
 
 # removed zhumcode begin
       # ret=$2
@@ -337,13 +338,16 @@ module Hopsa
 
     def hop
       ret = {}
-      @fields.map {|name, expr| ret[name] = expr.eval(self)}
+      @fields.map do |name, expr|
+        ret[name] = expr.eval(self) unless name == '__hoplang_cols_order'
+      end
+      ret['__hoplang_cols_order'] = @fields['__hoplang_cols_order']
       @parent.do_yield(ret)
     end
 
   end
-  
-  
+
+
   # debug EXPR statement
   class DebugStatement < Statement
     def self.createNewRetLineNum(parent,text,startLine)
@@ -354,12 +358,12 @@ module Hopsa
       raise SyntaxError if !line.match /debug\s+(.*)/
       @line=startLine
       @expr = HopExpr.parse_cond $1
-      puts "debug: #{@expr.inspect}"
+      warn "debug: #{@expr.inspect}"
       return self, pos + 1
     end # createNewRetLineNum
 
     def hop
-      puts "DEBUG(#{@line}): #{@expr.eval(@parent)}"
+      warn "DEBUG(#{@line}): #{@expr.eval(@parent)}"
     end
   end # DebugStatement
 end

@@ -1,10 +1,20 @@
+class String
+  def csv_escape
+    gsub('"','\\"')
+    if(self =~ /,/)
+      return '"'+self+'"'
+    end
+    self
+  end
+end
+
 module Hopsa
   # Statement, which process stream.
   # So, it has inPipe, which is connected to previous Hopstance output.
   class Hopstance < Statement
     def initialize(parent,inPipe=nil)
       super(parent)
-      
+
       @varStore=VarStore.new(self)
     end
 
@@ -17,9 +27,9 @@ module Hopsa
       end
       @@threads=[]
     end
-    
+
     def new_thread &block
-    
+
       @@threads ||= []
       @@threads.push(Thread.new(&block))
     end
@@ -35,12 +45,12 @@ module Hopsa
       raise UnexpectedEOF if line.nil?
       unless((line =~
       /^(\S+)\s*=\s*each\s+(\S+)\s+in\s+(\S+)(\s+where\s+(.*))?/) || (line =~ /^(\S+)\s*=\s*seq\s+(\S+)\s+in\s+(\S+)(\s+where\s+(.*))?/))
-          
+
         raise SyntaxError.new(line)
       end
 
       streamvar,current_var,source,where=$1,$2,$3,$5
-      
+
       cfg_entry = Config["db_type_#{source}"]
       src=Config.varmap[source]
       type=src.nil? ? nil : src['type']
@@ -165,12 +175,12 @@ module Hopsa
         @source_in = open @source
         # fields titles
         head=@source_in.readline.strip
-        @heads=head.split /\s*,\s*/
+        @heads=head.split(/\s*,\s*/)
       end
 
       begin
         line=@source_in.readline.strip
-        datas=line.split /\s*,\s*/
+        datas=line.split(/\s*,\s*/)
 
         i=0
         value={}
@@ -207,26 +217,38 @@ module Hopsa
       unless(line =~ /print\s+(\S+)/)
         raise SyntaxError.new(line)
       end
-      
+
       hopstance=PrintEachHopstance.new(parent)
       return hopstance.init($1),pos+1
     end
-    
+
     def init(source)
       @source=source
       self
     end
-    
+
     def hop
       new_thread do
         while not (self.readSource).nil?
         end
       end
     end
-    
+
     def readSource
       value=varStore.get(@source)
-      puts "OUT>>#{value.inspect}"
+      return nil if value.nil?
+      if(not Config['local'].nil? and
+         Config['local']['out_format'] == 'csv')
+        if @out_heads.nil?
+          @out_heads=value['__hoplang_cols_order'].split(/,/)
+          # print header
+          puts value['__hoplang_cols_order']
+        end
+
+        puts @out_heads.map {|key| value[key].to_s.csv_escape}.join(',')
+      else
+        puts "OUT>>#{value.inspect}"
+      end
       value
     end
   end
@@ -254,8 +276,8 @@ module Hopsa
     end
 
     def do_yield(hash)
-      print hash.map {|key,val| "#{key} => #{val}"} .join("\n")
-      print "\n"
+      warn hash.map {|key,val| "#{key} => #{val}"} .join("\n")
+      warn "\n"
     end
 
     def initialize

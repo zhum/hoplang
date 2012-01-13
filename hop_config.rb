@@ -10,7 +10,6 @@ module Hopsa
 
       def [](key)
         begin
-#          warn "CONFIG: #{key}=#{@data[key]}"
           return @data[key]
         rescue
           warn "Warning: config key '#{key}' not found"

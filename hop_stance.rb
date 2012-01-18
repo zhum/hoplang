@@ -6,6 +6,10 @@ class String
     end
     self
   end
+
+  def to_class
+    Object.const_get(self)
+  end
 end
 
 module Hopsa
@@ -59,8 +63,13 @@ module Hopsa
 #      elsif(Config["db_type_#{source}"]=='csv') then
       elsif(type=='csv') then
         hopstance=MyDatabaseEachHopstance.new(parent)
-      elsif(type=='cassandra') then
-        hopstance=CassandraHopstance.new parent, source
+#      elsif(type=='cassandra') then
+#        hopstance=CassandraHopstance.new parent, source
+#      elsif(type=='mongo') then
+#        hopstance=MongoHopstance.new parent, source
+      elsif(@@hoplang_databases.include? type)
+        typename=(type.capitalize+'Hopstance').to_class
+        hopstance = typename.new parent, source
       elsif(type=='split') then
         i=1
         types_list=Array.new

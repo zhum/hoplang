@@ -54,7 +54,6 @@ module Hopsa
       val = nil
       begin
         val = @enumerator.next
-        @items_read += 1
       rescue StopIteration
         warn "finished iteration"
       end
@@ -63,7 +62,7 @@ module Hopsa
 #        value = {'key' => k}.merge(v)
 #        value = nil if @max_items != -1 && @items_read > @max_items
 #      end
-      varStore.set(@current_var, value)
+      varStore.set(@current_var, val)
     end
 
     private
@@ -98,6 +97,7 @@ module Hopsa
       end
       return nil if !(check_binary filter)
       cfinfo = @db.collection_names
+      col_index=nil
       # check leaves and build index clause
       index_clause = []
       has_eq = nil
@@ -111,8 +111,8 @@ module Hopsa
         coll_index = cfinfo.index do |coll|
           coll == e.expr1.field_name
         end
-        return nil if !column_index
-        column = cfinfo[column_index]
+        return nil if !col_index
+        column = cfinfo[col_index]
         index_clause += [{:column_name => column.name, :comparison => e.op,
                            :value => e.expr2.val}]
         has_eq = true if e.op == '=='

@@ -1,4 +1,4 @@
-#!!require 'cassandra/0.8'
+require 'cassandra/0.8'
 
 module Hopsa
 
@@ -60,7 +60,7 @@ module Hopsa
       @push_index = false if cfg['push_index'] && cfg['push_index'] == 'false'
       @items_read = 0
       conn_addr = "#{address}:#{port}"
- #!!     @cassandra = Cassandra.new @keyspace, conn_addr
+      @cassandra = Cassandra.new @keyspace, conn_addr
       @enumerator = nil
     end
 

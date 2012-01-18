@@ -1,4 +1,4 @@
-#!!require 'cassandra/0.8'
+#!require 'cassandra/0.8'
 
 module Hopsa
 

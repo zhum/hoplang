@@ -39,17 +39,19 @@ end
 #include test_include.hpl
 
 # compute total and average number of serdyuk's CPUs
-#out3 = each t in tasks where t.user == 'serdyuk'
-# yield key => t.key, ncpus => t.ncpus
-#end
+out3 = each t in tasks where t.user == 'serdyuk'
+ yield key => t.key, ncpus => t.ncpus
+end
 
-#out4 = seq t in out3 
-# var ncpus, n
-# ncpus = ncpus + t.ncpus
-# n = n + 1
-#final
-# yield ncpus, n, ncpus / n
-#end
+out4 = seq t in out3 
+ var ncpus, n
+ ncpus = ncpus + t.ncpus
+ n = n + 1
+final
+ yield ntasks => n, avgncpus => ncpus / n
+end
+
+print out4
 
 _PROGRAM
 

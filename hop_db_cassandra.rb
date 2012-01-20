@@ -11,39 +11,21 @@ module Hopsa
         @cf = cf
         @index_clause = index_clause
         # hope there will be no more rows than this number
-        @key_count = 100_000_000
+        @key_count = 1_000_000
         @key_start = nil
       end
       def each
-#        while true
-          # get more rows if needed
-          @rows_read = 0
-          opts = {:key_count => @key_count}
-          #opts[:key_start] = @key_start if @key_start
-          @pre_rows = @cassandra.get_indexed_slices @cf, @index_clause, opts
-          # @nrows_read = @pre_rows.count
-          # puts "#{@nrows_read} row(s) read"
-          # raise StopIteration if @nrows_read == 0 || (@nrows_read == 1 && @key_start)
-          # iterate over rows, save the last as the start for the next batch
-          irow = 0
-          # @key_start = @pre_rows.keys.max
-          @pre_rows.each do |k, vs|
-            #if irow == @nrows_read - 1 && @nrows_read == @key_count
-            #  puts k
-            #  @key_start = k
-            #  break # each
-            #end
-            # row to be yielded
-            # additional conversion needed due to awful interface
-            row = {}
-            vs.each do |cosc|
-              row[cosc.column.name] = cosc.column.value
-            end
-            yield k,row
-            irow += 1
-          end # @pre_rows.each
-#        end # while
-        raise StopIteration
+        @rows_read = 0
+        opts = {:key_count => @key_count}
+        @pre_rows = @cassandra.get_indexed_slices @cf, @index_clause, opts
+        @pre_rows.each do |k, vs|
+          row = {}
+          vs.each do |cosc|
+            row[cosc.column.name] = cosc.column.value
+          end
+          yield k,row
+        end # @pre_rows.each
+        # raise StopIteration
       end # each
     end # IndexedIterator
 
@@ -69,11 +51,11 @@ module Hopsa
         lazy_init
       end
       kv = nil
+      value = nil
       begin
         kv = @enumerator.next
         @items_read += 1
       rescue StopIteration
-        warn "finished iteration"
       end
       if !kv.nil?
         k,v=kv[0],kv[1]
@@ -83,6 +65,7 @@ module Hopsa
         end
         value = nil if @max_items != -1 && @items_read > @max_items
       end
+      #puts value.inspect
       varStore.set(@current_var, value)
     end
 

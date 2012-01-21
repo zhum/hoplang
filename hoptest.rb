@@ -39,19 +39,24 @@ end
 #include test_include.hpl
 
 # compute total and average number of serdyuk's CPUs
-out3 = each t in tasks where t.user == 'serdyuk'
- yield key => t.key, ncpus => t.ncpus
-end
+#out3 = each t in tasks where t.user == 'serdyuk'
+# yield taskid => t.taskid, ncpus => t.ncpus
+#end
+#print out3
 
-out4 = seq t in out3 
- var ncpus, n
- ncpus = ncpus + t.ncpus
- n = n + 1
-final
- yield ntasks => n, avgncpus => ncpus / n
+out5 = each v in cheb_cpu_user where v.node == 'node-02-02' and v.time > 1326744000000 and v.time < 1326754000000
+ yield time => v.time, node => v.node, cpu => v.value
 end
+print out5
 
-print out4
+#out4 = seq t in out3 
+# var ncpus, n
+# ncpus = ncpus + t.ncpus
+# n = n + 1
+#final
+# yield ntasks => n, avgncpus => ncpus / n
+#end
+#print out4
 
 _PROGRAM
 

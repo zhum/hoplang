@@ -71,8 +71,14 @@ module Hopsa
     def initialize(val)
       @val = val
     end
+
     def eval(ex)
       return @val
+    end
+
+    def to_db(ex,db)
+      val=@expr.eval(ex)
+      db.value(val) #???
     end
   end # ValExpr
 
@@ -90,6 +96,11 @@ module Hopsa
       ex.varStore.set(@rname, val)
       return nil
     end
+
+    def to_db(ex,db)
+      val=eval(ex)
+      db.value(val)
+    end
   end # RefExpr
 
   class CallExpr < HopExpr
@@ -104,6 +115,12 @@ module Hopsa
       warn 'warning: function eval not yet implemented'
       return nil
     end
+
+    def to_db(ex,db)
+      warn 'warning: function eval not yet implemented'
+      #db.function()
+      return nil,nil
+    end
   end # CallExpr
 
   class DotExpr < HopExpr
@@ -115,7 +132,7 @@ module Hopsa
     end
     def eval(ex)
       o = @obj.eval(ex)
-      warn 'applying . to an object which is not a tuple' if o.class != Hash
+      warn 'applying . to non-tuple (#{o.inspect})' if o.class != Hash
       # puts "obj = #{o.inspect}"
       r = o[@field_name]
       # puts "obj.#{field_name} = #{r}"
@@ -124,6 +141,11 @@ module Hopsa
     end
     def ass(ex, val)
       @obj.eval(ex)[@field_name] = val
+    end
+
+    def to_db(ex,db)
+      val=@expr.eval(ex)
+      return db.value(val), val
     end
   end # DotExpr
 
@@ -144,6 +166,11 @@ module Hopsa
         warn "#{@op}: unsupported unary operator"
         return nil
       end
+    end
+
+    def to_db(ex,db)
+      val=@expr.eval(ex)
+      return db.unary(val,@op), val
     end
   end # UnaryExpr
 
@@ -170,12 +197,12 @@ module Hopsa
         val1 = @expr1.eval(ex)
         case op
           when 'and'
-          return val1 && @expr2.eval(ex)
+            return val1 && @expr2.eval(ex)
           when 'or'
-          return val1 || @expr2.eval(ex)
+            return val1 || @expr2.eval(ex)
           else
-          warn "#{op}: unsupported short-cirtuit binary operator"
-          return nil
+            warn "#{op}: unsupported short-cirtuit binary operator"
+            return nil
         end
       else
         #full evaluation
@@ -220,6 +247,82 @@ module Hopsa
         return res
       end
     end # eval
+
+    def to_db(ex,db)
+      if @short
+        #short-circuit
+        db_val1, hop_val1 = @expr1.to_db(ex)
+        db_val2, hop_val2 = @expr2.to_db(ex)
+
+        if not db_val1.nil? and not db_val2.nil?
+          #all calculated
+
+          case op
+            when 'and'
+              return db.and(db_val1, db_val2), eval(ex)
+            when 'or'
+              return db.or(db_val1, db_val2), eval(ex)
+            else
+              warn "#{op}: unsupported short-cirtuit binary operator"
+              return nil, nil
+          end
+        else
+          # sometnig cannot be calculated
+          case op
+            when 'or'
+              # 8( all DB must be searched...
+              return nil, eval(ex)
+            when 'and'
+              if(db_val1.nil?)
+                return db_val1, hop_val2
+              return hop_val1, db_val2
+            else
+              warn "#{op}: unsupported short-cirtuit binary operator"
+              return nil, nil
+          end
+        end #if calculated
+      else
+        #full evaluation
+        if @pre_conv
+          hop_val1 = hop_val1.to_f
+          hop_val2 = hop_val2.to_f
+        end
+        res = nil
+        db_res = db.binary(db_val1,db_val2,@op)
+        case @op
+          when '*'
+            res = hop_val1 * hop_val2
+          when '/'
+            res = hop_val1 / hop_val2
+          when '+'
+            res = hop_val1 + hop_val2
+          when '-'
+            res = hop_val1 - hop_val2
+          when '&'
+          # string concatenation
+            res = hop_val1 + hop_val2
+          when '<'
+            res = hop_val1 < hop_val2
+          when '>'
+            res = hop_val1 > hop_val2
+          when '<='
+            res = hop_val1 <= hop_val2
+          when '>='
+            res = hop_val1 >= hop_val2
+          when '=='
+            res = hop_val1 == hop_val2
+          when '!='
+            res = hop_val1 != hop_val2
+          when 'xor'
+            res = hop_val1 ^ hop_val2
+          else
+            warn "#{@op}: unsupported binary operator"
+            return nil,nil
+        end # case(op)
+        res = res.to_s if @post_conv
+        return db_res, res
+      end
+    end # to_db
   end # BinaryExpr
 
   # named expression
@@ -236,6 +339,12 @@ module Hopsa
     def name
       @name
     end
+
+    def to_db(ex,db)
+      val=eval(ex)
+      return db.value(val), val
+    end
+
   end
 
   # assignment expression
@@ -252,6 +361,9 @@ module Hopsa
       return nil
     end
 
-    def to_db(ex,)
+    def to_db(ex,db)
+      warn "Assingment not supported in where-expression"
+      return nil,nil
+    end
   end # AssExpr
 end

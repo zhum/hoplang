@@ -18,6 +18,7 @@ module Hopsa
         coll = @db[@collection]
 
         iter = coll.find(@index_clause)
+        warn "SEARCH: #{@index_clause}"
 
         iter.each do |row|
           yield row
@@ -107,20 +108,25 @@ module Hopsa
         return nil if !(e.expr1.instance_of? DotExpr)
         return nil if !(e.expr1.obj.instance_of? RefExpr)
         return nil if e.expr1.obj.rname != @current_var
-        return nil if !(e.expr2.instance_of? ValExpr)
-        coll_index = cfinfo.index do |coll|
-          coll == e.expr1.field_name
-        end
-        return nil if !col_index
-        column = cfinfo[col_index]
-        index_clause += [{:column_name => column.name, :comparison => e.op,
+#        coll_index = cfinfo.index do |coll|
+#          coll == e.expr1.field_name
+#        end
+#        return nil if !col_index
+        #column = cfinfo[col_index]
+          warn ">>>--- #{e.expr2.inspect}"
+        if e.expr2.instance_of? ValExpr
+          index_clause += [{:column_name => e.expr1.field_name, :comparison => e.op,
                            :value => e.expr2.val}]
-        has_eq = true if e.op == '=='
+        else
+          index_clause += [{:column_name => e.expr1.field_name, :comparison => e.op,
+                           :value => e.expr2.eval}]
+        end
+#        has_eq = true if e.op == '=='
       end
-      if !has_eq
-        warn "no == operator in filter expression"
-        return nil
-      end
+#      if !has_eq
+#        warn "no == operator in filter expression"
+#        return nil
+#      end
       index_clause
     end
 

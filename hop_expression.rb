@@ -8,7 +8,7 @@ module Hopsa
   # base class for hoplang expression
   class HopExpr
 
-    # chains expressions (Citrus matches) with operators (Citrus matches), 
+    # chains expressions (Citrus matches) with operators (Citrus matches),
     # returns the resulting hop expression
     # matches must be of the same precedence
     def self.chain(emlist, opmlist)
@@ -17,7 +17,7 @@ module Hopsa
       self.chain_helper elist, oplist
     end
 
-    def self.chain_helper(elist, oplist) 
+    def self.chain_helper(elist, oplist)
       if oplist.length == 0
         elist[0]
       elsif oplist.length == 1 && oplist[0] == '='
@@ -48,7 +48,7 @@ module Hopsa
     end
 
     # parses a list of expressions
-    def self.parse_list(line) 
+    def self.parse_list(line)
       HopExprGram.parse(line, :root => :topexprlist).value
     end
 
@@ -60,7 +60,7 @@ module Hopsa
     # eval - evaluate in current execution context
 
     # ass - assigns a value to the specified reference, available for reference
-    def ass(ex, val) 
+    def ass(ex, val)
       warn "#{self.class.inspect}: assignment to this value is not supported"
     end
   end # HopExpr
@@ -76,10 +76,10 @@ module Hopsa
     end
   end # ValExpr
 
-  class RefExpr < HopExpr 
+  class RefExpr < HopExpr
     attr_reader :rname
     # creates a reference expression with a variable
-    def initialize(rname) 
+    def initialize(rname)
       @rname = rname
     end
     def eval(ex)
@@ -92,14 +92,14 @@ module Hopsa
     end
   end # RefExpr
 
-  class CallExpr < HopExpr 
+  class CallExpr < HopExpr
     attr_reader :fun_expr, :args
     # function call with function expression (must be RefExpr) and arguments
-    def initialize(fun_name, args) 
+    def initialize(fun_name, args)
       @fun_name = fun_name
       @args = args
     end
-    def eval(ex) 
+    def eval(ex)
       # not implemented
       warn 'warning: function eval not yet implemented'
       return nil
@@ -133,7 +133,7 @@ module Hopsa
       @op = op
       @expr = expr
     end
-    def eval(ex) 
+    def eval(ex)
       val = @expr.eval(ex)
       case @op
         when '-'
@@ -156,7 +156,7 @@ module Hopsa
     POSTCONV_OPS = ['*', '/', '+', '-']
     # relational operators
     attr_reader :op, :expr1, :expr2, :short
-    def initialize(expr1, op, expr2) 
+    def initialize(expr1, op, expr2)
       @op = op
       @expr1 = expr1
       @expr2 = expr2
@@ -168,7 +168,7 @@ module Hopsa
       if @short
         #short-circuit
         val1 = @expr1.eval(ex)
-        case op 
+        case op
           when 'and'
           return val1 && @expr2.eval(ex)
           when 'or'
@@ -187,9 +187,9 @@ module Hopsa
         end
         res = nil
         case @op
-          when '*' 
+          when '*'
           res = val1 * val2
-          when '/' 
+          when '/'
           res = val1 / val2
           when '+'
           res = val1 + val2
@@ -197,7 +197,7 @@ module Hopsa
           res = val1 - val2
           when '&'
           # string concatenation
-          res = val1 + val2 
+          res = val1 + val2
           when '<'
           res = val1 < val2
           when '>'
@@ -222,7 +222,7 @@ module Hopsa
     end # eval
   end # BinaryExpr
 
-  # named expression 
+  # named expression
   class NamedExpr < HopExpr
     attr_reader :expr
     def initialize(name, expr)
@@ -237,7 +237,7 @@ module Hopsa
       @name
     end
   end
-  
+
   # assignment expression
   class AssExpr < HopExpr
     attr_reader :expr1, :expr2
@@ -251,5 +251,7 @@ module Hopsa
       expr1.ass(ex, val)
       return nil
     end
+
+    def to_db(ex,)
   end # AssExpr
 end

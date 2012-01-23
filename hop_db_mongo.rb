@@ -16,6 +16,7 @@ module Hopsa
     end
 
     def binary(ex1,ex2,op)
+
       warn "MONGO BINARY: #{ex1}, #{ex2}, #{op}"
       case op
       when '+'

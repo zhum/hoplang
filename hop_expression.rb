@@ -102,14 +102,15 @@ module Hopsa
     end
     # assigns result to a variable
     def ass(ex, val)
+      warn "ASS #{@rname} = #{val}"
       ex.varStore.set(@rname, val)
       return nil
     end
 
     def to_db(ex,db)
-      warn "REF=#{@rname}"
-      #val=eval(ex)
-      db.value(@rname)
+      val=eval(ex)
+      warn "REF=#{@rname} = #{val}"
+      db.value(val)
     end
 
     def to_s

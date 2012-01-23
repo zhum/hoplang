@@ -16,6 +16,7 @@ module Hopsa
     end
 
     def binary(ex1,ex2,op)
+      return nil if ex1.nil? or ex2.nil?
 
       warn "MONGO BINARY: #{ex1}, #{ex2}, #{op}"
       case op
@@ -28,23 +29,23 @@ module Hopsa
       when '-'
         return nil
       when '>'
-        return "{}"
-         op == '<' or
-         op == '>=' or
-         op == '<=' or
-         op == '==' or
-         op == '!=')
-        return '('+ex1.to_s+' '+op+' '+ex2.to_s+')'
-      end
-      if op == '&' # string catenation
-        return '('+ex1.to_s+' + '+ex2.to_s+')'
+        return ex1.to_s => {'$gt' => ex2.to_s}
+      when '>='
+        return ex1.to_s => {'$ge' => ex2.to_s}
+      when '<'
+        return ex1.to_s => {'$lt' => ex2.to_s}
+      when '<='
+        return ex1.to_s => {'$le' => ex2.to_s}
+      when '=='
+        return ex1.to_s => {'$eq' => ex2.to_s}
+      when '!='
+        return ex1.to_s => {'$ne' => ex2.to_s}
       end
       return nil
     end
 
     def value(ex)
-      ex.gsub!(Regexp.new('\W'+@db_var+'\.'),'')
-      return ' ('+ex.to_s+') '
+      return ex.gsub(Regexp.new('\W'+@db_var+'\.'),'')
     end
   end
 
@@ -64,7 +65,7 @@ module Hopsa
         coll = @db[@collection]
 
         iter = coll.find(@index_clause)
-        warn "SEARCH: #{@index_clause}"
+        warn "SEARCH: #{@index_clause.inspect}"
         iter.each do |row|
           if @where_clause
             if @where_clause.eval(@context)

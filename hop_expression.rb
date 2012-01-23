@@ -63,6 +63,10 @@ module Hopsa
     def ass(ex, val)
       warn "#{self.class.inspect}: assignment to this value is not supported"
     end
+
+    def to_s
+      ''
+    end
   end # HopExpr
 
   # expression containing a single value
@@ -77,8 +81,13 @@ module Hopsa
     end
 
     def to_db(ex,db)
-      val=@expr.eval(ex)
-      db.value(val) #???
+      #val=@expr.eval(ex)
+      warn "VAL=#{@val}"
+      db.value(@val) #???
+    end
+
+    def to_s
+      @val
     end
   end # ValExpr
 
@@ -98,8 +107,13 @@ module Hopsa
     end
 
     def to_db(ex,db)
-      val=eval(ex)
-      db.value(val)
+      warn "REF=#{@rname}"
+      #val=eval(ex)
+      db.value(@rname)
+    end
+
+    def to_s
+      @rname
     end
   end # RefExpr
 
@@ -144,8 +158,12 @@ module Hopsa
     end
 
     def to_db(ex,db)
-      val=@expr.eval(ex)
-      return db.value(val), val
+      val=@obj.eval(ex)
+      return db.value(@field_name), val[@field_name]
+    end
+
+    def to_s
+      "#{obj}.#{field_name}"
     end
   end # DotExpr
 
@@ -172,7 +190,53 @@ module Hopsa
       val=@expr.eval(ex)
       return db.unary(val,@op), val
     end
+
+    def to_s
+      @op.to_s+@expr.to_s
+    end
   end # UnaryExpr
+
+  # named expression
+  class NamedExpr < HopExpr
+    attr_reader :expr
+    def initialize(name, expr)
+      @name = name
+      @expr = expr
+    end
+    def eval(ex)
+      expr.eval(ex)
+    end
+    # gets the name associated with the expression
+    def name
+      @name
+    end
+
+    def to_db(ex,db)
+      val=eval(ex)
+      return db.value(@name), val
+    end
+
+  end
+
+  # assignment expression
+  class AssExpr < HopExpr
+    attr_reader :expr1, :expr2
+    def initialize(expr1, expr2)
+      @expr1 = expr1
+      @expr2 = expr2
+    end
+    # performs assignment and always returns nil
+    def eval(ex)
+      val = expr2.eval(ex)
+      expr1.ass(ex, val)
+      return nil
+    end
+
+    def to_db(ex,db)
+      warn "Assingment not supported in where-expression"
+      return nil,nil
+    end
+  end # AssExpr
 
   class BinaryExpr < HopExpr
     # operators which are short-circuit
@@ -183,6 +247,7 @@ module Hopsa
     POSTCONV_OPS = ['*', '/', '+', '-']
     # relational operators
     attr_reader :op, :expr1, :expr2, :short
+
     def initialize(expr1, op, expr2)
       @op = op
       @expr1 = expr1
@@ -191,6 +256,7 @@ module Hopsa
       @pre_conv = PRECONV_OPS.include? op
       @post_conv = POSTCONV_OPS.include? op
     end
+
     def eval(ex)
       if @short
         #short-circuit
@@ -249,11 +315,10 @@ module Hopsa
     end # eval
 
     def to_db(ex,db)
+      db_val1, hop_val1 = @expr1.to_db(ex,db)
+      db_val2, hop_val2 = @expr2.to_db(ex,db)
       if @short
         #short-circuit
-        db_val1, hop_val1 = @expr1.to_db(ex)
-        db_val2, hop_val2 = @expr2.to_db(ex)
-
         if not db_val1.nil? and not db_val2.nil?
           #all calculated
 
@@ -273,8 +338,7 @@ module Hopsa
               # 8( all DB must be searched...
               return nil, eval(ex)
             when 'and'
-              if(db_val1.nil?)
-                return db_val1, hop_val2
+              return db_val1, hop_val2 if(db_val1.nil?)
               return hop_val1, db_val2
             else
               warn "#{op}: unsupported short-cirtuit binary operator"
@@ -323,47 +387,10 @@ module Hopsa
         return db_res, res
       end
     end # to_db
+
+    def to_s
+      '('+@expr1.to_s+@op.to_s+@expr2.to_s+')'
+    end
   end # BinaryExpr
 
-  # named expression
-  class NamedExpr < HopExpr
-    attr_reader :expr
-    def initialize(name, expr)
-      @name = name
-      @expr = expr
-    end
-    def eval(ex)
-      expr.eval(ex)
-    end
-    # gets the name associated with the expression
-    def name
-      @name
-    end
-
-    def to_db(ex,db)
-      val=eval(ex)
-      return db.value(val), val
-    end
-
-  end
-
-  # assignment expression
-  class AssExpr < HopExpr
-    attr_reader :expr1, :expr2
-    def initialize(expr1, expr2)
-      @expr1 = expr1
-      @expr2 = expr2
-    end
-    # performs assignment and always returns nil
-    def eval(ex)
-      val = expr2.eval(ex)
-      expr1.ass(ex, val)
-      return nil
-    end
-
-    def to_db(ex,db)
-      warn "Assingment not supported in where-expression"
-      return nil,nil
-    end
-  end # AssExpr
 end

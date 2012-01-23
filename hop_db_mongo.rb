@@ -11,23 +11,28 @@ module Hopsa
     end
 
     def unary(ex,op)
-      if (op == 'not') or (op == '!')
-        return '(not '+ex.to_s+')'
+      #return '(not '+ex.to_s+')' if (op == 'not') or (op == '!')
       return nil
     end
 
     def binary(ex1,ex2,op)
-      if(op == '+' or
-         op == '*' or
-         op == '-' or
-         op == '/' or
-         op == '>' or
+      warn "MONGO BINARY: #{ex1}, #{ex2}, #{op}"
+      case op
+      when '+'
+        return nil
+      when '*'
+        return nil
+      when '/'
+        return nil
+      when '-'
+        return nil
+      when '>'
+        return "{}"
          op == '<' or
          op == '>=' or
          op == '<=' or
          op == '==' or
-         op == '!=' or
-         )
+         op == '!=')
         return '('+ex1.to_s+' '+op+' '+ex2.to_s+')'
       end
       if op == '&' # string catenation
@@ -36,8 +41,8 @@ module Hopsa
       return nil
     end
 
-    def value(ex,op)
-      ex.gsub!(Regexp.new('\W'+@db.var+'\.'),'')
+    def value(ex)
+      ex.gsub!(Regexp.new('\W'+@db_var+'\.'),'')
       return ' ('+ex.to_s+') '
     end
   end
@@ -61,7 +66,7 @@ module Hopsa
         warn "SEARCH: #{@index_clause}"
         iter.each do |row|
           if @where_clause
-            if @where_clause.eval(context)
+            if @where_clause.eval(@context)
               yield row
             end
           else
@@ -128,22 +133,22 @@ module Hopsa
 
       db_conv=MongoDBConv.new(@current_var)
 
-      db_expr,hop_expr=filter.to_db(filter,db_conv)
+      db_expr,hop_expr=filter.to_db(self,db_conv)
     end
 
     # lazy initialization, done on reading first element
     def lazy_init
       # build index clause if possible
       @index_clause,@where_clause = create_filter @where_expr
-      if @index_clause && @push_index
-        ind_iter = IndexedIterator.new @db, @collection, @index_clause
+      if @index_clause and @push_index
+        ind_iter = IndexedIterator.new @db, @collection, @index_clause, @where_clause ,self
         @enumerator = ind_iter.to_enum(:each)
-        warn 'index pushed to Mongo'
+        warn "index pushed to Mongo #{@where_expr.to_s}"
       else
         ind_iter = IndexedIterator.new @db, @collection, nil
         @enumerator = ind_iter.to_enum(:each)
         warn 'index not pushed to Mongo' if @where_expr
       end
-    end
-  end
+    end # lazy_init
+  end # MongoHopstance
 end

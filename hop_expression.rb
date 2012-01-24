@@ -206,6 +206,14 @@ module Hopsa
           res = val1 <= val2
           when '>='
           res = val1 >= val2
+          when '<.'
+          res = val1 < val2
+          when '>.'
+          res = val1 > val2
+          when '<=.'
+          res = val1 <= val2
+          when '>=.'
+          res = val1 >= val2
           when '=='
           res = val1 == val2
           when '!='

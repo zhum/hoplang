@@ -87,7 +87,7 @@ module Hopsa
     # key_start, key_finish, col_start, col_end, filter_expr
     # any of the components may be null if it is absent; currently, col_start
     # and col_finish are both null. 
-    PUSH_OPS = ['<', '<=', '>', '>=', '==']
+    PUSH_OPS = ['<', '<=', '>', '>=', '<.', '>.', '<=.', '>=.', '==']
     def filter_exprs?(filter)
       return nil if !filter
       @filter_leaves = []
@@ -120,6 +120,8 @@ module Hopsa
       # has effect only for list of columns
       col_type = cassandra_type cfinfo.comparator_type
       @filter_leaves.each do |e|
+        # remove trailing . for string comparison ops
+        eop = e.op.sub /\./, ''
         if !(PUSH_OPS.include? e.op)
           push_index = false
           warn "#{e.op} is not an index-pushable comparison"
@@ -142,20 +144,20 @@ module Hopsa
         end
         # check if key, list of columns (2d) or column
         if e.expr1.field_name == @keyname
-          if e.op == '<' || e.op == '<='
+          if eop == '<' || eop == '<='
             key_end = to_cassandra_val(e.expr2.val, key_type)
-          elsif e.op == '>' || e.op == '>='
+          elsif eop == '>' || eop == '>='
             key_start = to_cassandra_val(e.expr2.val, key_type)
-          elsif e.op == '=='
+          elsif eop == '=='
             key_start = to_cassandra_val(e.expr2.val, key_type)
             key_end = to_cassandra_val(e.expr2.val, key_type)
           end
         elsif e.expr1.field_name == @colname
-          if e.op == '<' || e.op == '<='
+          if eop == '<' || eop == '<='
             col_end = to_cassandra_val(e.expr2.val, col_type)
-          elsif e.op == '>' || e.op == '>='
+          elsif eop == '>' || eop == '>='
             col_start = to_cassandra_val(e.expr2.val, col_type)
-          elsif e.op == '=='
+          elsif eop == '=='
             col_start = to_cassandra_val(e.expr2.val, col_type)
             col_end = to_cassandra_val(e.expr2.val, col_type)
           end
@@ -177,11 +179,11 @@ module Hopsa
           index_clause += 
             [{
                :column_name => column.name, 
-               :comparison => e.op, 
+               :comparison => eop, 
                :value => to_cassandra_val(
                   e.expr2.val, cassandra_type(column.validation_class))
              }]
-          has_eq = true if e.op == '=='
+          has_eq = true if eop == '=='
         end # key / column
       end # @filter_leaves.each
       # check for eq in indices

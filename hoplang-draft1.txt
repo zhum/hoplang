@@ -51,7 +51,8 @@ Post				f(x,y),x.n			 unary
 Unary				-,not						 unary						
 Mul					*,/,%						 left							
 Add					+,&,-						 left							& is string concatenation
-Rel					<,>,<=,=>,==,!=	 none							
+Rel					<,>,<=,=>,==,!=	 none							dotted variants are for strings
+						<., >., <=., >=.									
 And					and							 left							short-circuit
 Or					or,xor					 left							short-circuit or
 Named				n => e					 none							naming expressions for yielding

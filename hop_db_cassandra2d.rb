@@ -21,24 +21,26 @@ module Hopsa
 
       # @kv == nil - finished iteration
       value = nil
-      begin
-        colv, valv = @kvenum.next
-        @items_read += 1
-        value = {@keyname => @kv[0], @colname => colv, @valuename => @valv}
-        @columns_to_long.each do |column_name|
-          value[column_name] = to_long value[column_name]
-        end
-      rescue StopIteration
+      if @kv
         begin
-          @kvenum = nil
-          @kv = @enumerator.next
-          @kvenum = @kv[1].to_enum :each
-          retry
+          colv, valv = @kvenum.next
+          @items_read += 1
+          value = {@keyname => @kv[0], @colname => colv, @valuename => @valv}
+          @columns_to_long.each do |column_name|
+            value[column_name] = to_long value[column_name]
+          end
         rescue StopIteration
+          begin
+            @kvenum = nil
+            @kv = @enumerator.next
+            @kvenum = @kv[1].to_enum :each
+            retry
+          rescue StopIteration
+          end
         end
-      end             
+      end
       value = nil if @max_items != -1 && @items_read > @max_items
-      warn 'finished cassandra2d iteration' if value.nil?
+      warn 'finished cassandra2d iteration' if !value
       # puts value.inspect
       varStore.set @current_var, value
     end # readSource

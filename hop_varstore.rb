@@ -22,12 +22,12 @@ module Hopsa
     def initialize(ex, dontcopy=nil)
       warn "New varstore #{object_id}. Parent - #{ex} (#{caller})"
       @ex=ex
-      
+
       begin
         copy(ex.parent.varStore) if not dontcopy
         return
       rescue NoMethodError
-      
+
         warn "NEW EMPTY VARSTORE"
         @scalarStore=Hash.new
         @cortegeStore=Hash.new
@@ -40,6 +40,13 @@ module Hopsa
       @scalarStore=vs.scalarStore.hop_clone
       @cortegeStore=vs.cortegeStore.hop_clone
       @streamStore=vs.streamStore.hop_clone
+    end
+
+    def merge(vs)
+      warn "Merge varstore #{object_id} with #{vs.object_id}. Parent - #{@ex}"
+      @scalarStore.merge(vs.scalarStore.hop_clone)
+      @cortegeStore.merge(vs.cortegeStore.hop_clone)
+      @streamStore.merge(vs.streamStore.hop_clone)
     end
 
     def addScalar(name)
@@ -108,18 +115,18 @@ module Hopsa
         elsif @cortegeStore.has_key? name
           return true
         end
-          
+
         return false
     end
 
     def copyStreamFromParent(name,parent)
       @streamStore[name]=parent.streamStore[name]
     end
-    
+
     def print_store
       ret=''
       each do |name,var|
-        ret+="::> #{name} = #{var.inspect}"
+        ret+="::> #{name} = #{var.inspect}\n"
       end
       ret
     end
@@ -136,7 +143,7 @@ module Hopsa
     end
 
     def get(name)
-      
+
       if @streamStore.has_key? name
         return @streamStore[name].get
       elsif @scalarStore.has_key? name

@@ -39,7 +39,16 @@ out4 = seq z in out3
   yield u => z.u, sum4 => y, avg4 => z.avg3
 end
 
-print out4
+out5 = group z by z.u from out4
+  var sum
+  var count
+  sum = sum + z.sum4
+  count = count + 1
+final
+  yield u => z.u, count => count, sum => sum
+end
+ 
+print out5
 
 #include test_include.hpl
 

@@ -145,6 +145,8 @@ module Hopsa
 
     def hop
       warn "START main chain #{@streamvar} <- #{@source} (#{@mainChain})"
+      warn "PARENT VARSTORE:\n#{@parent.varStore.print_store}"
+      varStore.merge(@parent.varStore)
       new_thread do
         begin
           while not (self.readSource).nil?

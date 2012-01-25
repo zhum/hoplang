@@ -18,6 +18,7 @@ require './hop_varstore.rb'
 require './hop_expression.rb'
 require './hop_statement.rb'
 require './hop_stance.rb'
+require './hop_group.rb'
 require './hop_config.rb'
 
 module Hopsa

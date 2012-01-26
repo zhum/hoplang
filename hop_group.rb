@@ -1,36 +1,40 @@
 module Hopsa
 
   class GroupExecutor < Hopstance
-    def initialize(parent,pipe,store,current_var,stream_var,chain,final)
+    def initialize(parent,pipe,store,current_var,stream_var,chain,final,name=nil)
       super(parent)
-      varStore.merge(parent.varStore)
       @mainChain=chain
       @finalChain=final
       @current_var=current_var
       @stream_var=stream_var
+      varStore.delStream(@stream_var)
       varStore.addCortege(@stream_var)
       @pipe=pipe
       @result=[]
-    end
+      @name=name
 
-    def do_yield(hash)
-      warn "GROUP OUT: #{hash.inspect}"
-      @result.push hash
+      # rebase chins for local varstore
+      @mainChain.executor=self
+      @finalChain.executor=self
     end
 
     def hop
-      warn "GROUP loop #{@current_var}"
+      hop_warn "GROUP loop #{@name}"
       loop do
         var=@pipe.get
-        warn "GROUP: GOT #{var.inspect}"
+        hop_warn "GROUP: GOT #{var.inspect}"
         if(var.nil?)
+          hop_warn "GROUP #{@name} final start"
           @finalChain.hop
-          return @result
+          hop_warn "-----------"
+          result=varStore.get(@stream_var)
+          hop_warn "GROUP #{@name} final end (#{result})"
+          return result
         end
         varStore.set(@current_var,var)
-#        warn ".....#{varStore.print_store}"
+#        hop_warn ".....#{varStore.print_store}"
         @mainChain.hop
-        warn "main success"
+        hop_warn "main success"
       end
     end
   end
@@ -78,11 +82,11 @@ module Hopsa
         begin
           stream_hopstance=Object.const_get(type+'Hopstance').new(parent)
         rescue NameError
-          warn "No such driver: #{type}!"
+          hop_warn "No such driver: #{type}!"
           stream_hopstance=EachHopstance.new(parent)
         end
       else
-        warn "DEFAULT Each"
+        hop_warn "DEFAULT Each"
         stream_hopstance=EachHopstance.new(parent)
       end
 
@@ -93,10 +97,10 @@ module Hopsa
       stream_hopstance.varStore.addCortege(current_var)
 
       fake_text=["#debug 1","yield #{current_var}","end"]
-      warn "FAKE TEXT: #{fake_text.join(';')}"
+      hop_warn "FAKE TEXT: #{fake_text.join(';')}"
       stream_hopstance.init(fake_text,0,local_stream,current_var,source,where)
 
-      warn "ADDED STREAM FOR GROUP: #{stream_hopstance} #{local_stream} #{current_var}"
+      hop_warn "ADDED STREAM FOR GROUP: #{stream_hopstance} #{local_stream} #{current_var}"
 
       hopstance = GroupHopstance.new(stream_hopstance)
       hopstance.varStore.copyStreamFromParent(local_stream,stream_hopstance.varStore)
@@ -119,14 +123,14 @@ module Hopsa
       # parse predicate expression, if any
       @where_expr = HopExpr.parse_cond where if where
       @group_expr = HopExpr.parse_cond group_expr
-      #warn @where_expr.inspect if @where_expr
-      #warn @group_expr.inspect
+      #hop_warn @where_expr.inspect if @where_expr
+      #hop_warn @group_expr.inspect
 
       @groups={}
 
       pos+=1
-      warn ":: #{text[pos]}"
-      warn "GROUP: #{streamvar},#{current_var},#{group_expr},#{source},#{where}"
+      hop_warn ":: #{text[pos]}"
+      hop_warn "GROUP: #{streamvar},#{current_var},#{group_expr},#{source},#{where}"
       # now create execution chains for body and final sections
       begin
         while true
@@ -135,7 +139,7 @@ module Hopsa
         end
       rescue SyntaxError
         line,pos=Statement.nextLine(text,pos)
-        warn ">>#{line}<<"
+        hop_warn ">>#{line}<<"
         if line == 'final'
           # process final section!
           pos+=1
@@ -158,7 +162,7 @@ module Hopsa
     end
 
     def hop
-      warn "START main chain (GROUP) #{@streamvar} <- #{@source} (#{@mainChain})"
+      hop_warn "START main chain (GROUP) #{@streamvar} <- #{@source} (#{@mainChain})"
       varStore.merge(@parent.varStore)
       @stream_hopstance.hop
 
@@ -173,65 +177,67 @@ module Hopsa
 
             # calculate group
             group=@group_expr.eval(self)
-            #warn "GROUP EXPR #{@group_expr.inspect} = #{@group} (#{@current_var})"
+            #hop_warn "GROUP EXPR #{@group_expr.inspect} = #{@group} (#{@current_var})"
             if @groups[group].nil?
               #create new group thread
-              warn "New GROUP: #{group}"
               @groups[group]=HopPipe.new
 
               #start group processor
-              t=Thread.new do
+              workers << Thread.new {
               #parent,pipe,store,current_var,stream_var,chain,final
-                exec=GroupExecutor.new(self,@groups[group],varStore,
-                                       @current_var,@streamvar,@mainChain,@finalChain)
-                warn "GROUP THREAD0 for #{group} - #{exec}"
-                result=exec.hop
-                warn "GROUP THREAD1: #{result}"
+                hop_warn "GROUP THREAD #{Thread.current} start for #{group}"
+                executor=GroupExecutor.new(self,@groups[group],varStore,
+                                       @current_var,@streamvar,
+                                       @mainChain,@finalChain,group)
+#                hop_warn "GROUP THREAD #{t} executor for #{group} #{executor}"
+                result=executor.hop
                 Thread.current['result']=result
-              end
-              workers.push t
+                hop_warn "GROUP THREAD #{Thread.current} end: #{result.inspect}"
+              }
             end
 
             @groups[group].put(val)
+            hop_warn "PUT #{group} #{val.inspect}"
           end #while read source
 
           # process final section
-          warn "START GROUP final chain (#{@finalChain})"
-          #warn @groups.inspect
-          @groups.each do |name,pipe|
-            warn "Finish #{name}"
+          hop_warn "START GROUP final chain (#{@finalChain})"
+          #hop_warn @groups.inspect
+          @groups.each_pair do |name,pipe|
+            hop_warn "GROUP thread finishing #{name}"
             pipe.put(nil)
           end
 
           workers.each do |t|
+            hop_warn "Try to join #{t} (#{t.status})"
             fin=t.join
-            warn "GROUP Thread #{t} joined (#{t.status})"
+            hop_warn "GROUP Thread #{t} joined (#{fin}/#{t.status})"
             #put result to output stream
             t['result'].each {|val| do_yield val}
           end
-          warn "GROUP FINISHED!\n-------------------------------"
+          hop_warn "GROUP FINISHED!\n-------------------------------"
           # write EOF to out stream
           do_yield(nil)
         rescue => e
-          warn "Exception in #{@streamvar} <- #{@source} (#{@mainChain}: #{e}. "+e.backtrace.join("\t\n")
+          hop_warn "Exception in #{@streamvar} <- #{@source} (#{@mainChain}: #{e}. "+e.backtrace.join("\t\n")
         end
       end #~Thread
     end
 
     def do_yield(hash)
       # push data into out pipe
-      warn "YYYY1 (#{hash.inspect})"
+      #hop_warn "YYYY1 (#{hash.inspect})"
       varStore.set(@streamvar,hash)
     end
 
     # read next source line and write it into @source_var
     def readSource
       value=varStore.get(@local_stream)
-      warn "GROUP READED from #{@local_stream} #{value.inspect}"
+      #hop_warn "GROUP READED from #{@local_stream} #{value.inspect}"
 
       varStore.set(@current_var, value)
 #      group=@group_expr.eval(self)
-#      warn "#{@current_var}= #{@group_expr.inspect} = #{group.inspect}"
+#      hop_warn "#{@current_var}= #{@group_expr.inspect} = #{group.inspect}"
       value
     end
   end

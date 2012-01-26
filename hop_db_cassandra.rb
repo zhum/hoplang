@@ -115,7 +115,7 @@ module Hopsa
       col_end = nil
       has_eq = false
       push_index = true
-      warn @filter_leaves.inspect
+      hop_warn @filter_leaves.inspect
       key_type = cassandra_type cfinfo.key_validation_class
       # has effect only for list of columns
       col_type = cassandra_type cfinfo.comparator_type
@@ -124,22 +124,22 @@ module Hopsa
         eop = e.op.sub /\./, ''
         if !(PUSH_OPS.include? e.op)
           push_index = false
-          warn "#{e.op} is not an index-pushable comparison"
+          hop_warn "#{e.op} is not an index-pushable comparison"
           next
         end
         if !(e.expr1.instance_of? DotExpr)
           push_index = false
-          warn "first comparison operand is not a member access"
+          hop_warn "first comparison operand is not a member access"
           next
         end
         if !(e.expr1.obj.instance_of? RefExpr) || e.expr1.obj.rname != @current_var
           push_index = false
-          warn "variable being accessed is not iteratable variable"
+          hop_warn "variable being accessed is not iteratable variable"
           next
         end
         if !(e.expr2.instance_of? ValExpr)
           push_index = false
-          warn "second comparison operand is not a value expression"
+          hop_warn "second comparison operand is not a value expression"
           next
         end
         # check if key, list of columns (2d) or column
@@ -167,13 +167,13 @@ module Hopsa
           end
           if !column_index
             push_index = false
-            warn "column #{e.expr1.field_name} not found in database"
+            hop_warn "column #{e.expr1.field_name} not found in database"
             next
           end
           column = cfinfo.column_metadata[column_index]
           if !column.index_type
             push_index = false
-            warn "column #{e.expr1.field_name} is not indexed"
+            hop_warn "column #{e.expr1.field_name} is not indexed"
             next
           end
           index_clause += 
@@ -188,7 +188,7 @@ module Hopsa
       end # @filter_leaves.each
       # check for eq in indices
       if !has_eq
-        warn "no == operator in filter expression"
+        hop_warn "no == operator in filter expression"
         push_index = false
       end
       index_clause = nil if !push_index
@@ -238,7 +238,7 @@ module Hopsa
         ind_iter = 
           IndexedIterator.new @cassandra, @column_family, @index_clause, opts
         @enumerator = ind_iter.to_enum :each
-        warn 'index filter pushed to Cassandra'
+        hop_warn 'index filter pushed to Cassandra'
       else
         opts[:start_key] = key_start if key_start
         opts[:finish_key] = key_end if key_end
@@ -248,13 +248,13 @@ module Hopsa
         if @where_expr
           if key_start || key_end || col_start || col_end
             if key_start || key_end
-              warn 'key filter pushed to Cassandra'
+              hop_warn 'key filter pushed to Cassandra'
             end
             if col_start || col_end
-              warn 'column filter pushed to Cassandra'
+              hop_warn 'column filter pushed to Cassandra'
             end
           else
-            warn 'filter not pushed to Cassandra'
+            hop_warn 'filter not pushed to Cassandra'
           end
         end
       end

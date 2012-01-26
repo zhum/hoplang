@@ -61,7 +61,7 @@ module Hopsa
 
     # ass - assigns a value to the specified reference, available for reference
     def ass(ex, val)
-      warn "#{self.class.inspect}: assignment to this value is not supported"
+      hop_warn "#{self.class.inspect}: assignment to this value is not supported"
     end
   end # HopExpr
 
@@ -83,7 +83,7 @@ module Hopsa
       @rname = rname
     end
     def eval(ex)
-#      warn "+++ #{ex.varStore.print_store}"
+#      hop_warn "+++ #{ex.varStore.print_store}"
       ex.varStore.get(@rname)
     end
     # assigns result to a variable
@@ -102,7 +102,7 @@ module Hopsa
     end
     def eval(ex)
       # not implemented
-      warn 'warning: function eval not yet implemented'
+      hop_warn 'warning: function eval not yet implemented'
       return nil
     end
   end # CallExpr
@@ -116,11 +116,11 @@ module Hopsa
     end
     def eval(ex)
       o = @obj.eval(ex)
-      warn "applying . to not a tuple (#{o.class} = #{o.inspect})" if o.class != Hash
+      hop_warn "applying . to not a tuple (#{o.class} = #{o.inspect})" if o.class != Hash
       # puts "obj = #{o.inspect}"
       r = o[@field_name]
       # puts "obj.#{field_name} = #{r}"
-      warn "no field #{@field_name} in object (#{o.inspect})" if !r
+      hop_warn "no field #{@field_name} in object (#{o.inspect})" if !r
       r
     end
     def ass(ex, val)
@@ -142,7 +142,7 @@ module Hopsa
         when 'not'
         return !val
         else
-        warn "#{@op}: unsupported unary operator"
+        hop_warn "#{@op}: unsupported unary operator"
         return nil
       end
     end
@@ -175,7 +175,7 @@ module Hopsa
           when 'or'
           return val1 || @expr2.eval(ex)
           else
-          warn "#{op}: unsupported short-cirtuit binary operator"
+          hop_warn "#{op}: unsupported short-cirtuit binary operator"
           return nil
         end
       else
@@ -222,7 +222,7 @@ module Hopsa
           when 'xor'
           res = val1 ^ val2
           else
-          warn "#{@op}: unsupported binary operator"
+          hop_warn "#{@op}: unsupported binary operator"
           return nil
         end # case(op)
         res = res.to_s if @post_conv

@@ -1,3 +1,5 @@
+require 'thread'
+
 module Hopsa
   class HopPipe
 
@@ -8,7 +10,7 @@ module Hopsa
     def get
 
       if @read_io.eof?
-        warn "EOF!"
+        hop_warn "EOF!"
         return nil
       end
 
@@ -18,18 +20,18 @@ module Hopsa
         new_data=@read_io.gets
         if new_data.nil? or /~END~RECORD~/ =~ new_data
           ret=YAML::load data
-#          warn "PIPE GET #{object_id} VAL: #{ret.inspect}"
-          warn "AND EOF!" if new_data.nil?
-          warn "PIPE NIL!!! (class=#{ret.class})" if ret.class != Hash
+#          hop_warn "PIPE GET #{object_id} VAL: #{ret.inspect}"
+          hop_warn "AND EOF!" if new_data.nil?
+          hop_warn "PIPE NIL!!! (class=#{ret.class})" if ret.class != Hash
           return ret
         else
           data+=new_data
         end
       rescue EOFError
-        warn "EOF #{object_id}"
+        hop_warn "EOF #{object_id}"
         return YAML::load data
       rescue => e
-        warn "PIPE Error #{object_id} (#{data}) #{e}"
+        hop_warn "PIPE Error #{object_id} (#{data}) #{e}"
         return YAML::load data
       end
       end
@@ -37,9 +39,9 @@ module Hopsa
       while true do
         begin
           Thread.critical=true
-#          warn "PIPE: #{@buffer.size}"
+#          hop_warn "PIPE: #{@buffer.size}"
           if @buffer.nil?
-            warn "EMTY PIPE"
+            hop_warn "EMTY PIPE"
             Thread.critical=false
             Thread.pass
           else
@@ -49,7 +51,7 @@ module Hopsa
           end
         rescue => e
           Thread.critical=false
-          warn "PIPE IS EMPTY. Wait for new values... #{e}"
+          hop_warn "PIPE IS EMPTY. Wait for new values... #{e}"
           Thread.pass
 #          sleep 1
         end
@@ -58,7 +60,7 @@ module Hopsa
 
     def put(value)
     
-#      warn "PUT #{object_id} #{value.inspect}"
+#      hop_warn "PUT #{object_id} #{value.inspect}"
       @write_io.puts(value.to_yaml)
       @write_io.puts('~END~RECORD~')
       @write_io.sync
@@ -96,6 +98,22 @@ module Hopsa
     def to_s
       "#HopChain (#{@chain.size} statements)"
     end
+
+    def executor=(executor)
+      @executor=executor
+    end
   end
+
+  def hop_warn(str)
+    if $hoplang_warn_mutex.nil?
+      $hoplang_warn_mutex=Mutex.new
+    end
+
+    $hoplang_warn_mutex.synchronize do
+      warn str
+    end
+  end 
+  Thread.abort_on_exception = true
+    
 end
 

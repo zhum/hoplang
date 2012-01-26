@@ -20,7 +20,7 @@ module Hopsa
     public
 
     def initialize(ex, dontcopy=nil)
-      warn "New varstore #{object_id}. Parent - #{ex} (#{caller})"
+      #hop_warn "New varstore #{object_id}. Parent - #{ex} (#{caller})"
       @ex=ex
 
       begin
@@ -28,7 +28,7 @@ module Hopsa
         return
       rescue NoMethodError
 
-        warn "NEW EMPTY VARSTORE"
+        hop_warn "NEW EMPTY VARSTORE"
         @scalarStore=Hash.new
         @cortegeStore=Hash.new
         @streamStore=Hash.new
@@ -36,14 +36,14 @@ module Hopsa
     end
 
     def copy(vs)
-      warn "Copy varstore #{object_id} from #{vs.object_id}. Parent - #{@ex}"
+      hop_warn "Copy varstore #{object_id} from #{vs.object_id}. Parent - #{@ex}"
       @scalarStore=vs.scalarStore.hop_clone
       @cortegeStore=vs.cortegeStore.hop_clone
       @streamStore=vs.streamStore.hop_clone
     end
 
     def merge(vs)
-      warn "Merge varstore #{object_id} with #{vs.object_id}. Parent - #{@ex}"
+      hop_warn "Merge varstore #{object_id} with #{vs.object_id}. Parent - #{@ex}"
       @scalarStore.merge(vs.scalarStore.hop_clone)
       @cortegeStore.merge(vs.cortegeStore.hop_clone)
       @streamStore.merge(vs.streamStore.hop_clone)
@@ -61,8 +61,20 @@ module Hopsa
       @cortegeStore[name]={}
     end
 
+    def delScalar(name)
+      @scalarStore.delete name
+    end
+
+    def delStream(name)
+      @streamStore.delete name
+    end
+
+    def delCortege(name)
+      @cortegeStore.delete name
+    end
+
     def getScalar(name)
-      #warn ">>Read #{name} = #{@scalarStore[hopid][name]}"
+      #hop_warn ">>Read #{name} = #{@scalarStore[hopid][name]}"
 
       #!!!! TODO - only in debug version
       raise VarNotFound unless @scalarStore.has_key? name
@@ -95,7 +107,7 @@ module Hopsa
       #!!!! TODO - only in debug version
       raise VarNotFound unless @cortegeStore.has_key? name
       val.each_pair{|key,value|
-        #warn ">>SET #{name}: #{hopid} #{name}.#{key} = #{value}"
+        #hop_warn ">>SET #{name}: #{hopid} #{name}.#{key} = #{value}"
         @cortegeStore[name][key]=value
       }
     end

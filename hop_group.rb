@@ -3,7 +3,7 @@ module Hopsa
   class GroupExecutor < Hopstance
     def initialize(parent,pipe,store,current_var,stream_var,chain,final)
       super(parent)
-      varStore=store.clone
+      varStore.merge(parent.varStore)
       @mainChain=chain
       @finalChain=final
       @current_var=current_var
@@ -14,18 +14,23 @@ module Hopsa
     end
 
     def do_yield(hash)
+      warn "GROUP OUT: #{hash.inspect}"
       @result.push hash
     end
 
     def hop
+      warn "GROUP loop #{@current_var}"
       loop do
         var=@pipe.get
+        warn "GROUP: GOT #{var.inspect}"
         if(var.nil?)
           @finalChain.hop
           return @result
         end
         varStore.set(@current_var,var)
+#        warn ".....#{varStore.print_store}"
         @mainChain.hop
+        warn "main success"
       end
     end
   end
@@ -86,13 +91,16 @@ module Hopsa
 
       stream_hopstance.varStore.addStream(local_stream)
       stream_hopstance.varStore.addCortege(current_var)
-      stream_hopstance.init(text,pos,local_stream,current_var,source,where)
+
+      fake_text=["#debug 1","yield #{current_var}","end"]
+      warn "FAKE TEXT: #{fake_text.join(';')}"
+      stream_hopstance.init(fake_text,0,local_stream,current_var,source,where)
 
       warn "ADDED STREAM FOR GROUP: #{stream_hopstance} #{local_stream} #{current_var}"
 
       hopstance = GroupHopstance.new(stream_hopstance)
       hopstance.varStore.copyStreamFromParent(local_stream,stream_hopstance.varStore)
-      hopstance.varStore.addScalar(current_var)
+      hopstance.varStore.addCortege(current_var)
       parent.varStore.addStream(streamvar)
       hopstance.varStore.copyStreamFromParent(streamvar,parent.varStore)
 
@@ -151,63 +159,79 @@ module Hopsa
 
     def hop
       warn "START main chain (GROUP) #{@streamvar} <- #{@source} (#{@mainChain})"
-      varStore.merge(@parent.varStore.clone)
+      varStore.merge(@parent.varStore)
       @stream_hopstance.hop
+
       new_thread do
         begin
-          worers=[]
-          while not (self.readSource).nil?
+          workers=[]
+          while not (val=readSource).nil?
             if @where_expr && !@where_expr.eval(self)
               #puts @where_expr.eval(self)
               next
             end
 
             # calculate group
-            @group=@group_expr.eval(self)
-            if @groups[@group].nil?
+            group=@group_expr.eval(self)
+            #warn "GROUP EXPR #{@group_expr.inspect} = #{@group} (#{@current_var})"
+            if @groups[group].nil?
               #create new group thread
-              @groups[@group]=HopPipe.new
+              warn "New GROUP: #{group}"
+              @groups[group]=HopPipe.new
 
               #start group processor
-              workers.push new_thread do
-                exec=GroupExecutor.new(self,@groups[@group],varStore,
-                                       @mainChain,@finalChain)
-                Thread.current['result']=exec.hop
+              t=Thread.new do
+              #parent,pipe,store,current_var,stream_var,chain,final
+                exec=GroupExecutor.new(self,@groups[group],varStore,
+                                       @current_var,@streamvar,@mainChain,@finalChain)
+                warn "GROUP THREAD0 for #{group} - #{exec}"
+                result=exec.hop
+                warn "GROUP THREAD1: #{result}"
+                Thread.current['result']=result
               end
+              workers.push t
             end
 
-            @groups[@group].put(varStore.get(@current_var))
+            @groups[group].put(val)
           end #while read source
 
           # process final section
           warn "START GROUP final chain (#{@finalChain})"
-          @groups.each do |pipe|
+          #warn @groups.inspect
+          @groups.each do |name,pipe|
+            warn "Finish #{name}"
             pipe.put(nil)
           end
 
-          workers.each do |thread|
-            thread.join
+          workers.each do |t|
+            fin=t.join
+            warn "GROUP Thread #{t} joined (#{t.status})"
             #put result to output stream
-            thread['result'].each {|val| do_yield val}
+            t['result'].each {|val| do_yield val}
           end
           warn "GROUP FINISHED!\n-------------------------------"
           # write EOF to out stream
           do_yield(nil)
         rescue => e
-          warn "Exception in #{@streamvar} <- #{@source} (#{@mainChain}: #{e}. #{e.backtrace}"
+          warn "Exception in #{@streamvar} <- #{@source} (#{@mainChain}: #{e}. "+e.backtrace.join("\t\n")
         end
       end #~Thread
     end
 
     def do_yield(hash)
       # push data into out pipe
+      warn "YYYY1 (#{hash.inspect})"
       varStore.set(@streamvar,hash)
     end
 
     # read next source line and write it into @source_var
     def readSource
       value=varStore.get(@local_stream)
+      warn "GROUP READED from #{@local_stream} #{value.inspect}"
+
       varStore.set(@current_var, value)
+#      group=@group_expr.eval(self)
+#      warn "#{@current_var}= #{@group_expr.inspect} = #{group.inspect}"
       value
     end
   end

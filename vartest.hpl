@@ -1,8 +1,8 @@
 var abc
 #  test
 abc = 1
-yield abc + 1, 10
-out = each x in ttt where x.np > 15
+#yield count => abc + 1, sum => 10
+out = each x in ttt2 where x.np > 15
  var delta
  delta = x.end - x.start * 1 + 0
  var i
@@ -11,7 +11,7 @@ out = each x in ttt where x.np > 15
   if i == 0
     yield d => delta, u => x.user, i => i
   else
-    yield d => delta, u => x.user, i => i + 1 
+    yield d => delta, u => x.user, i => i + 1
   end
   i = i + 1
  end
@@ -21,10 +21,10 @@ out2 = seq y in out
  var s, n
  s = s + y.d
  n = n + 1
-# debug n
+ debug y
  yield sum2 => s, avg2 => s / n, u => y.u
 final
- yield sum2 => s + 1024, avg2 => s + 1024 / ( n + 1 ), u => 'final_user' 
+ yield sum2 => s + 1024, avg2 => s + 1024 / ( n + 1 ), u => 'final_user'
 end
 
 out3 = seq z in out2
@@ -37,17 +37,22 @@ out4 = seq z in out3
   var y
   y = y + z.sum3
   yield u => z.u, sum4 => y, avg4 => z.avg3
+#  debug z
 end
 
 out5 = group z by z.u from out4
   var sum
   var count
+  var avg5
+  var u
   sum = sum + z.sum4
   count = count + 1
+  avg5 = sum / count
+  u = z.u
 final
-  yield u => z.u, count => count, sum => sum
+  yield count => count, sum => sum, my_avg => avg5, user => u
 end
- 
+
 print out5
 
 #include test_include.hpl
@@ -57,7 +62,7 @@ print out5
 # yield key => t.key, ncpus => t.ncpus
 #end
 
-#out4 = seq t in out3 
+#out4 = seq t in out3
 # var ncpus, n
 # ncpus = ncpus + t.ncpus
 # n = n + 1

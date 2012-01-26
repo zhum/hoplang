@@ -298,50 +298,44 @@ module Hopsa
       # parse expressions
       #puts $2
       elist = HopExpr.parse_list $2
-      #puts elist
-      elist.each do |e|
-        name = e.name
-        if name == ''
-          name = "field_#{field_num}"
+#      warn "DDDDDDDDDDDD:: #{elist.size} / #{elist[0].class} / #{elist[0]}"
+      if (elist.size == 1) and (elist[0].name == '')
+        @reference=true
+        @expression = elist[0]
+        warn "TRUE! #{@expression.inspect}"
+      else
+        @reference=false
+        elist.each do |e|
+          name = e.name
+          if name == ''
+            name = "field_#{field_num}"
+          end
+          field_num += 1
+          @fields[name] = e
         end
-        field_num += 1
-        @fields[name] = e
+        @fields['__hoplang_cols_order']=elist.map{|e| e.name}.join(',')
       end
-      @fields['__hoplang_cols_order']=elist.map{|e| e.name}.join(',')
-
-# removed zhumcode begin
-      # ret=$2
-      # while not ret.nil?;
-      #   expr,ret = HopExpression.line2expr(ret)
-      #   ret.match /^(=>\s*(\S+))?(.*)/
-      #   unless $1.nil?
-      #     # named field
-      #     field_name=$2
-      #   else
-      #     # generate field name
-      #     field_name="field_#{field_num}"
-      #     field_num+=1
-      #   end
-      #   @fields[field_name]=expr
-
-      #   ret=$3
-      #   # remove separators...
-      #   unless ret.nil?
-      #     ret.match /^\s*,(.*)/
-      #     ret=$1
-      #   end
-      # end
-# removed zhumcode end
 
       return self,pos+1
     end
 
     def hop
       ret = {}
-      @fields.map do |name, expr|
-        ret[name] = expr.eval(self) unless name == '__hoplang_cols_order'
+      if @reference
+        # one variable
+        ret=@expression.eval(self)
+#        @fields.map do |name, expr|
+#          ret[name] = expr.eval(self) unless name == '__hoplang_cols_order'
+#        end
+#        warn "WWWWWWWWWW: #{value.inspect}"
+#        {"__hoplang_cols_order"=>"u,sum4,avg4", "avg4"=>"116.0", "sum4"=>"464.0", "u"=>"vasya16"}
+      else
+        # named list
+        @fields.map do |name, expr|
+          ret[name] = expr.eval(self) unless name == '__hoplang_cols_order'
+        end
+        ret['__hoplang_cols_order'] = @fields['__hoplang_cols_order']
       end
-      ret['__hoplang_cols_order'] = @fields['__hoplang_cols_order']
       @parent.do_yield(ret)
     end
 

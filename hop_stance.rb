@@ -144,7 +144,7 @@ module Hopsa
     end
 
     def hop
-      warn "START main chain #{@streamvar} <- #{@source} (#{@mainChain})"
+      warn "START main chain #{self.to_s} (#{@mainChain})"
       warn "PARENT VARSTORE:\n#{@parent.varStore.print_store}"
       varStore.merge(@parent.varStore)
       new_thread do
@@ -158,10 +158,10 @@ module Hopsa
             @mainChain.hop
           end
           # process final section
-          warn "START final chain (#{@finalChain})"
+          warn "START final chain #{self.to_s} (#{@finalChain})"
           @finalChain.hop
 
-          warn "FINISHED!\n-------------------------------"
+          warn "FINISHED! #{self.to_s}\n-------------------------------"
           # write EOF to out stream
           do_yield(nil)
 #          while not (val=outPipe.get).nil?
@@ -170,7 +170,7 @@ module Hopsa
 #            warn "\n"
 #          end
         rescue => e
-          warn "Exception in #{@streamvar} <- #{@source} (#{@mainChain}: #{e}. #{e.backtrace}"
+          warn "Exception in #{self.to_s} (#{@mainChain}: #{e}. "+e.backtrace.join("\t\n")
         end
       end #~Thread
     end

@@ -22,11 +22,10 @@ module Hopsa
       hop_warn "GROUP loop #{@name}"
       loop do
         var=@pipe.get
-        hop_warn "GROUP: GOT #{var.inspect}"
+        hop_warn "GROUP #{@name}: GOT #{var.inspect}"
         if(var.nil?)
-          hop_warn "GROUP #{@name} final start"
+          hop_warn "GROUP #{@name} final start -> #{@stream_var}"
           @finalChain.hop
-          hop_warn "-----------"
           result=varStore.get(@stream_var)
           hop_warn "GROUP #{@name} final end (#{result})"
           return result
@@ -53,7 +52,7 @@ module Hopsa
 
       raise UnexpectedEOF if line.nil?
       unless line =~
-        /^(\S+)\s*=\s*group\s+(\S+)\s+by\s+(.+)\s+from\s+(\S+)(\s+where\s+(.*))?/
+        /^(\S+)\s*=\s*group\s+(\S+)\s+by\s+(.+)\s+in\s+(\S+)(\s+where\s+(.*))?/
 
         raise SyntaxError.new(line)
       end

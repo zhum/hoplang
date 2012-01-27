@@ -5,14 +5,14 @@ module Hopsa
     class << self
       def load
         @data=YAML.load(File.open(CONFIG_FILE, "r"))
-        warn "CONFIG YAML: #{@data.inspect}"
+        hop_warn "CONFIG YAML: #{@data.inspect}"
       end
 
       def [](key)
         begin
           return @data[key]
         rescue
-          warn "Warning: config key '#{key}' not found"
+          hop_warn "Warning: config key '#{key}' not found"
           return nil
         end
       end

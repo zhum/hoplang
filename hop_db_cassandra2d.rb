@@ -18,7 +18,7 @@ module Hopsa
           @kvenum = @kv[1].to_enum :each
         end
       rescue StopIteration
-      end      
+      end
 
       # @kv == nil - finished iteration
       value = nil
@@ -41,7 +41,7 @@ module Hopsa
         end
       end
       value = nil if @max_items != -1 && @items_read > @max_items
-      warn 'finished cassandra2d iteration' if !value
+      hop_warn 'finished cassandra2d iteration' if !value
       varStore.set @current_var, value
     end # readSource
   end # Cassandra2dHopstance

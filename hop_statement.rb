@@ -73,7 +73,7 @@ module Hopsa
 
 #!! simplify regexp
           # group by
-        when /^((\S+)\s*=\s*)?group\s+(\S+)\s+by\s+(\S+)(\s+where\s+(.*))?/
+        when /^((\S+)\s*=\s*)?group\s+(\S+)\s+by\s+(\.+)\s+in\s+(\S+)(\s+where\s+(.*))?/
           return GroupHopstance.createNewRetLineNum(parent, text, startLine)
 
           # while loop

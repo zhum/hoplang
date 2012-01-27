@@ -59,7 +59,7 @@ module Hopsa
     end
 
     def put(value)
-    
+
 #      hop_warn "PUT #{object_id} #{value.inspect}"
       @write_io.puts(value.to_yaml)
       @write_io.puts('~END~RECORD~')
@@ -67,9 +67,9 @@ module Hopsa
     end
 
     def empty?
-    
+
       return @read_io.eof?
-      
+
       return True if @buffer.nil?
       return @buffer.empty?
     end
@@ -104,16 +104,23 @@ module Hopsa
     end
   end
 
-  def hop_warn(str)
-    if $hoplang_warn_mutex.nil?
-      $hoplang_warn_mutex=Mutex.new
+  def self.hop_warn(str)
+    $hoplang_warn_mutex ||= Mutex.new
+
+    if $hoplang_logger.nil?
+      $hoplang_logger=File.open('hoplog.log','a')
     end
 
     $hoplang_warn_mutex.synchronize do
-      warn str
+      $hoplang_logger.print str,"\n"
     end
-  end 
+  end
+
+  def hop_warn(str)
+    Hopsa::hop_warn(str)
+  end
+
   Thread.abort_on_exception = true
-    
+
 end
 

@@ -14,6 +14,7 @@ module Hopsa
       begin
         if !@kv
           @kv = @enumerator.next
+          #puts @kv[1].inspect
           @kvenum = @kv[1].to_enum :each
         end
       rescue StopIteration
@@ -25,7 +26,7 @@ module Hopsa
         begin
           colv, valv = @kvenum.next
           @items_read += 1
-          value = {@keyname => @kv[0], @colname => colv, @valuename => @valv}
+          value = {@keyname => @kv[0], @colname => colv, @valuename => valv}
           @columns_to_long.each do |column_name|
             value[column_name] = to_long value[column_name]
           end
@@ -41,7 +42,6 @@ module Hopsa
       end
       value = nil if @max_items != -1 && @items_read > @max_items
       warn 'finished cassandra2d iteration' if !value
-      # puts value.inspect
       varStore.set @current_var, value
     end # readSource
   end # Cassandra2dHopstance

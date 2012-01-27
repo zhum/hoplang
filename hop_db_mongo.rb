@@ -39,7 +39,7 @@ module Hopsa
 
       if not cfg['user'].nil?
         if db.authenticate(cfg['user'], cfg['password'])
-          warn "Auth with MongoDB failed\n"
+          hop_warn "Auth with MongoDB failed\n"
         end
       end
       @push_index = true
@@ -55,7 +55,7 @@ module Hopsa
       begin
         val = @enumerator.next
       rescue StopIteration
-        warn "finished iteration"
+        hop_warn "finished iteration"
       end
 #      if not val.nil?
 #        k,v=kv[0],kv[1]
@@ -101,7 +101,7 @@ module Hopsa
       # check leaves and build index clause
       index_clause = []
       has_eq = nil
-      warn @filter_leaves.inspect
+      hop_warn @filter_leaves.inspect
       @filter_leaves.each do |e|
         return nil if !(PUSH_OPS.include? e.op)
         return nil if !(e.expr1.instance_of? DotExpr)
@@ -118,7 +118,7 @@ module Hopsa
         has_eq = true if e.op == '=='
       end
       if !has_eq
-        warn "no == operator in filter expression"
+        hop_warn "no == operator in filter expression"
         return nil
       end
       index_clause
@@ -131,11 +131,11 @@ module Hopsa
       if @index_clause && @push_index
         ind_iter = IndexedIterator.new @db, @collection, @index_clause
         @enumerator = ind_iter.to_enum(:each)
-        warn 'index pushed to Mongo'
+        hop_warn 'index pushed to Mongo'
       else
         ind_iter = IndexedIterator.new @db, @collection, nil
         @enumerator = ind_iter.to_enum(:each)
-        warn 'index not pushed to Mongo' if @where_expr
+        hop_warn 'index not pushed to Mongo' if @where_expr
       end
     end
   end

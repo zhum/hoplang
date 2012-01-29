@@ -5,7 +5,12 @@ class Hash
   def hop_clone
     ret=self.clone
     self.each do |k,v|
-      ret[k]=v.clone
+      begin
+#        hop_warn "CLONE: #{k} => #{v.inspect}"
+        ret[k]=v.hop_clone
+      rescue
+        ret[k]=v.clone
+      end
     end
     ret
   end
@@ -15,7 +20,7 @@ module Hopsa
   class VarStore
 
     protected
-    attr_reader :scalarStore, :streamStore, :cortegeStore
+    attr_reader :scalarStore, :streamStore, :cortegeStore, :ex
 
     public
 
@@ -36,14 +41,14 @@ module Hopsa
     end
 
     def copy(vs)
-      hop_warn "Copy varstore #{object_id} from #{vs.object_id}. Parent - #{@ex}"
+      hop_warn "Copy varstore #{@ex.to_s} from #{vs.ex.to_s}. (#{@ex})"
       @scalarStore=vs.scalarStore.hop_clone
       @cortegeStore=vs.cortegeStore.hop_clone
       @streamStore=vs.streamStore.hop_clone
     end
 
     def merge(vs)
-      hop_warn "Merge varstore #{object_id} with #{vs.object_id}. Parent - #{@ex}"
+      hop_warn "Merge varstore #{@ex.to_s} from #{vs.ex.to_s}. (#{@ex})"
       @scalarStore.merge(vs.scalarStore.hop_clone)
       @cortegeStore.merge(vs.cortegeStore.hop_clone)
       @streamStore.merge(vs.streamStore.hop_clone)
@@ -136,7 +141,7 @@ module Hopsa
     end
 
     def print_store
-      ret=''
+      ret="VARSTORE [#{@ex.to_s}]\n"
       each do |name,var|
         ret+="::> #{name} = #{var.inspect}\n"
       end

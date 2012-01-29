@@ -57,6 +57,13 @@ module Hopsa
       ''
     end
 
+    def executor=(ex)
+    end
+
+    def hop_clone
+      self
+    end
+
     # eval - evaluate in current execution context
 
     # ass - assigns a value to the specified reference, available for reference
@@ -83,7 +90,7 @@ module Hopsa
       @rname = rname
     end
     def eval(ex)
-#      hop_warn "+++ #{ex.varStore.print_store}"
+#      hop_warn "REF #{@rname} =>#{ex.to_s}\n#{ex.varStore.print_store}"
       ex.varStore.get(@rname)
     end
     # assigns result to a variable
@@ -91,6 +98,7 @@ module Hopsa
       ex.varStore.set(@rname, val)
       return nil
     end
+
   end # RefExpr
 
   class CallExpr < HopExpr

@@ -23,7 +23,7 @@ module Hopsa
 
     # parent = top block
     def initialize(parent=nil)
-      hop_warn ">>Statement #{parent.class.to_s}:#{self.class.to_s}"
+      hop_warn ">>Statement #{parent.class.to_s} => #{self.class.to_s}"
       @parent=parent
       @finished=false
       @started=false
@@ -38,6 +38,27 @@ module Hopsa
     def hop
       @mainChain.hop
 
+    end
+
+    def executor=(ex)
+      @parent=ex
+    end
+
+    def hop_clone
+      hop_warn "No clone for #{self.to_s}"
+      self
+    end
+
+    def dump_parents
+      parent=self
+      begin
+        until parent.nil?
+          hop_warn "^^ #{parent.to_s}"
+          parent=parent.parent
+        end
+      rescue => e
+        hop_warn "^^^^^ exception: #{e.message}"
+      end
     end
 
     # creates new Hopstance and returns it and next text line
@@ -73,7 +94,8 @@ module Hopsa
 
 #!! simplify regexp
           # group by
-        when /^((\S+)\s*=\s*)?group\s+(\S+)\s+by\s+(\.+)\s+in\s+(\S+)(\s+where\s+(.*))?/
+
+        when /^((\S+)\s*=\s*)?group\s+(\S+)\s+by\s+(.+)\s+in\s+(\S+)(\s+where\s+(.*))?/
           return GroupHopstance.createNewRetLineNum(parent, text, startLine)
 
           # while loop
@@ -120,8 +142,7 @@ module Hopsa
 
           # ooops....
         else
-          hop_warn "Cannot understand '#{startLine}: #{line}'"
-          raise SyntaxError.new #(line)
+          raise SyntaxError.new "Cannot understand '#{startLine}: #{line}'"
         end # case
       end
     end  # ~createNewRetLineNum
@@ -160,6 +181,19 @@ module Hopsa
     def else_chain
       @finalChain
     end
+
+    def initialize(parent,main=nil,final=nil,cond=nil)
+      super(parent)
+      @mainChain=main
+      @finalChain=final
+      @cond_expr=cond
+    end
+
+    def hop_clone
+      return IfStatement.new(@parent,@mainChain.hop_clone,
+                             @finalChain.hop_clone, @cond_expr.hop_clone)
+    end
+
     def self.createNewRetLineNum(parent,text,startLine)
       return IfStatement.new(parent).createNewRetLineNum(parent,text,startLine)
     end
@@ -209,6 +243,16 @@ module Hopsa
   class WhileStatement < Statement
     def self.createNewRetLineNum(parent,text,startLine)
       return WhileStatement.new(parent).createNewRetLineNum(parent,text,startLine)
+    end
+
+    def initialize(parent,main=nil,cond=nil)
+      super(parent)
+      @mainChain=main
+      @cond_expr=cond
+    end
+
+    def hop_clone
+      return WhileStatement.new(@parent,@mainChain.hop_clone,@cond_expr.hop_clone)
     end
 
     def createNewRetLineNum(parent,text,startLine)
@@ -262,6 +306,10 @@ module Hopsa
       @expression=expr
     end
 
+    def hop_clone
+      LetStatement.new(@parent,@expression.hop_clone)
+    end
+
     def hop
       #!!!!!!!!!!!!!!!!TODO!!!!!!!!!!!!!!!!!!
       #!!!!!! scalar/cortege !!!!!!!!!!!!!!!!
@@ -270,15 +318,20 @@ module Hopsa
 
       #value=@expression.evaluate(@parent)
       #VarStor.set(@parent, @varname, value)
-      @expression.eval @parent
+      @expression.eval self
     end
   end
 
   class YieldStatement < Statement
-    def initialize(parent)
+    def initialize(parent,fields=nil)
       @parent=parent
       @id=Hopstance.nextId
       @started=false
+      @fields=fields
+    end
+
+    def hop_clone
+      return YieldStatement.new(@parent,@fields.hop_clone)
     end
 
     def self.createNewRetLineNum(parent,text,pos)
@@ -356,6 +409,14 @@ module Hopsa
       return self, pos + 1
     end # createNewRetLineNum
 
+    def initialize(parent,expr=nil)
+      super(parent)
+      @expr=expr
+    end
+
+    def hop_clone
+      return DebugStatement.new(@parent,@expr.hop_clone)
+    end
     def hop
       hop_warn "DEBUG(#{@line}): #{@expr.eval(@parent)}"
     end

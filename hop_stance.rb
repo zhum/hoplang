@@ -145,7 +145,7 @@ module Hopsa
 
     def hop
       hop_warn "START main chain #{self.to_s} (#{@mainChain})"
-      hop_warn "PARENT VARSTORE:\n#{@parent.varStore.print_store}"
+#      hop_warn "PARENT VARSTORE:\n#{@parent.varStore.print_store}"
       varStore.merge(@parent.varStore)
       new_thread do
         begin
@@ -177,6 +177,7 @@ module Hopsa
 
     def do_yield(hash)
       # push data into out pipe
+#      hop_warn "!!! YIELD #{@streamvar} #{hash.inspect}"
       varStore.set(@streamvar,hash)
     end
 
@@ -247,6 +248,7 @@ module Hopsa
 
     def readSource
       value=varStore.get(@source)
+#      hop_warn "DD val=#{value.inspect}"
       return nil if value.nil?
       if(not Config['local'].nil? and
          Config['local']['out_format'] == 'csv')

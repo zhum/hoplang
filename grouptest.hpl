@@ -1,12 +1,12 @@
-out = group x by x.user in ttt2 where x.np > 15
+out = group x by x.user in ttt2 where x.np > 1
  var delta
- var user
  var sum
+ var count
  delta = x.end - x.start * 1 + 0
  sum = sum+delta
- user = x.user
+ count = count + 1
 final
-  yield user => user, sum => sum
+  yield user => x.user, sum => sum / count
 end
 
 print out

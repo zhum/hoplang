@@ -1,7 +1,8 @@
 user, np, start, end, task
-vasya1,16,101,202,task_1
-vasya1,16,301,202,task_1
-vasya1,16,401,202,task_1
-vasya2,26,102,204,task_2
-vasya3,36,103,206,task_3
-vasya4,46,104,208,task_4
+vasya1,16,200,0,task_1
+vasya1,16,300,0,task_1
+vasya1,16,400,0,task_1
+vasya1,16,500,0,task_1
+vasya2,16,400,200,task_1
+vasya2,16,800,200,task_1
+vasya3,16,900,200,task_1

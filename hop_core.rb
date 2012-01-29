@@ -3,8 +3,13 @@ require 'thread'
 module Hopsa
   class HopPipe
 
-    def initialize
-      @read_io, @write_io = File.pipe
+    def initialize(copy=nil)
+      copy ||= File.pipe
+      @read_io, @write_io = copy
+    end
+
+    def hop_clone
+      HopsaPipe.new(@read_io)
     end
 
     def get
@@ -70,7 +75,7 @@ module Hopsa
 
       return @read_io.eof?
 
-      return True if @buffer.nil?
+      return true if @buffer.nil?
       return @buffer.empty?
     end
 
@@ -78,6 +83,8 @@ module Hopsa
 #      "#HopPipe: #{@buffer.size} elements inside."
       @read_io.nil? ? "HopPipe: non-init" : "HopPipe: is #{object_id}"
     end
+    private
+      attr_reader :read_io, :write_io
   end
 
   class HopChain
@@ -99,9 +106,24 @@ module Hopsa
       "#HopChain (#{@chain.size} statements)"
     end
 
+    def hop_clone
+      ret=HopChain.new(@executor)
+      @chain.each {|el|
+        ret.add el.hop_clone
+      }
+      ret
+    end
+
     def executor=(executor)
       @executor=executor
+      @chain.each do |el|
+        el.executor=executor
+      end
     end
+
+    attr_reader :executor
+    attr_reader :chain
+
   end
 
   def self.hop_warn(str)

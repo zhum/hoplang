@@ -23,7 +23,7 @@ module Hopsa
 
     # parent = top block
     def initialize(parent=nil)
-      warn ">>Statement #{parent.class.to_s}:#{self.class.to_s}"
+      hop_warn ">>Statement #{parent.class.to_s} => #{self.class.to_s}"
       @parent=parent
       @finished=false
       @started=false
@@ -40,12 +40,33 @@ module Hopsa
 
     end
 
+    def executor=(ex)
+      @parent=ex
+    end
+
+    def hop_clone
+      hop_warn "No clone for #{self.to_s}"
+      self
+    end
+
+    def dump_parents
+      parent=self
+      begin
+        until parent.nil?
+          hop_warn "^^ #{parent.to_s}"
+          parent=parent.parent
+        end
+      rescue => e
+        hop_warn "^^^^^ exception: #{e.message}"
+      end
+    end
+
     # creates new Hopstance and returns it and next text line
     # ret: Hopstance,newStartLine
     def self.createNewRetLineNum(parent,text,startLine)
       startLine -=1
       while (true)
-        #warn "PROCESS #{text[startLine]}"
+        #hop_warn "PROCESS #{text[startLine]}"
         startLine+=1
         line,startLine=Statement.nextLine(text,startLine)
 
@@ -53,7 +74,7 @@ module Hopsa
         case line
           # comment
         when /^\s*#/, /^$/
-          warn "Comment #{line.chomp}"
+          hop_warn "Comment #{line.chomp}"
           redo
 
 #!! simplify regexp
@@ -79,7 +100,8 @@ module Hopsa
 
 #!! simplify regexp
           # group by
-        when /^((\S+)\s*=\s*)?group\s+(\S+)\s+by\s+(\S+)(\s+where\s+(.*))?/
+
+        when /^((\S+)\s*=\s*)?group\s+(\S+)\s+by\s+(.+)\s+in\s+(\S+)(\s+where\s+(.*))?/
           return GroupHopstance.createNewRetLineNum(parent, text, startLine)
 
           # while loop
@@ -126,19 +148,18 @@ module Hopsa
 
           # ooops....
         else
-          warn "Cannot understand '#{startLine}: #{line}'"
-          raise SyntaxError.new #(line)
+          raise SyntaxError.new "Cannot understand '#{startLine}: #{line}'"
         end # case
       end
     end  # ~createNewRetLineNum
 
     def self.include_file(file,txt,pos)
-      warn "Include #{file}"
+      hop_warn "Include #{file}"
       IO.foreach(file) do |line|
           txt.insert(pos,line)
           pos+=1
       end
-      warn "Included"
+      hop_warn "Included"
     end
 
     def do_yield(hash)
@@ -166,6 +187,19 @@ module Hopsa
     def else_chain
       @finalChain
     end
+
+    def initialize(parent,main=nil,final=nil,cond=nil)
+      super(parent)
+      @mainChain=main
+      @finalChain=final
+      @cond_expr=cond
+    end
+
+    def hop_clone
+      return IfStatement.new(@parent,@mainChain.hop_clone,
+                             @finalChain.hop_clone, @cond_expr.hop_clone)
+    end
+
     def self.createNewRetLineNum(parent,text,startLine)
       return IfStatement.new(parent).createNewRetLineNum(parent,text,startLine)
     end
@@ -173,7 +207,7 @@ module Hopsa
       line,pos = Statement.nextLine(text,startLine);
       raise SyntaxError if !line.match /\s*if\s+(.*)/
       @cond_expr = HopExpr.parse_cond $1
-      warn @cond_expr.inspect
+      hop_warn @cond_expr.inspect
       pos += 1
       cur_chain = if_chain
       while true
@@ -217,11 +251,21 @@ module Hopsa
       return WhileStatement.new(parent).createNewRetLineNum(parent,text,startLine)
     end
 
+    def initialize(parent,main=nil,cond=nil)
+      super(parent)
+      @mainChain=main
+      @cond_expr=cond
+    end
+
+    def hop_clone
+      return WhileStatement.new(@parent,@mainChain.hop_clone,@cond_expr.hop_clone)
+    end
+
     def createNewRetLineNum(parent,text,startLine)
       line,pos = Statement.nextLine(text,startLine);
       raise SyntaxError if !line.match /\s*while\s+(.*)/
       @cond_expr = HopExpr.parse_cond $1
-      warn @cond_expr.inspect
+      hop_warn @cond_expr.inspect
       pos += 1
       begin
         while true
@@ -268,6 +312,10 @@ module Hopsa
       @expression=expr
     end
 
+    def hop_clone
+      LetStatement.new(@parent,@expression.hop_clone)
+    end
+
     def hop
       #!!!!!!!!!!!!!!!!TODO!!!!!!!!!!!!!!!!!!
       #!!!!!! scalar/cortege !!!!!!!!!!!!!!!!
@@ -276,15 +324,20 @@ module Hopsa
 
       #value=@expression.evaluate(@parent)
       #VarStor.set(@parent, @varname, value)
-      @expression.eval @parent
+      @expression.eval self
     end
   end
 
   class YieldStatement < Statement
-    def initialize(parent)
+    def initialize(parent,fields=nil)
       @parent=parent
       @id=Hopstance.nextId
       @started=false
+      @fields=fields
+    end
+
+    def hop_clone
+      return YieldStatement.new(@parent,@fields.hop_clone)
     end
 
     def self.createNewRetLineNum(parent,text,pos)
@@ -304,50 +357,44 @@ module Hopsa
       # parse expressions
       #puts $2
       elist = HopExpr.parse_list $2
-      #puts elist
-      elist.each do |e|
-        name = e.name
-        if name == ''
-          name = "field_#{field_num}"
+#      hop_warn "DDDDDDDDDDDD:: #{elist.size} / #{elist[0].class} / #{elist[0]}"
+      if (elist.size == 1) and (elist[0].name == '')
+        @reference=true
+        @expression = elist[0]
+        hop_warn "TRUE! #{@expression.inspect}"
+      else
+        @reference=false
+        elist.each do |e|
+          name = e.name
+          if name == ''
+            name = "field_#{field_num}"
+          end
+          field_num += 1
+          @fields[name] = e
         end
-        field_num += 1
-        @fields[name] = e
+        @fields['__hoplang_cols_order']=elist.map{|e| e.name}.join(',')
       end
-      @fields['__hoplang_cols_order']=elist.map{|e| e.name}.join(',')
-
-# removed zhumcode begin
-      # ret=$2
-      # while not ret.nil?;
-      #   expr,ret = HopExpression.line2expr(ret)
-      #   ret.match /^(=>\s*(\S+))?(.*)/
-      #   unless $1.nil?
-      #     # named field
-      #     field_name=$2
-      #   else
-      #     # generate field name
-      #     field_name="field_#{field_num}"
-      #     field_num+=1
-      #   end
-      #   @fields[field_name]=expr
-
-      #   ret=$3
-      #   # remove separators...
-      #   unless ret.nil?
-      #     ret.match /^\s*,(.*)/
-      #     ret=$1
-      #   end
-      # end
-# removed zhumcode end
 
       return self,pos+1
     end
 
     def hop
       ret = {}
-      @fields.map do |name, expr|
-        ret[name] = expr.eval(self) unless name == '__hoplang_cols_order'
+      if @reference
+        # one variable
+        ret=@expression.eval(self)
+#        @fields.map do |name, expr|
+#          ret[name] = expr.eval(self) unless name == '__hoplang_cols_order'
+#        end
+#        hop_warn "WWWWWWWWWW: #{value.inspect}"
+#        {"__hoplang_cols_order"=>"u,sum4,avg4", "avg4"=>"116.0", "sum4"=>"464.0", "u"=>"vasya16"}
+      else
+        # named list
+        @fields.map do |name, expr|
+          ret[name] = expr.eval(self) unless name == '__hoplang_cols_order'
+        end
+        ret['__hoplang_cols_order'] = @fields['__hoplang_cols_order']
       end
-      ret['__hoplang_cols_order'] = @fields['__hoplang_cols_order']
       @parent.do_yield(ret)
     end
 
@@ -364,12 +411,20 @@ module Hopsa
       raise SyntaxError if !line.match /debug\s+(.*)/
       @line=startLine
       @expr = HopExpr.parse_cond $1
-      warn "debug: #{@expr.inspect}"
+      hop_warn "debug: #{@expr.inspect}"
       return self, pos + 1
     end # createNewRetLineNum
 
+    def initialize(parent,expr=nil)
+      super(parent)
+      @expr=expr
+    end
+
+    def hop_clone
+      return DebugStatement.new(@parent,@expr.hop_clone)
+    end
     def hop
-      warn "DEBUG(#{@line}): #{@expr.eval(@parent)}"
+      hop_warn "DEBUG(#{@line}): #{@expr.eval(@parent)}"
     end
   end # DebugStatement
 end

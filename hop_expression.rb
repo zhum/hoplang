@@ -8,7 +8,7 @@ module Hopsa
   # base class for hoplang expression
   class HopExpr
 
-    # chains expressions (Citrus matches) with operators (Citrus matches), 
+    # chains expressions (Citrus matches) with operators (Citrus matches),
     # returns the resulting hop expression
     # matches must be of the same precedence
     def self.chain(emlist, opmlist)
@@ -17,7 +17,7 @@ module Hopsa
       self.chain_helper elist, oplist
     end
 
-    def self.chain_helper(elist, oplist) 
+    def self.chain_helper(elist, oplist)
       if oplist.length == 0
         elist[0]
       elsif oplist.length == 1 && oplist[0] == '='
@@ -48,7 +48,7 @@ module Hopsa
     end
 
     # parses a list of expressions
-    def self.parse_list(line) 
+    def self.parse_list(line)
       HopExprGram.parse(line, :root => :topexprlist).value
     end
 
@@ -57,11 +57,18 @@ module Hopsa
       ''
     end
 
+    def executor=(ex)
+    end
+
+    def hop_clone
+      self
+    end
+
     # eval - evaluate in current execution context
 
     # ass - assigns a value to the specified reference, available for reference
-    def ass(ex, val) 
-      warn "#{self.class.inspect}: assignment to this value is not supported"
+    def ass(ex, val)
+      hop_warn "#{self.class.inspect}: assignment to this value is not supported"
     end
   end # HopExpr
 
@@ -76,13 +83,14 @@ module Hopsa
     end
   end # ValExpr
 
-  class RefExpr < HopExpr 
+  class RefExpr < HopExpr
     attr_reader :rname
     # creates a reference expression with a variable
-    def initialize(rname) 
+    def initialize(rname)
       @rname = rname
     end
     def eval(ex)
+#      hop_warn "REF #{@rname} =>#{ex.to_s}\n#{ex.varStore.print_store}"
       ex.varStore.get(@rname)
     end
     # assigns result to a variable
@@ -90,18 +98,19 @@ module Hopsa
       ex.varStore.set(@rname, val)
       return nil
     end
+
   end # RefExpr
 
-  class CallExpr < HopExpr 
+  class CallExpr < HopExpr
     attr_reader :fun_expr, :args
     # function call with function expression (must be RefExpr) and arguments
-    def initialize(fun_name, args) 
+    def initialize(fun_name, args)
       @fun_name = fun_name
       @args = args
     end
-    def eval(ex) 
+    def eval(ex)
       # not implemented
-      warn 'warning: function eval not yet implemented'
+      hop_warn 'warning: function eval not yet implemented'
       return nil
     end
   end # CallExpr
@@ -115,11 +124,11 @@ module Hopsa
     end
     def eval(ex)
       o = @obj.eval(ex)
-      warn 'applying . to an object which is not a tuple' if o.class != Hash
+      hop_warn "applying . to not a tuple (#{o.class} = #{o.inspect})" if o.class != Hash
       # puts "obj = #{o.inspect}"
       r = o[@field_name]
       # puts "obj.#{field_name} = #{r}"
-      warn "no field #{@field_name} in object" if !r
+      hop_warn "no field #{@field_name} in object (#{o.inspect})" if !r
       r
     end
     def ass(ex, val)
@@ -133,7 +142,7 @@ module Hopsa
       @op = op
       @expr = expr
     end
-    def eval(ex) 
+    def eval(ex)
       val = @expr.eval(ex)
       case @op
         when '-'
@@ -141,7 +150,7 @@ module Hopsa
         when 'not'
         return !val
         else
-        warn "#{@op}: unsupported unary operator"
+        hop_warn "#{@op}: unsupported unary operator"
         return nil
       end
     end
@@ -156,7 +165,7 @@ module Hopsa
     POSTCONV_OPS = ['*', '/', '+', '-']
     # relational operators
     attr_reader :op, :expr1, :expr2, :short
-    def initialize(expr1, op, expr2) 
+    def initialize(expr1, op, expr2)
       @op = op
       @expr1 = expr1
       @expr2 = expr2
@@ -168,13 +177,13 @@ module Hopsa
       if @short
         #short-circuit
         val1 = @expr1.eval(ex)
-        case op 
+        case op
           when 'and'
           return val1 && @expr2.eval(ex)
           when 'or'
           return val1 || @expr2.eval(ex)
           else
-          warn "#{op}: unsupported short-cirtuit binary operator"
+          hop_warn "#{op}: unsupported short-cirtuit binary operator"
           return nil
         end
       else
@@ -187,9 +196,9 @@ module Hopsa
         end
         res = nil
         case @op
-          when '*' 
+          when '*'
           res = val1 * val2
-          when '/' 
+          when '/'
           res = val1 / val2
           when '+'
           res = val1 + val2
@@ -197,7 +206,7 @@ module Hopsa
           res = val1 - val2
           when '&'
           # string concatenation
-          res = val1 + val2 
+          res = val1 + val2
           when '<'
           res = val1 < val2
           when '>'
@@ -206,6 +215,14 @@ module Hopsa
           res = val1 <= val2
           when '>='
           res = val1 >= val2
+          when '<.'
+          res = val1 < val2
+          when '>.'
+          res = val1 > val2
+          when '<=.'
+          res = val1 <= val2
+          when '>=.'
+          res = val1 >= val2
           when '=='
           res = val1 == val2
           when '!='
@@ -213,7 +230,7 @@ module Hopsa
           when 'xor'
           res = val1 ^ val2
           else
-          warn "#{@op}: unsupported binary operator"
+          hop_warn "#{@op}: unsupported binary operator"
           return nil
         end # case(op)
         res = res.to_s if @post_conv
@@ -222,7 +239,7 @@ module Hopsa
     end # eval
   end # BinaryExpr
 
-  # named expression 
+  # named expression
   class NamedExpr < HopExpr
     attr_reader :expr
     def initialize(name, expr)
@@ -237,7 +254,7 @@ module Hopsa
       @name
     end
   end
-  
+
   # assignment expression
   class AssExpr < HopExpr
     attr_reader :expr1, :expr2

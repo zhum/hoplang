@@ -121,7 +121,8 @@ grammar HopExprGram
 						 ('and' spacecom) { 'and' }
 				end
 				rule relop
-						 (('<=' | '<' | '>=' | '>' | '==' | '!=') spacecom) { to_s.strip }
+						 (('<.' | '<=.' | '<=' | '<' | '>.' | '>=.' | '>=' | '>' | '==' |
+						 '!=') spacecom) { to_s.strip }
 				end
 				rule addlop
 						 ([-+&] spacecom) { to_s.strip }

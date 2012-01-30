@@ -4,7 +4,7 @@ module Hopsa
 
     def initialize(parent, sources)
       super(parent)
-      warn "SPLIT #{sources.size}"
+      hop_warn "SPLIT #{sources.size}"
       @sources=sources
     end
 
@@ -52,7 +52,7 @@ module Hopsa
           varStore.set(@streamvar, value)
           return value
         end
-#        warn "RR #{saved_source} #{@current_source}"
+#        hop_warn "RR #{saved_source} #{@current_source}"
       end while saved_source!=@current_source
       return nil
     end

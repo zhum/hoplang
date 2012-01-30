@@ -253,12 +253,17 @@ module Hopsa
       if(not Config['local'].nil? and
          Config['local']['out_format'] == 'csv')
         if @out_heads.nil?
+          $hoplang_print_mutex ||= Mutex.new
           @out_heads=value['__hoplang_cols_order'].split(/,/)
           # print header
-          puts value['__hoplang_cols_order']
+          $hoplang_print_mutex.synchronize do
+            puts value['__hoplang_cols_order']
+          end
         end
 
-        puts @out_heads.map {|key| value[key].to_s.csv_escape}.join(',')
+        $hoplang_print_mutex.synchronize do
+          puts @out_heads.map {|key| value[key].to_s.csv_escape}.join(',')
+        end
       else
         puts "OUT>>#{value.inspect}"
       end

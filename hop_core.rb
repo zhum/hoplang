@@ -130,7 +130,11 @@ module Hopsa
     $hoplang_warn_mutex ||= Mutex.new
 
     if $hoplang_logger.nil?
-      $hoplang_logger=File.open('hoplog.log','a')
+      begin
+        $hoplang_logger=File.open('hoplog.log','a')
+      rescue
+        $hoplang_logger=File.open('/dev/null','a')
+      end
     end
 
     $hoplang_warn_mutex.synchronize do

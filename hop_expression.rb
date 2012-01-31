@@ -124,7 +124,7 @@ module Hopsa
     end
     def eval(ex)
       o = @obj.eval(ex)
-      hop_warn "applying . to not a tuple (#{o.class} = #{o.inspect})" if o.class != Hash
+      hop_warn "applying . to not a tuple (#{o.class} = #{o.inspect})" unless o.is_a? Hash
       # puts "obj = #{o.inspect}"
       r = o[@field_name]
       # puts "obj.#{field_name} = #{r}"

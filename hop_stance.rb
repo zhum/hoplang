@@ -64,14 +64,14 @@ module Hopsa
         hopstance=StreamEachHopstance.new(parent)
 #      elsif(Config["db_type_#{source}"]=='csv') then
       elsif(type=='csv') then
-        hopstance=MyDatabaseEachHopstance.new(parent)
+        hopstance=MyDatabaseEachHopstance.new(parent,source)
 #      elsif(type=='cassandra') then
 #        hopstance=CassandraHopstance.new parent, source
 #      elsif(type=='mongo') then
 #        hopstance=MongoHopstance.new parent, source
       elsif(@@hoplang_databases.include? type)
         typename=(type.capitalize+'Hopstance').to_class
-        hopstance = typename.new parent, source
+        hopstance = typename.new parent, source, current_var, where
       elsif(type=='split') then
         i=1
         types_list=Array.new

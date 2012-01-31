@@ -1,0 +1,9 @@
+var tst
+tst = 123123128
+
+out = each x in cpu_user where x.time > tst
+    yield node => x.node, value => x.cpu_user, time => x.time
+end
+
+print out
+

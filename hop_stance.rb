@@ -308,7 +308,7 @@ module Hopsa
       hop_warn "\n\n***********   START   *********************\n"
       super
       join_threads
-      hop_warn "\n***********   END     *********************\n"
+      hop_warn   "\n***********   END     *********************\n"
       varStore.each{|var|
         hop_warn "VAR: #{var.to_s}"
       }

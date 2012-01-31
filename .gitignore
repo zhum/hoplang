@@ -4,4 +4,6 @@ Gemfile.lock
 pkg/*
 *~
 *.bak
-
+*.hpl
+*.out
+*.tgz

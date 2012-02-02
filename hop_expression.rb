@@ -39,12 +39,12 @@ module Hopsa
     # parses expression, returns HopExpr for top expression
     # in case of error, returns nil and prints error type and location
     def self.parse(line)
-      HopExprGram.parse(line, :root => :expr).value
+      HopExprGram.parse(line.to_s, :root => :expr).value
     end
 
     # parses a conditional expression, such as allowed in while, if and where
     def self.parse_cond(line)
-      HopExprGram.parse(line, :root => :condexpr).value
+      HopExprGram.parse(line.to_s, :root => :condexpr).value
     end
 
     # parses a list of expressions
@@ -146,12 +146,14 @@ module Hopsa
       val = @expr.eval(ex)
       case @op
         when '-'
-        return (-val.to_f).to_s
+          return (-val.to_f).to_s
         when 'not'
-        return !val
+          return !val
+        when 'int'
+          return val.to_i
         else
-        hop_warn "#{@op}: unsupported unary operator"
-        return nil
+          hop_warn "#{@op}: unsupported unary operator"
+          return nil
       end
     end
   end # UnaryExpr

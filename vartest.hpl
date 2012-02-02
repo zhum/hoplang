@@ -28,9 +28,12 @@ final
 end
 
 out3 = seq z in out2
-  var x
-  x = x + z.sum2
-  yield sum3 => x, avg3 => z.avg2, u => z.u
+  if z.sum2 >-10000000 
+    yield sum3 => z.sum2, avg3 => z.avg2, u => z.u
+  end
+#  var x
+#  x = x + z.sum2
+#  yield sum3 => x, avg3 => z.avg2, u => z.u
 end
 
 out4 = seq z in out3
@@ -40,7 +43,7 @@ out4 = seq z in out3
 #  debug z
 end
 
-out5 = group z by z.u from out4
+out5 = group z by z.u in out4
   var sum
   var count
   var avg5

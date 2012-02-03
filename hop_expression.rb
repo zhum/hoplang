@@ -89,8 +89,8 @@ module Hopsa
 
     def to_db(ex,db)
       #val=@expr.eval(ex)
-      warn "VAL=#{@val}"
-      db.value(@val) #???
+      hop_warn "VAL=#{@val}"
+      return db.value(@val),ex #???
     end
 
     def to_s
@@ -115,7 +115,7 @@ module Hopsa
     end
 
     def to_db(ex,db)
-      warn "REF=#{@rname}"
+      hop_warn "REF=#{@rname}"
       #val=eval(ex)
       db.value(@rname)
     end
@@ -139,7 +139,7 @@ module Hopsa
     end
 
     def to_db(ex,db)
-      warn 'warning: function eval not yet implemented'
+      hop_warn 'warning: function eval not yet implemented'
       #db.function()
       return nil,nil
     end
@@ -166,8 +166,9 @@ module Hopsa
     end
 
     def to_db(ex,db)
-      val=@obj.eval(ex)
-      return db.value(@field_name), val[@field_name]
+      #val=@obj.eval(ex)
+      return db.value(@field_name), ex
+      #val[@field_name]
     end
 
     def to_s
@@ -197,8 +198,8 @@ module Hopsa
     end
 
     def to_db(ex,db)
-      val=@expr.eval(ex)
-      return db.unary(val,@op), val
+      #val=@expr.eval(ex)
+      return db.unary(val,@op), ex
     end
 
     def to_s
@@ -222,8 +223,8 @@ module Hopsa
     end
 
     def to_db(ex,db)
-      val=eval(ex)
-      return db.value(@name), val
+      #val=eval(ex)
+      return db.value(@name), ex
     end
 
   end
@@ -243,7 +244,7 @@ module Hopsa
     end
 
     def to_db(ex,db)
-      warn "Assingment not supported in where-expression"
+      hop_warn "Assingment not supported in where-expression"
       return nil,nil
     end
   end # AssExpr
@@ -332,6 +333,7 @@ module Hopsa
       end
     end # eval
 
+    # return: DB_EXPRESSION, hoplang string
     def to_db(ex,db)
       db_val1, hop_val1 = @expr1.to_db(ex,db)
       db_val2, hop_val2 = @expr2.to_db(ex,db)
@@ -342,11 +344,11 @@ module Hopsa
 
           case op
             when 'and'
-              return db.and(db_val1, db_val2), eval(ex)
+              return db.and(db_val1, db_val2), ex
             when 'or'
-              return db.or(db_val1, db_val2), eval(ex)
+              return db.or(db_val1, db_val2), ex
             else
-              warn "#{op}: unsupported short-cirtuit binary operator"
+              hop_warn "#{op}: unsupported short-cirtuit binary operator"
               return nil, nil
           end
         else
@@ -354,54 +356,26 @@ module Hopsa
           case op
             when 'or'
               # 8( all DB must be searched...
-              return nil, eval(ex)
+              return nil, ex
             when 'and'
-              return db_val1, hop_val2 if(db_val1.nil?)
-              return hop_val1, db_val2
+              return db_val2, ex if(db_val1.nil?)
+              return db_val1, ex
             else
-              warn "#{op}: unsupported short-cirtuit binary operator"
+              hop_warn "#{op}: unsupported short-cirtuit binary operator"
               return nil, nil
           end
         end #if calculated
       else
         #full evaluation
-        if @pre_conv
-          hop_val1 = hop_val1.to_f
-          hop_val2 = hop_val2.to_f
-        end
+        #if @pre_conv
+        #  hop_val1 = hop_val1.to_f
+        #  hop_val2 = hop_val2.to_f
+        #end
         res = nil
         db_res = db.binary(db_val1,db_val2,@op)
-        case @op
-          when '*'
-            res = hop_val1 * hop_val2
-          when '/'
-            res = hop_val1 / hop_val2
-          when '+'
-            res = hop_val1 + hop_val2
-          when '-'
-            res = hop_val1 - hop_val2
-          when '&'
-          # string concatenation
-            res = hop_val1 + hop_val2
-          when '<'
-            res = hop_val1 < hop_val2
-          when '>'
-            res = hop_val1 > hop_val2
-          when '<='
-            res = hop_val1 <= hop_val2
-          when '>='
-            res = hop_val1 >= hop_val2
-          when '=='
-            res = hop_val1 == hop_val2
-          when '!='
-            res = hop_val1 != hop_val2
-          when 'xor'
-            res = hop_val1 ^ hop_val2
-          else
-            warn "#{@op}: unsupported binary operator"
-            return nil,nil
-        end # case(op)
-        res = res.to_s if @post_conv
+
+        #res = res.to_s if @post_conv
+
         return db_res, res
       end
     end # to_db

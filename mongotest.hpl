@@ -1,8 +1,8 @@
-var tst
-tst = 123123128
-
-out = each x in cpu_user where x.time > tst
+#out = each x in cpu_user where x.time >  123123128
+out = each x in cpu_user where x.node == 'node-01-01'
+ if x.time >  123123128
     yield node => x.node, value => x.cpu_user, time => x.time
+ end
 end
 
 print out

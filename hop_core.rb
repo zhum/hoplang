@@ -139,6 +139,7 @@ module Hopsa
 
     $hoplang_warn_mutex.synchronize do
       $hoplang_logger.print str,"\n"
+      $hoplang_logger.flush
     end
   end
 

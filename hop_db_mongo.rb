@@ -15,9 +15,14 @@ module Hopsa
       return nil
     end
 
+    OPS={'>' => '$gt', '<' => '$lt', '<=' => '$lte', '>=' => '$gte',
+         '!=' => '$ne'}
+    REV_OPS={'<' => '$gt', '>' => '$le', '>=' => '$lte', '<=' => '$gte',
+         '!=' => '$ne'}
+
     def binary(ex1,ex2,op)
 
-      warn "MONGO BINARY: #{ex1}, #{ex2}, #{op}"
+      hop_warn "MONGO BINARY TODB: #{ex1}, #{ex2}, #{op}"
       case op
       when '+'
         return nil
@@ -27,24 +32,67 @@ module Hopsa
         return nil
       when '-'
         return nil
-      when '>'
-        return "{}"
-         op == '<' or
-         op == '>=' or
-         op == '<=' or
-         op == '==' or
-         op == '!=')
-        return '('+ex1.to_s+' '+op+' '+ex2.to_s+')'
-      end
-      if op == '&' # string catenation
-        return '('+ex1.to_s+' + '+ex2.to_s+')'
+      when '=='
+        if ex1 =~ /^\w+$/
+          # first argument = 'dbname.field'
+          left=ex1
+        elsif ex2 =~ /^\w+$/
+          # second argument is... So swap 'em!
+          left=ex2
+          ex2=ex1
+        else
+          # not field name...
+          return nil
+        end
+        ex2= ex2.to_i if ex2 =~ /^\d+$/
+
+        return {left => ex2}
+      when /^(<|>|>=|<=|!=)$/
+        if ex1 =~ /^\w+$/
+          # first argument = 'dbname.field'
+          left=ex1
+          op_map=OPS
+        elsif ex2 =~ /^\w+$/
+          # second argument is... So swap 'em!
+          left=ex2
+          ex2=ex1
+          op_map=REV_OPS
+        else
+          # not field name...
+          return nil
+        end
+
+        #right=ex2.to_db
+        #return nil if right.nil?
+        ex2= ex2.to_i if ex2 =~ /^\d+$/
+
+        return {left => {op_map[op] => ex2}}
+      when '&' # string catenation
+        return nil
+
       end
       return nil
     end
 
+    def or(ex1,ex2)
+        #left=ex1.to_db
+        #right=ex2.to_db
+        #return nil if left.nil? or right.nil?
+
+      return {'$or' => [ex1, ex2]}
+    end
+
+    def and(ex1,ex2)
+        #left=ex1.to_db
+        #right=ex2.to_db
+        #return nil if left.nil? or right.nil?
+
+      return {'$and' => [ex1, ex2]}
+    end
+
     def value(ex)
-      ex.gsub!(Regexp.new('\W'+@db_var+'\.'),'')
-      return ' ('+ex.to_s+') '
+      ret = ex.gsub(Regexp.new('\W'+@db_var+'\.'),'')
+      return ret.to_s
     end
   end
 
@@ -61,18 +109,23 @@ module Hopsa
       end
 
       def each
-        coll = @db[@collection]
+        begin
+          coll = @db[@collection]
 
-        iter = coll.find(@index_clause)
-        warn "SEARCH: #{@index_clause}"
-        iter.each do |row|
-          if @where_clause
-            if @where_clause.eval(@context)
+          iter = coll.find(@index_clause)
+          hop_warn "SEARCH: #{@index_clause}"
+          iter.each do |row|
+            if @where_clause
+              hop_warn "WHERE=#{@where_clause.inspect}"
+              if @where_clause.eval(@context)
+                yield row
+              end
+            else
               yield row
             end
-          else
-            yield row
           end
+        rescue => e
+          hop_warn "MONGO_DB Exception: #{e.message}\n"+e.backtrace.join("\t\n")
         end
         raise StopIteration
 
@@ -141,12 +194,13 @@ module Hopsa
     def lazy_init
       # build index clause if possible
       @index_clause,@where_clause = create_filter @where_expr
+      hop_warn "INDEX: #{@index_clause.inspect}"
       if @index_clause and @push_index
         ind_iter = IndexedIterator.new @db, @collection, @index_clause, @where_clause ,self
         @enumerator = ind_iter.to_enum(:each)
         hop_warn "index pushed to Mongo #{@where_expr.to_s}"
       else
-        ind_iter = IndexedIterator.new @db, @collection, nil
+        ind_iter = IndexedIterator.new @db, @collection, nil, @where_clause ,self
         @enumerator = ind_iter.to_enum(:each)
         hop_warn 'index not pushed to Mongo' if @where_expr
       end

@@ -39,12 +39,12 @@ module Hopsa
     # parses expression, returns HopExpr for top expression
     # in case of error, returns nil and prints error type and location
     def self.parse(line)
-      HopExprGram.parse(line.to_s, :root => :expr).value
+      HopExprGram.parse(line, :root => :expr).value
     end
 
     # parses a conditional expression, such as allowed in while, if and where
     def self.parse_cond(line)
-      HopExprGram.parse(line.to_s, :root => :condexpr).value
+      HopExprGram.parse(line, :root => :condexpr).value
     end
 
     # parses a list of expressions
@@ -70,10 +70,6 @@ module Hopsa
     def ass(ex, val)
       hop_warn "#{self.class.inspect}: assignment to this value is not supported"
     end
-
-    def to_s
-      ''
-    end
   end # HopExpr
 
   # expression containing a single value
@@ -82,19 +78,8 @@ module Hopsa
     def initialize(val)
       @val = val
     end
-
     def eval(ex)
       return @val
-    end
-
-    def to_db(ex,db)
-      #val=@expr.eval(ex)
-      hop_warn "VAL=#{@val}"
-      return db.value(@val),ex #???
-    end
-
-    def to_s
-      @val
     end
   end # ValExpr
 
@@ -114,15 +99,6 @@ module Hopsa
       return nil
     end
 
-    def to_db(ex,db)
-      hop_warn "REF=#{@rname}"
-      #val=eval(ex)
-      db.value(@rname)
-    end
-
-    def to_s
-      @rname
-    end
   end # RefExpr
 
   class CallExpr < HopExpr
@@ -136,12 +112,6 @@ module Hopsa
       # not implemented
       hop_warn 'warning: function eval not yet implemented'
       return nil
-    end
-
-    def to_db(ex,db)
-      hop_warn 'warning: function eval not yet implemented'
-      #db.function()
-      return nil,nil
     end
   end # CallExpr
 
@@ -164,16 +134,6 @@ module Hopsa
     def ass(ex, val)
       @obj.eval(ex)[@field_name] = val
     end
-
-    def to_db(ex,db)
-      #val=@obj.eval(ex)
-      return db.value(@field_name), ex
-      #val[@field_name]
-    end
-
-    def to_s
-      "#{obj}.#{field_name}"
-    end
   end # DotExpr
 
   class UnaryExpr < HopExpr
@@ -186,68 +146,17 @@ module Hopsa
       val = @expr.eval(ex)
       case @op
         when '-'
-          return (-val.to_f).to_s
+        return (-val.to_f).to_s
         when 'not'
-          return !val
+        return !val
         when 'int'
-          return val.to_i
+        return val.to_i
         else
-          hop_warn "#{@op}: unsupported unary operator"
-          return nil
+        hop_warn "#{@op}: unsupported unary operator"
+        return nil
       end
     end
-
-    def to_db(ex,db)
-      #val=@expr.eval(ex)
-      return db.unary(val,@op), ex
-    end
-
-    def to_s
-      @op.to_s+@expr.to_s
-    end
   end # UnaryExpr
-
-  # named expression
-  class NamedExpr < HopExpr
-    attr_reader :expr
-    def initialize(name, expr)
-      @name = name
-      @expr = expr
-    end
-    def eval(ex)
-      expr.eval(ex)
-    end
-    # gets the name associated with the expression
-    def name
-      @name
-    end
-
-    def to_db(ex,db)
-      #val=eval(ex)
-      return db.value(@name), ex
-    end
-
-  end
-
-  # assignment expression
-  class AssExpr < HopExpr
-    attr_reader :expr1, :expr2
-    def initialize(expr1, expr2)
-      @expr1 = expr1
-      @expr2 = expr2
-    end
-    # performs assignment and always returns nil
-    def eval(ex)
-      val = expr2.eval(ex)
-      expr1.ass(ex, val)
-      return nil
-    end
-
-    def to_db(ex,db)
-      hop_warn "Assingment not supported in where-expression"
-      return nil,nil
-    end
-  end # AssExpr
 
   class BinaryExpr < HopExpr
     # operators which are short-circuit
@@ -258,7 +167,6 @@ module Hopsa
     POSTCONV_OPS = ['*', '/', '+', '-']
     # relational operators
     attr_reader :op, :expr1, :expr2, :short
-
     def initialize(expr1, op, expr2)
       @op = op
       @expr1 = expr1
@@ -267,19 +175,18 @@ module Hopsa
       @pre_conv = PRECONV_OPS.include? op
       @post_conv = POSTCONV_OPS.include? op
     end
-
     def eval(ex)
       if @short
         #short-circuit
         val1 = @expr1.eval(ex)
         case op
           when 'and'
-            return val1 && @expr2.eval(ex)
+          return val1 && @expr2.eval(ex)
           when 'or'
-            return val1 || @expr2.eval(ex)
+          return val1 || @expr2.eval(ex)
           else
-            hop_warn "#{op}: unsupported short-cirtuit binary operator"
-            return nil
+          hop_warn "#{op}: unsupported short-cirtuit binary operator"
+          return nil
         end
       else
         #full evaluation
@@ -332,57 +239,36 @@ module Hopsa
         return res
       end
     end # eval
-
-    # return: DB_EXPRESSION, hoplang string
-    def to_db(ex,db)
-      db_val1, hop_val1 = @expr1.to_db(ex,db)
-      db_val2, hop_val2 = @expr2.to_db(ex,db)
-      if @short
-        #short-circuit
-        if not db_val1.nil? and not db_val2.nil?
-          #all calculated
-
-          case op
-            when 'and'
-              return db.and(db_val1, db_val2), ex
-            when 'or'
-              return db.or(db_val1, db_val2), ex
-            else
-              hop_warn "#{op}: unsupported short-cirtuit binary operator"
-              return nil, nil
-          end
-        else
-          # sometnig cannot be calculated
-          case op
-            when 'or'
-              # 8( all DB must be searched...
-              return nil, ex
-            when 'and'
-              return db_val2, ex if(db_val1.nil?)
-              return db_val1, ex
-            else
-              hop_warn "#{op}: unsupported short-cirtuit binary operator"
-              return nil, nil
-          end
-        end #if calculated
-      else
-        #full evaluation
-        #if @pre_conv
-        #  hop_val1 = hop_val1.to_f
-        #  hop_val2 = hop_val2.to_f
-        #end
-        res = nil
-        db_res = db.binary(db_val1,db_val2,@op)
-
-        #res = res.to_s if @post_conv
-
-        return db_res, res
-      end
-    end # to_db
-
-    def to_s
-      '('+@expr1.to_s+@op.to_s+@expr2.to_s+')'
-    end
   end # BinaryExpr
 
+  # named expression
+  class NamedExpr < HopExpr
+    attr_reader :expr
+    def initialize(name, expr)
+      @name = name
+      @expr = expr
+    end
+    def eval(ex)
+      expr.eval(ex)
+    end
+    # gets the name associated with the expression
+    def name
+      @name
+    end
+  end
+
+  # assignment expression
+  class AssExpr < HopExpr
+    attr_reader :expr1, :expr2
+    def initialize(expr1, expr2)
+      @expr1 = expr1
+      @expr2 = expr2
+    end
+    # performs assignment and always returns nil
+    def eval(ex)
+      val = expr2.eval(ex)
+      expr1.ass(ex, val)
+      return nil
+    end
+  end # AssExpr
 end

@@ -214,6 +214,7 @@ module Hopsa
     def lazy_init
       # keys and columns which need conversion to long
       cfinfo = @cassandra.column_families[@column_family.to_s]
+      hop_warn "CAS: #{@column_family.to_s} / #{cfinfo}"
       @columns_to_long = []
       if cassandra_type(cfinfo.key_validation_class) == 'LongType'
         @columns_to_long += [@keyname]

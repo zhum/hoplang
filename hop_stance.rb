@@ -48,9 +48,7 @@ module Hopsa
 
       raise UnexpectedEOF if line.nil?
       unless((line =~
-        /^(\S+)\s*=\s*each\s+(\S+)\s+in\s+(\S+)(\s+where\s+(.*))?/) ||
-             (line =~
-        /^(\S+)\s*=\s*seq\s+(\S+)\s+in\s+(\S+)(\s+where\s+(.*))?/))
+      /^(\S+)\s*=\s*each\s+(\S+)\s+in\s+(\S+)(\s+where\s+(.*))?/) || (line =~ /^(\S+)\s*=\s*seq\s+(\S+)\s+in\s+(\S+)(\s+where\s+(.*))?/))
 
         raise SyntaxError.new(line)
       end
@@ -64,14 +62,14 @@ module Hopsa
         hopstance=StreamEachHopstance.new(parent)
 #      elsif(Config["db_type_#{source}"]=='csv') then
       elsif(type=='csv') then
-        hopstance=MyDatabaseEachHopstance.new(parent,source)
+        hopstance=MyDatabaseEachHopstance.new(parent)
 #      elsif(type=='cassandra') then
 #        hopstance=CassandraHopstance.new parent, source
 #      elsif(type=='mongo') then
 #        hopstance=MongoHopstance.new parent, source
       elsif(@@hoplang_databases.include? type)
         typename=(type.capitalize+'Hopstance').to_class
-        hopstance = typename.new parent, source, current_var, where
+        hopstance = typename.new parent, source
       elsif(type=='split') then
         i=1
         types_list=Array.new
@@ -308,7 +306,7 @@ module Hopsa
       hop_warn "\n\n***********   START   *********************\n"
       super
       join_threads
-      hop_warn   "\n***********   END     *********************\n"
+      hop_warn "\n***********   END     *********************\n"
       varStore.each{|var|
         hop_warn "VAR: #{var.to_s}"
       }

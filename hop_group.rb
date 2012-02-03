@@ -221,7 +221,7 @@ module Hopsa
 #          hop_warn "START GROUP final chain (#{@finalChain})"
           #hop_warn @groups.inspect
           @groups.each_pair do |name,pipe|
-#            hop_warn "GROUP thread finishing #{name}"
+            hop_warn "GROUP thread finishing #{name}"
             pipe.put(nil)
           end
 

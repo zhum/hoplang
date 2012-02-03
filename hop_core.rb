@@ -27,7 +27,7 @@ module Hopsa
           ret=YAML::load data
 #          hop_warn "PIPE GET #{object_id} VAL: #{ret.inspect}"
           hop_warn "AND EOF!" if new_data.nil?
-          hop_warn "PIPE NIL!!! (class=#{ret.class})" if ret.class != Hash
+          hop_warn "PIPE NIL!!! (class=#{ret.class})" unless ret.is_a? Hash
           return ret
         else
           data+=new_data
@@ -139,7 +139,6 @@ module Hopsa
 
     $hoplang_warn_mutex.synchronize do
       $hoplang_logger.print str,"\n"
-      $hoplang_logger.flush
     end
   end
 

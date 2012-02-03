@@ -82,12 +82,6 @@ module Hopsa
         when /^((\S+)\s*=\s*)?each\s+(\S+)(\s+where\s+(.*))?/
           return EachHopstance.createNewRetLineNum(parent, text, startLine)
 
-        when /^((\S+)\s*=\s*)?top\s+(.+)\s+(\S+)\s+in\s+(\S+)\s+by\s+(.*)(\s+where\s+(.*))?/
-          return TopEachHopstance.createNewRetLineNum(parent, text, startLine)
-
-        when /^((\S+)\s*=\s*)?bottom\s+(.+)\s+(\S+)\s+in\s+(\S+)\s+by\s+(.*)(\s+where\s+(.*))?/
-          return BottomEachHopstance.createNewRetLineNum(parent, text, startLine)
-
         when /^print\s+(\S+)/
           return PrintEachHopstance.createNewRetLineNum(parent, text, startLine)
 
@@ -190,8 +184,8 @@ module Hopsa
 
     def initialize(parent,main=nil,final=nil,cond=nil)
       super(parent)
-      @mainChain=(main.nil? ? HopChain.new(self) : main)
-      @finalChain=(final.nil? ? HopChain.new(self) : final)
+      @mainChain=main
+      @finalChain=final
       @cond_expr=cond
     end
 
@@ -253,7 +247,7 @@ module Hopsa
 
     def initialize(parent,main=nil,cond=nil)
       super(parent)
-      @mainChain=(main.nil? ? HopChain.new(self) : main)
+      @mainChain=main
       @cond_expr=cond
     end
 

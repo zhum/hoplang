@@ -190,8 +190,8 @@ module Hopsa
 
     def initialize(parent,main=nil,final=nil,cond=nil)
       super(parent)
-      @mainChain=main
-      @finalChain=final
+      @mainChain=(main.nil? ? HopChain.new(self) : main)
+      @finalChain=(final.nil? ? HopChain.new(self) : final)
       @cond_expr=cond
     end
 
@@ -253,7 +253,7 @@ module Hopsa
 
     def initialize(parent,main=nil,cond=nil)
       super(parent)
-      @mainChain=main
+      @mainChain=(main.nil? ? HopChain.new(self) : main)
       @cond_expr=cond
     end
 

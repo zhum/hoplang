@@ -26,7 +26,7 @@ module Hopsa
 
     def join_threads
       @@threads.each do |t|
-        warn "T: #{t} #{t.status}"
+        hop_warn "T: #{t} #{t.status}"
         t.join
       end
       @@threads=[]
@@ -48,7 +48,9 @@ module Hopsa
 
       raise UnexpectedEOF if line.nil?
       unless((line =~
-      /^(\S+)\s*=\s*each\s+(\S+)\s+in\s+(\S+)(\s+where\s+(.*))?/) || (line =~ /^(\S+)\s*=\s*seq\s+(\S+)\s+in\s+(\S+)(\s+where\s+(.*))?/))
+        /^(\S+)\s*=\s*each\s+(\S+)\s+in\s+(\S+)(\s+where\s+(.*))?/) ||
+             (line =~
+        /^(\S+)\s*=\s*seq\s+(\S+)\s+in\s+(\S+)(\s+where\s+(.*))?/))
 
         raise SyntaxError.new(line)
       end
@@ -82,11 +84,11 @@ module Hopsa
         begin
           hopstance=Object.const_get(type+'Hopstance').new(parent)
         rescue NameError
-          warn "No such driver: #{type}!"
+          hop_warn "No such driver: #{type}!"
           hopstance=EachHopstance.new(parent)
         end
       else
-        warn "DEFAULT Each"
+        hop_warn "DEFAULT Each"
         hopstance=EachHopstance.new(parent)
       end
 
@@ -94,7 +96,7 @@ module Hopsa
       parent.varStore.addStream(streamvar)
       hopstance.varStore.copyStreamFromParent(streamvar,parent.varStore)
 
-      warn "ADDED STREAM: #{parent.varStore.object_id} #{streamvar}"
+      hop_warn "ADDED STREAM: #{parent.varStore.object_id} #{streamvar}"
 
       return hopstance.init(text,pos,streamvar,current_var,source,where)
     end
@@ -111,8 +113,8 @@ module Hopsa
       #puts @where_expr.inspect if @where_expr
 
       pos+=1
-      warn ":: #{text[pos]}"
-      warn "EACH: #{streamvar},#{current_var},#{source},#{where}"
+      hop_warn ":: #{text[pos]}"
+      hop_warn "EACH: #{streamvar},#{current_var},#{source},#{where}"
       # now create execution chains for body and final sections
       begin
         while true
@@ -121,7 +123,7 @@ module Hopsa
         end
       rescue SyntaxError
         line,pos=Statement.nextLine(text,pos)
-        warn ">>#{line}<<"
+        hop_warn ">>#{line}<<"
         if line == 'final'
           # process final section!
           pos+=1
@@ -144,7 +146,9 @@ module Hopsa
     end
 
     def hop
-      warn "START main chain #{@streamvar} <- #{@source} (#{@mainChain})"
+      hop_warn "START main chain #{self.to_s} (#{@mainChain})"
+#      hop_warn "PARENT VARSTORE:\n#{@parent.varStore.print_store}"
+      varStore.merge(@parent.varStore)
       new_thread do
         begin
           while not (self.readSource).nil?
@@ -156,25 +160,26 @@ module Hopsa
             @mainChain.hop
           end
           # process final section
-          warn "START final chain (#{@finalChain})"
+          hop_warn "START final chain #{self.to_s} (#{@finalChain})"
           @finalChain.hop
 
-          warn "FINISHED!\n-------------------------------"
+          hop_warn "FINISHED! #{self.to_s}\n-------------------------------"
           # write EOF to out stream
           do_yield(nil)
 #          while not (val=outPipe.get).nil?
-#            warn ":>> "
-#            warn val.map {|key,val| "#{key} => #{val}"} .join("; ")
-#            warn "\n"
+#            hop_warn ":>> "
+#            hop_warn val.map {|key,val| "#{key} => #{val}"} .join("; ")
+#            hop_warn "\n"
 #          end
         rescue => e
-          warn "Exception in #{@streamvar} <- #{@source} (#{@mainChain}: #{e}. #{e.backtrace}"
+          hop_warn "Exception in #{self.to_s} (#{@mainChain}: #{e}. "+e.backtrace.join("\t\n")
         end
       end #~Thread
     end
 
     def do_yield(hash)
       # push data into out pipe
+#      hop_warn "!!! YIELD #{@streamvar} #{hash.inspect}"
       varStore.set(@streamvar,hash)
     end
 
@@ -200,7 +205,7 @@ module Hopsa
         # now store variable!
         varStore.set(@current_var, value)
       rescue EOFError
-        warn "EOF.....\n"
+        hop_warn "EOF.....\n"
         varStore.set(@current_var, nil)
         return nil
       end
@@ -245,16 +250,22 @@ module Hopsa
 
     def readSource
       value=varStore.get(@source)
+#      hop_warn "DD val=#{value.inspect}"
       return nil if value.nil?
       if(not Config['local'].nil? and
          Config['local']['out_format'] == 'csv')
         if @out_heads.nil?
+          $hoplang_print_mutex ||= Mutex.new
           @out_heads=value['__hoplang_cols_order'].split(/,/)
           # print header
-          puts value['__hoplang_cols_order']
+          $hoplang_print_mutex.synchronize do
+            puts value['__hoplang_cols_order']
+          end
         end
 
-        puts @out_heads.map {|key| value[key].to_s.csv_escape}.join(',')
+        $hoplang_print_mutex.synchronize do
+          puts @out_heads.map {|key| value[key].to_s.csv_escape}.join(',')
+        end
       else
         puts "OUT>>#{value.inspect}"
       end
@@ -274,6 +285,12 @@ module Hopsa
     end
 
     def createNewRetLineNum(parent,text,startLine)
+      # load arguments from config file
+      Config.parmap.each do |par, val| 
+        varStore.addScalar par
+        varStore.set par, (Param.cmd_arg_val(par) || val)
+      end
+
       begin
         while true
           hopstance,startLine=Hopstance.createNewRetLineNum(self,text,startLine)
@@ -285,8 +302,8 @@ module Hopsa
     end
 
     def do_yield(hash)
-      warn hash.map {|key,val| "#{key} => #{val}"} .join("\n")
-      warn "\n"
+      hop_warn hash.map {|key,val| "#{key} => #{val}"} .join("\n")
+      hop_warn "\n"
     end
 
     def initialize
@@ -294,20 +311,20 @@ module Hopsa
     end
 
     def hop
-      warn "\n\n***********   START   *********************\n"
+      hop_warn "\n\n***********   START   *********************\n"
       super
       join_threads
-      warn "\n***********   END     *********************\n"
+      hop_warn   "\n***********   END     *********************\n"
       varStore.each{|var|
-        warn "VAR: #{var.to_s}"
+        hop_warn "VAR: #{var.to_s}"
       }
 #      varStore.each_stream{|name, var|
-#        warn "Output Stream: #{name}"
+#        hop_warn "Output Stream: #{name}"
 #        while not (v=var.get).nil?
 #          if v.class == Hash
-#            warn "-> #{v.to_csv}"
+#            hop_warn "-> #{v.to_csv}"
 #          else
-#            warn "-> #{v}"
+#            hop_warn "-> #{v}"
 #          end
 #        end
 #      }

@@ -6,53 +6,38 @@ module Hopsa
 
     # provides 'each' functionality for Cassandra request with indices
     class IndexedIterator
-      def initialize(cassandra, cf, index_clause)
+      def initialize(cassandra, cf, index_clause, opts)
         @cassandra = cassandra
         @cf = cf
         @index_clause = index_clause
         # hope there will be no more rows than this number
-        @key_count = 100_000_000
-        @key_start = nil
+        @opts = opts || {}
+        opts[:key_count] = 1_000_000
       end
       def each
-#        while true
-          # get more rows if needed
-          @rows_read = 0
-          opts = {:key_count => @key_count}
-          #opts[:key_start] = @key_start if @key_start
-          @pre_rows = @cassandra.get_indexed_slices @cf, @index_clause, opts
-          # @nrows_read = @pre_rows.count
-          # puts "#{@nrows_read} row(s) read"
-          # raise StopIteration if @nrows_read == 0 || (@nrows_read == 1 && @key_start)
-          # iterate over rows, save the last as the start for the next batch
-          irow = 0
-          # @key_start = @pre_rows.keys.max
-          @pre_rows.each do |k, vs|
-            #if irow == @nrows_read - 1 && @nrows_read == @key_count
-            #  puts k
-            #  @key_start = k
-            #  break # each
-            #end
-            # row to be yielded
-            # additional conversion needed due to awful interface
-            row = {}
-            vs.each do |cosc|
-              row[cosc.column.name] = cosc.column.value
-            end
-            yield k,row
-            irow += 1
-          end # @pre_rows.each
-#        end # while
-        raise StopIteration
+        @rows_read = 0
+        @pre_rows = @cassandra.get_indexed_slices @cf, @index_clause, @opts
+        @pre_rows.each do |k, vs|
+          row = {}
+          vs.each do |cosc|
+            row[cosc.column.name] = cosc.column.value
+          end
+          yield k,row
+        end # @pre_rows.each
+        # raise StopIteration
       end # each
     end # IndexedIterator
 
-    def initialize(parent, source)
+    def initialize(parent, source, current_var, where)
       super(parent)
       cfg = Config['varmap'][source]
       address = cfg['address'] || 'localhost'
       port = cfg['port'] || '9160'
       @keyspace = cfg['keyspace']
+      @keyname = cfg['keyname'] || 'key'
+      # column name, has effect only for 2d driver
+      @colname = cfg['colname'] || 'col'
+      @valuename = cfg['valuename'] || 'value'
       @column_family = cfg['cf'].to_sym
       @max_items = -1
       @max_items = cfg['max_items'].to_i if cfg['max_items']
@@ -60,6 +45,8 @@ module Hopsa
       @push_index = false if cfg['push_index'] && cfg['push_index'] == 'false'
       @items_read = 0
       conn_addr = "#{address}:#{port}"
+      @current_var = current_var
+      @where_expr = HopExpr.parse where
       @cassandra = Cassandra.new @keyspace, conn_addr
       @enumerator = nil
     end
@@ -69,24 +56,23 @@ module Hopsa
         lazy_init
       end
       kv = nil
+      value = nil
       begin
         kv = @enumerator.next
         @items_read += 1
       rescue StopIteration
-        warn "finished iteration"
       end
       if !kv.nil?
         k,v=kv[0],kv[1]
-        value = {'key' => k}.merge(v)
+        value = {@keyname => k}.merge(v)
         @columns_to_long.each do |column_name|
           value[column_name] = to_long value[column_name]
         end
         value = nil if @max_items != -1 && @items_read > @max_items
       end
+      #puts value.inspect
       varStore.set(@current_var, value)
     end
-
-    private
 
     # checks whether filter can be pushed into DB (Cassandra), and returns an
     # object which can be passed to get_index_slices if it can be
@@ -96,11 +82,15 @@ module Hopsa
     # f is the name of the field of the variable, and that field is indexed (for
     # Cassandra) 
     # op is one of <, <=, >, >=, ==
-    # expr is an expression of simple form, currently must be a constant
+    # expr is an expression of simple form, currently must be either a constant
+    # or a variable declared outside of this hopsance
     # currently, the order must be exact (i.e. v.f to the left only), in future
-    # the requirement will be relaxed. Keys and column names will also be
-    # supported in future
-    PUSH_OPS = ['<', '<=', '>', '>=', '==']
+    # the requirement will be relaxed.
+    # the return tuple is of the form:
+    # key_start, key_finish, col_start, col_end, filter_expr
+    # any of the components may be null if it is absent; currently, col_start
+    # and col_finish are both null. 
+    PUSH_OPS = ['<', '<=', '>', '>=', '<.', '>.', '<=.', '>=.', '==']
     def filter_exprs?(filter)
       return nil if !filter
       @filter_leaves = []
@@ -116,33 +106,109 @@ module Hopsa
           nil
         end
       end
-      return nil if !(check_binary filter)
+      if !(check_binary filter)
+        return nil,nil,nil,nil,nil
+      end
       cfinfo = @cassandra.column_families[@column_family.to_s]
       # check leaves and build index clause
       index_clause = []
-      has_eq = nil
-      warn @filter_leaves.inspect
+      key_start = nil
+      key_end = nil
+      col_start = nil
+      col_end = nil
+      has_eq = false
+      push_index = true
+      hop_warn @filter_leaves.inspect
+      key_type = cassandra_type cfinfo.key_validation_class
+      # has effect only for list of columns
+      col_type = cassandra_type cfinfo.comparator_type
       @filter_leaves.each do |e|
-        return nil if !(PUSH_OPS.include? e.op)
-        return nil if !(e.expr1.instance_of? DotExpr)
-        return nil if !(e.expr1.obj.instance_of? RefExpr)
-        return nil if e.expr1.obj.rname != @current_var
-        return nil if !(e.expr2.instance_of? ValExpr)
-        column_index = cfinfo.column_metadata.index do |col| 
-          col.name == e.expr1.field_name
+        # remove trailing . for string comparison ops
+        eop = e.op.sub /\./, ''
+        if !(PUSH_OPS.include? e.op)
+          push_index = false
+          hop_warn "#{e.op} is not an index-pushable comparison"
+          next
         end
-        return nil if !column_index
-        column = cfinfo.column_metadata[column_index]
-        return nil if !column.index_type
-        index_clause += [{:column_name => column.name, :comparison => e.op, 
-                           :value => to_cassandra_val(e.expr2.val, column)}]
-        has_eq = true if e.op == '=='
-      end
+        if !(e.expr1.instance_of? DotExpr)
+          push_index = false
+          hop_warn "first comparison operand is not a member access"
+          next
+        end
+        if !(e.expr1.obj.instance_of? RefExpr) || e.expr1.obj.rname != @current_var
+          push_index = false
+          hop_warn "variable being accessed is not iterator variable"
+          next
+        end
+        # get value of the second expression
+        expr2_val = nil
+        if e.expr2.instance_of? ValExpr
+          expr2_val = e.expr2.val
+        elsif e.expr2.instance_of? RefExpr
+          cvar_name = e.expr2.rname
+          unless cvar_name == @current_var
+            begin
+              expr2_val = varStore.get cvar_name
+            rescue VarNotFound              
+            end
+          end
+        end
+        unless expr2_val
+          push_index = false
+          hop_warn "second comparison operand is not a constant/outside variable"
+          next
+        end
+        # check if key, list of columns (2d) or column
+        if e.expr1.field_name == @keyname
+          if eop == '<' || eop == '<='
+            key_end = to_cassandra_val(expr2_val, key_type)
+          elsif eop == '>' || eop == '>='
+            key_start = to_cassandra_val(expr2_val, key_type)
+          elsif eop == '=='
+            key_start = to_cassandra_val(expr2_val, key_type)
+            key_end = to_cassandra_val(expr2_val, key_type)
+          end
+        elsif e.expr1.field_name == @colname
+          if eop == '<' || eop == '<='
+            col_end = to_cassandra_val(expr2_val, col_type)
+          elsif eop == '>' || eop == '>='
+            col_start = to_cassandra_val(expr2_val, col_type)
+          elsif eop == '=='
+            col_start = to_cassandra_val(expr2_val, col_type)
+            col_end = to_cassandra_val(expr2_val, col_type)
+          end
+        else
+          column_index = cfinfo.column_metadata.index do |col| 
+            col.name == e.expr1.field_name
+          end
+          if !column_index
+            push_index = false
+            hop_warn "column #{e.expr1.field_name} not found in database"
+            next
+          end
+          column = cfinfo.column_metadata[column_index]
+          if !column.index_type
+            push_index = false
+            hop_warn "column #{e.expr1.field_name} is not indexed"
+            next
+          end
+          index_clause += 
+            [{
+               :column_name => column.name, 
+               :comparison => eop, 
+               :value => to_cassandra_val(
+                  expr2_val, cassandra_type(column.validation_class))
+             }]
+          has_eq = true if eop == '=='
+        end # key / column
+      end # @filter_leaves.each
+      # check for eq in indices
       if !has_eq
-        warn "no == operator in filter expression"
-        return nil
+        hop_warn "no == operator in filter expression"
+        push_index = false
       end
-      index_clause
+      index_clause = nil if !push_index
+      return key_start,key_end,col_start,col_end,index_clause
     end
 
     # gets short cassandra type string from full name
@@ -151,9 +217,9 @@ module Hopsa
     end
 
     # converts hoplang value to cassandra value for specific column type
-    def to_cassandra_val(hv, col)
-      hv if !col
-      if cassandra_type(col.validation_class) == 'LongType'
+    def to_cassandra_val(hv, cass_type)
+      hv if !cass_type
+      if cass_type == 'LongType'
         Cassandra::Long.new(hv.to_i).to_s
       else
         hv
@@ -165,8 +231,14 @@ module Hopsa
       # keys and columns which need conversion to long
       cfinfo = @cassandra.column_families[@column_family.to_s]
       @columns_to_long = []
+      if cassandra_type(cfinfo.key_validation_class) == 'LongType'
+        @columns_to_long += [@keyname]
+      end
       if cassandra_type(cfinfo.comparator_type) == 'LongType'
-        @columns_to_long += ['key']
+        @columns_to_long += [@colname]
+      end
+      if cassandra_type(cfinfo.default_validation_class) == 'LongType'
+        @columns_to_long += [@valuename]
       end
       cfinfo.column_metadata.each do |column_info|
         if cassandra_type(column_info.validation_class) == 'LongType'
@@ -174,14 +246,33 @@ module Hopsa
         end
       end
       # build index clause if possible
-      @index_clause = filter_exprs? @where_expr
+      key_start,key_end,col_start,col_end,@index_clause = 
+        filter_exprs?(@where_expr)
+      opts = {}
       if @index_clause && @push_index
-        ind_iter = IndexedIterator.new @cassandra, @column_family, @index_clause
-        @enumerator = ind_iter.to_enum(:each)
-        warn 'index pushed to Cassandra'
+        opts[:key_start] = key_start if key_start
+        ind_iter = 
+          IndexedIterator.new @cassandra, @column_family, @index_clause, opts
+        @enumerator = ind_iter.to_enum :each
+        hop_warn 'index filter pushed to Cassandra'
       else
-        @enumerator = @cassandra.to_enum(:each, @column_family)
-        warn 'index not pushed to Cassandra' if @where_expr
+        opts[:start_key] = key_start if key_start
+        opts[:finish_key] = key_end if key_end
+        opts[:start] = col_start if col_start
+        opts[:finish] = col_end if col_end
+        @enumerator = @cassandra.to_enum :each, @column_family, opts
+        if @where_expr
+          if key_start || key_end || col_start || col_end
+            if key_start || key_end
+              hop_warn 'key filter pushed to Cassandra'
+            end
+            if col_start || col_end
+              hop_warn 'column filter pushed to Cassandra'
+            end
+          else
+            hop_warn 'filter not pushed to Cassandra'
+          end
+        end
       end
     end
 
@@ -189,5 +280,6 @@ module Hopsa
     def to_long(s)
       Cassandra::Long.new(s).to_i.to_s
     end
-  end
-end
+
+  end # class Cassandra
+end # module Hopsa

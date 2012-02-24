@@ -5,7 +5,12 @@ class Hash
   def hop_clone
     ret=self.clone
     self.each do |k,v|
-      ret[k]=v.clone
+      begin
+#        hop_warn "CLONE: #{k} => #{v.inspect}"
+        ret[k]=v.hop_clone
+      rescue
+        ret[k]=v.clone
+      end
     end
     ret
   end
@@ -15,20 +20,20 @@ module Hopsa
   class VarStore
 
     protected
-    attr_reader :scalarStore, :streamStore, :cortegeStore
+    attr_reader :scalarStore, :streamStore, :cortegeStore, :ex
 
     public
 
     def initialize(ex, dontcopy=nil)
-      warn "New varstore #{object_id}. Parent - #{ex} (#{caller})"
+      #hop_warn "New varstore #{object_id}. Parent - #{ex} (#{caller})"
       @ex=ex
-      
+
       begin
         copy(ex.parent.varStore) if not dontcopy
         return
       rescue NoMethodError
-      
-        warn "NEW EMPTY VARSTORE"
+
+        hop_warn "NEW EMPTY VARSTORE"
         @scalarStore=Hash.new
         @cortegeStore=Hash.new
         @streamStore=Hash.new
@@ -36,10 +41,17 @@ module Hopsa
     end
 
     def copy(vs)
-      warn "Copy varstore #{object_id} from #{vs.object_id}. Parent - #{@ex}"
+      hop_warn "Copy varstore #{@ex.to_s} from #{vs.ex.to_s}. (#{@ex})"
       @scalarStore=vs.scalarStore.hop_clone
       @cortegeStore=vs.cortegeStore.hop_clone
       @streamStore=vs.streamStore.hop_clone
+    end
+
+    def merge(vs)
+      hop_warn "Merge varstore #{@ex.to_s} from #{vs.ex.to_s}. (#{@ex})"
+      @scalarStore.merge(vs.scalarStore.hop_clone)
+      @cortegeStore.merge(vs.cortegeStore.hop_clone)
+      @streamStore.merge(vs.streamStore.hop_clone)
     end
 
     def addScalar(name)
@@ -54,8 +66,20 @@ module Hopsa
       @cortegeStore[name]={}
     end
 
+    def delScalar(name)
+      @scalarStore.delete name
+    end
+
+    def delStream(name)
+      @streamStore.delete name
+    end
+
+    def delCortege(name)
+      @cortegeStore.delete name
+    end
+
     def getScalar(name)
-      #warn ">>Read #{name} = #{@scalarStore[hopid][name]}"
+      #hop_warn ">>Read #{name} = #{@scalarStore[hopid][name]}"
 
       #!!!! TODO - only in debug version
       raise VarNotFound unless @scalarStore.has_key? name
@@ -88,7 +112,7 @@ module Hopsa
       #!!!! TODO - only in debug version
       raise VarNotFound unless @cortegeStore.has_key? name
       val.each_pair{|key,value|
-        #warn ">>SET #{name}: #{hopid} #{name}.#{key} = #{value}"
+        #hop_warn ">>SET #{name}: #{hopid} #{name}.#{key} = #{value}"
         @cortegeStore[name][key]=value
       }
     end
@@ -108,18 +132,18 @@ module Hopsa
         elsif @cortegeStore.has_key? name
           return true
         end
-          
+
         return false
     end
 
     def copyStreamFromParent(name,parent)
       @streamStore[name]=parent.streamStore[name]
     end
-    
+
     def print_store
-      ret=''
+      ret="VARSTORE [#{@ex.to_s}]\n"
       each do |name,var|
-        ret+="::> #{name} = #{var.inspect}"
+        ret+="::> #{name} = #{var.inspect}\n"
       end
       ret
     end
@@ -136,7 +160,7 @@ module Hopsa
     end
 
     def get(name)
-      
+
       if @streamStore.has_key? name
         return @streamStore[name].get
       elsif @scalarStore.has_key? name

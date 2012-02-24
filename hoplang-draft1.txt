@@ -51,7 +51,8 @@ Post				f(x,y),x.n			 unary
 Unary				-,not						 unary						
 Mul					*,/,%						 left							
 Add					+,&,-						 left							& is string concatenation
-Rel					<,>,<=,=>,==,!=	 none							
+Rel					<,>,<=,=>,==,!=	 none							dotted variants are for strings
+						<., >., <=., >=.									
 And					and							 left							short-circuit
 Or					or,xor					 left							short-circuit or
 Named				n => e					 none							naming expressions for yielding
@@ -68,3 +69,19 @@ but no conversion is performed. For ., the left-side object must be a hash, or
 an error will occur. For => operator, the left side must be an id, and the right
 side can be any expression. & is an operator which does concatenation on
 strings. 
+
+Hoplang parameters
+
+Parameters must be specified on a command line after scripts, the syntax is
+name=value. A single parameter must be specified completely within a single
+command line argument. If the value contains spaces, the shell must be
+instructed to pass them as command line arguments. In bash, this is performed
+either by enclosing the argument in quotes "" or '', or by escaping spaces using
+backslash \. Parameters must be declared either in script itself or in
+configuration file (hopsa.conf) for the script to use them. In both cases,
+default value can be specified, which is assigned to a parameter if it is not
+specified on the command line. Precedence for assignment of parameter values is
+(from highest to lowest): command line, value from script, value from
+config. See paramtest.hpl for example of using parameters.
+
+./hoprun.rb script.hpl arg1=value1 arg2=value2 ... argN=valueN

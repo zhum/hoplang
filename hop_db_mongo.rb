@@ -10,15 +10,24 @@ module Hopsa
       @db_var=db_var
     end
 
+    def dv_var
+      @db_var
+    end
+
     def unary(ex,op)
       #return '(not '+ex.to_s+')' if (op == 'not') or (op == '!')
       return nil
     end
 
+    OPS={'>' => '$gt', '<' => '$lt', '<=' => '$lte', '>=' => '$gte',
+         '!=' => '$ne'}
+    REV_OPS={'<' => '$gt', '>' => '$le', '>=' => '$lte', '<=' => '$gte',
+         '!=' => '$ne'}
+
     def binary(ex1,ex2,op)
       return nil if ex1.nil? or ex2.nil?
 
-      warn "MONGO BINARY: #{ex1}, #{ex2}, #{op}"
+      hop_warn "MONGO BINARY TODB: #{ex1}, #{ex2}, #{op}"
       case op
       when '+'
         return nil
@@ -42,6 +51,22 @@ module Hopsa
         return ex1.to_s => {'$ne' => ex2.to_s}
       end
       return nil
+    end
+
+    def or(ex1,ex2)
+        #left=ex1.to_db
+        #right=ex2.to_db
+        #return nil if left.nil? or right.nil?
+
+      return {'$or' => [ex1, ex2]}
+    end
+
+    def and(ex1,ex2)
+        #left=ex1.to_db
+        #right=ex2.to_db
+        #return nil if left.nil? or right.nil?
+
+      return {'$and' => [ex1, ex2]}
     end
 
     def value(ex)
@@ -71,9 +96,9 @@ module Hopsa
             if @where_clause.eval(@context)
               yield row
             end
-          else
-            yield row
           end
+        rescue => e
+          hop_warn "MONGO_DB Exception: #{e.message}\n"+e.backtrace.join("\t\n")
         end
         raise StopIteration
 
@@ -94,7 +119,7 @@ module Hopsa
 
       if not cfg['user'].nil?
         if db.authenticate(cfg['user'], cfg['password'])
-          warn "Auth with MongoDB failed"
+          hop_warn "Auth with MongoDB failed\n"
         end
       end
       @push_index = true
@@ -110,7 +135,7 @@ module Hopsa
       begin
         val = @enumerator.next
       rescue StopIteration
-        warn "finished iteration"
+        hop_warn "finished iteration"
       end
       varStore.set(@current_var, val)
     end
@@ -142,14 +167,15 @@ module Hopsa
     def lazy_init
       # build index clause if possible
       @index_clause,@where_clause = create_filter @where_expr
+      hop_warn "INDEX: #{@index_clause.inspect}"
       if @index_clause and @push_index
         ind_iter = IndexedIterator.new @db, @collection, @index_clause, @where_clause ,self
         @enumerator = ind_iter.to_enum(:each)
-        warn "index pushed to Mongo #{@where_expr.to_s}"
+        hop_warn "index pushed to Mongo #{@where_expr.to_s}"
       else
-        ind_iter = IndexedIterator.new @db, @collection, nil
+        ind_iter = IndexedIterator.new @db, @collection, nil, @where_clause ,self
         @enumerator = ind_iter.to_enum(:each)
-        warn 'index not pushed to Mongo' if @where_expr
+        hop_warn 'index not pushed to Mongo' if @where_expr
       end
     end # lazy_init
   end # MongoHopstance

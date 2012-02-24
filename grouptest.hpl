@@ -1,0 +1,12 @@
+out = group x by x.user in ttt2 where x.np > 1
+ var delta
+ var sum
+ var count
+ delta = x.end - x.start * 1 + 0
+ sum = sum+delta
+ count = count + 1
+final
+  yield user => x.user, sum => sum / count
+end
+
+print out

@@ -28,7 +28,7 @@ module Hopsa
       end # each
     end # IndexedIterator
 
-    def initialize(parent, source)
+    def initialize(parent, source, current_var, where)
       super(parent)
       cfg = Config['varmap'][source]
       address = cfg['address'] || 'localhost'
@@ -213,6 +213,7 @@ module Hopsa
     # lazy initialization, done on reading first element
     def lazy_init
       # keys and columns which need conversion to long
+      hop_warn "COLUMN: #{@column_family}"
       cfinfo = @cassandra.column_families[@column_family.to_s]
       @columns_to_long = []
       if cassandra_type(cfinfo.key_validation_class) == 'LongType'

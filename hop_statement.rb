@@ -64,6 +64,7 @@ module Hopsa
     # creates new Hopstance and returns it and next text line
     # ret: Hopstance,newStartLine
     def self.createNewRetLineNum(parent,text,startLine)
+      @line=startLine
       startLine -=1
       while (true)
         #hop_warn "PROCESS #{text[startLine]}"
@@ -205,6 +206,7 @@ module Hopsa
     end
     def createNewRetLineNum(parent,text,startLine)
       line,pos = Statement.nextLine(text,startLine);
+      @line=startLine
       raise SyntaxError if !line.match /\s*if\s+(.*)/
       @cond_expr = HopExpr.parse_cond $1
       hop_warn @cond_expr.inspect
@@ -263,6 +265,7 @@ module Hopsa
 
     def createNewRetLineNum(parent,text,startLine)
       line,pos = Statement.nextLine(text,startLine);
+      @line=startLine
       raise SyntaxError if !line.match /\s*while\s+(.*)/
       @cond_expr = HopExpr.parse_cond $1
       hop_warn @cond_expr.inspect
@@ -294,26 +297,28 @@ module Hopsa
   end # WhileStatement
 
   class LetStatement < Statement
-    def self.createNewRetLineNum(parent,text,startLine)
+    def self.createNewRetLineNum(parent,text,startLine=nil)
 
       line,startLine=nextLine(text,startLine)
+      @line=startLine
       #line =~ /^(\S+)\s*=\s*(.*)/
       #expression,* = HopExpression.line2expr($2)
       expression = HopExpr.parse(line)
       #puts expression.inspect
       #ret = LetStatement.new parent, $1, expression
-      ret = LetStatement.new parent, expression
+      ret = LetStatement.new parent, expression, startLine
       return ret,startLine+1
     end
 
-    def initialize(parent, expr)
+    def initialize(parent, expr, line)
       super(parent)
       # @varname=var
       @expression=expr
+      @line=line
     end
 
     def hop_clone
-      LetStatement.new(@parent,@expression.hop_clone)
+      LetStatement.new(@parent,@expression.hop_clone,@line)
     end
 
     def hop

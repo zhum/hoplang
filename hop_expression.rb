@@ -154,7 +154,10 @@ module Hopsa
     end
     def eval(ex)
       o = @obj.eval(ex)
-      hop_warn "applying . to not a tuple (#{o.class} = #{o.inspect})" unless o.is_a? Hash
+      unless o.is_a? Hash
+        hop_warn "applying . to not a tuple (#{o.class} = #{o.inspect}) #{ex.varStore.print_store}"
+        return nil
+      end
       # puts "obj = #{o.inspect}"
       r = o[@field_name]
       # puts "obj.#{field_name} = #{r}"
@@ -238,6 +241,7 @@ module Hopsa
     end
     # performs assignment and always returns nil
     def eval(ex)
+#      hop_warn "DO #{expr2}"
       val = expr2.eval(ex)
       expr1.ass(ex, val)
       return nil

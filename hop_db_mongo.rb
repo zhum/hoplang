@@ -1,5 +1,5 @@
 require 'rubygems'
-#require 'bson'
+require 'bson'
 require 'mongo'
 
 module Hopsa
@@ -108,22 +108,30 @@ module Hopsa
         @context=context
       end
 
+      def to_hash(h)
+        ret={}
+        h.each_pair{ |k,v|
+          ret[k]=v.to_s unless k == '_id'
+        }
+        return ret
+      end
+
       def each
         begin
           coll = @db[@collection]
 
-          iter = coll.find(@index_clause)
+#          iter = coll.find(@index_clause)
           hop_warn "SEARCH: #{@index_clause}"
-          iter.each do |row|
+          coll.find(@index_clause).each { |row|
             if @where_clause
               hop_warn "WHERE=#{@where_clause.inspect}"
               if @where_clause.eval(@context)
-                yield row
+                yield to_hash row
               end
             else
-              yield row
+              yield to_hash row
             end
-          end
+          }
         rescue => e
           hop_warn "MONGO_DB Exception: #{e.message}\n"+e.backtrace.join("\t\n")
         end
@@ -142,7 +150,9 @@ module Hopsa
       @db = Mongo::Connection.new(address, port).db(database)
       @collection = cfg['collection'].to_sym
       @current_var = current_var
-      @where_expr = HopExpr.parse(where)
+      unless where.nil? or where == ''
+        @where_expr = HopExpr.parse(where)
+      end
 
       if not cfg['user'].nil?
         if db.authenticate(cfg['user'], cfg['password'])
@@ -183,6 +193,8 @@ module Hopsa
     # supported in future
     #PUSH_OPS = ['<', '<=', '>', '>=', '==']
     def create_filter(filter)
+      return nil,nil if filter.nil?
+
       cfinfo = @db.collection_names
 
       db_conv=MongoDBConv.new(@current_var)

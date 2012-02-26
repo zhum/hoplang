@@ -127,6 +127,18 @@ module Hopsa
           end
           redo
 
+          # query parameter
+        when /^param\s+(\w+)\s*(?:=\s*(\S+))/
+          name=$~[1]
+          val=$~[2]
+          if Config.varmap.has_key? name
+            # just update value, if any
+            parent.varStore.set(name, val) if val && !Param.cmd_arg_val(name)
+          else
+            # add variable and value
+            parent.varStore.addScalar name
+            parent.varStore.set name, Param.cmd_arg_val(name) || val
+          end
           # removed zhumcode begin
           # cortege variable
           # TODO: deprecate, so that it it the same as scalar variable

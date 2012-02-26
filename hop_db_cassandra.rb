@@ -44,7 +44,9 @@ module Hopsa
       @push_index = true 
       @push_index = false if cfg['push_index'] && cfg['push_index'] == 'false'
       @items_read = 0
-      conn_addr = "#{address}:#{port}"      
+      conn_addr = "#{address}:#{port}"
+      @current_var = current_var
+      @where_expr = HopExpr.parse where
       @cassandra = Cassandra.new @keyspace, conn_addr
       @enumerator = nil
     end
@@ -80,7 +82,8 @@ module Hopsa
     # f is the name of the field of the variable, and that field is indexed (for
     # Cassandra) 
     # op is one of <, <=, >, >=, ==
-    # expr is an expression of simple form, currently must be a constant
+    # expr is an expression of simple form, currently must be either a constant
+    # or a variable declared outside of this hopsance
     # currently, the order must be exact (i.e. v.f to the left only), in future
     # the requirement will be relaxed.
     # the return tuple is of the form:
@@ -134,32 +137,45 @@ module Hopsa
         end
         if !(e.expr1.obj.instance_of? RefExpr) || e.expr1.obj.rname != @current_var
           push_index = false
-          hop_warn "variable being accessed is not iteratable variable"
+          hop_warn "variable being accessed is not iterator variable"
           next
         end
-        if !(e.expr2.instance_of? ValExpr)
+        # get value of the second expression
+        expr2_val = nil
+        if e.expr2.instance_of? ValExpr
+          expr2_val = e.expr2.val
+        elsif e.expr2.instance_of? RefExpr
+          cvar_name = e.expr2.rname
+          unless cvar_name == @current_var
+            begin
+              expr2_val = varStore.get cvar_name
+            rescue VarNotFound              
+            end
+          end
+        end
+        unless expr2_val
           push_index = false
-          hop_warn "second comparison operand is not a value expression"
+          hop_warn "second comparison operand is not a constant/outside variable"
           next
         end
         # check if key, list of columns (2d) or column
         if e.expr1.field_name == @keyname
           if eop == '<' || eop == '<='
-            key_end = to_cassandra_val(e.expr2.val, key_type)
+            key_end = to_cassandra_val(expr2_val, key_type)
           elsif eop == '>' || eop == '>='
-            key_start = to_cassandra_val(e.expr2.val, key_type)
+            key_start = to_cassandra_val(expr2_val, key_type)
           elsif eop == '=='
-            key_start = to_cassandra_val(e.expr2.val, key_type)
-            key_end = to_cassandra_val(e.expr2.val, key_type)
+            key_start = to_cassandra_val(expr2_val, key_type)
+            key_end = to_cassandra_val(expr2_val, key_type)
           end
         elsif e.expr1.field_name == @colname
           if eop == '<' || eop == '<='
-            col_end = to_cassandra_val(e.expr2.val, col_type)
+            col_end = to_cassandra_val(expr2_val, col_type)
           elsif eop == '>' || eop == '>='
-            col_start = to_cassandra_val(e.expr2.val, col_type)
+            col_start = to_cassandra_val(expr2_val, col_type)
           elsif eop == '=='
-            col_start = to_cassandra_val(e.expr2.val, col_type)
-            col_end = to_cassandra_val(e.expr2.val, col_type)
+            col_start = to_cassandra_val(expr2_val, col_type)
+            col_end = to_cassandra_val(expr2_val, col_type)
           end
         else
           column_index = cfinfo.column_metadata.index do |col| 
@@ -181,7 +197,7 @@ module Hopsa
                :column_name => column.name, 
                :comparison => eop, 
                :value => to_cassandra_val(
-                  e.expr2.val, cassandra_type(column.validation_class))
+                  expr2_val, cassandra_type(column.validation_class))
              }]
           has_eq = true if eop == '=='
         end # key / column

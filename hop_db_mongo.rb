@@ -10,6 +10,10 @@ module Hopsa
       @db_var=db_var
     end
 
+    def dv_var
+      @db_var
+    end
+
     def unary(ex,op)
       #return '(not '+ex.to_s+')' if (op == 'not') or (op == '!')
       return nil

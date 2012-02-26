@@ -295,6 +295,12 @@ module Hopsa
     end
 
     def createNewRetLineNum(parent,text,startLine)
+      # load arguments from config file
+      Config.parmap.each do |par, val| 
+        varStore.addScalar par
+        varStore.set par, (Param.cmd_arg_val(par) || val)
+      end
+
       begin
         while true
           hopstance,startLine=Hopstance.createNewRetLineNum(self,text,startLine)

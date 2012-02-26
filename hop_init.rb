@@ -1,8 +1,8 @@
 module Hopsa
 
-
   def load_program(text)
     Hopsa::Config.load
+    Hopsa::Param.load
     return TopStatement.createNewRetLineNum(nil,text,0)
   end
 

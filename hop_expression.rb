@@ -106,18 +106,23 @@ module Hopsa
     end
     def eval(ex)
 #      hop_warn "REF #{@rname} =>#{ex.to_s}\n#{ex.varStore.print_store}"
-      ex.varStore.get(@rname)
+      ex.varStore.get @rname
     end
     # assigns result to a variable
     def ass(ex, val)
-      ex.varStore.set(@rname, val)
+      ex.varStore.set @rname, val
       return nil
     end
 
-    def to_db(ex,db)
+    def to_db(ex,db)      
       hop_warn "REF=#{@rname}"
-      #val=eval(ex)
-      db.value(@rname)
+      if @rname == db.db_var
+        # special case of iterator variable
+        db.value @rname
+      else
+        # just an outer variable, get the value
+        ex.varStore.get @rname
+      end
     end
 
     def to_s

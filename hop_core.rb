@@ -26,7 +26,7 @@ module Hopsa
       begin
         ret=JSON::load data
         unless ret.is_a? Hash
-          hop_warn "Not a hash readed: (class=#{ret.class}, data=#{ret.inspect})"
+          raise "Not a hash readed: (class=#{ret.class})"
           ret=nil
         end
       rescue => e

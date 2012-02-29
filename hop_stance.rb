@@ -25,6 +25,7 @@ module Hopsa
     attr_accessor :outPipe, :inPipe, :varStore
 
     def join_threads
+      @@threads ||= []
       @@threads.each do |t|
         hop_warn "T: #{t} #{t.status}"
         t.join
@@ -35,7 +36,9 @@ module Hopsa
     def new_thread &block
 
       @@threads ||= []
-      @@threads.push(Thread.new(&block))
+      t=Thread.new(&block)
+      t.abort_on_exception=true
+      @@threads.push(t)
     end
   end
 

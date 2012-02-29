@@ -11,7 +11,6 @@ module Hopsa
       varStore.delStream(@stream_var)
       varStore.addCortege(@stream_var)
       @pipe=pipe
-      @result=[]
       @name=name
 
       # rebase chains for local varstore
@@ -24,31 +23,47 @@ module Hopsa
     end
 
     def do_yield(hash)
-      # push data into out pipe
       #dump_parents
 #      hop_warn "GROUP EX YIELD #{@name}/#{object_id}: (#{hash.inspect})"
 #      hop_warn "GROUP EX Y #{@parent.to_s}/#{@parent.object_id}"
-      varStore.set(@stream_var,hash)
+#      varStore.set(@stream_var,hash)
+      Thread.current['result'] << hash
     end
 
     def hop
 #      hop_warn "GROUP loop #{@name}"
+      var=nil
       loop do
         var=@pipe.get
+#-        empty=true
+#-        while empty 
+#-          @pipe.synchronize do
+#-            unless Thread.current['input'].empty?
+#-              var=Thread.current['input'].shift
+#-              empty=false
+#-              hop_warn "THREAD #{@name} GOT #{var.inspect}"
+#-            end
+#-          end
+#-          sleep 0.1 if empty
+#-        end
+
 #        hop_warn "GROUP #{@name}: GOT #{var.inspect}"
+#        hop_warn "VAR(#{@name})=#{var.inspect}"
         if(var.nil?)
-#          hop_warn "GROUP #{@name} final start -> #{@stream_var}"
+          hop_warn "GROUP #{@name} final start -> #{@stream_var}"
 #          hop_warn ">> #{@finalChain.executor.varStore.print_store}"
+          @finalChain.executor=self
           @finalChain.hop
           result=varStore.get(@stream_var)
+#          hop_warn "<< #{@finalChain.executor.varStore.print_store}"
 #          hop_warn "GROUP #{@name} final end (#{result})"
 #          hop_warn "final success #{varStore.print_store}"
           return result
         end
         varStore.set(@current_var,var)
-#        hop_warn "GROUP MAIN #{@name} .....#{varStore.print_store}"
+        #hop_warn "GROUP MAIN #{@name} .....#{varStore.print_store}"
         @mainChain.hop
-#        hop_warn "main success #{varStore.print_store}"
+        #hop_warn "main success #{varStore.print_store}"
       end
     end
   end
@@ -83,7 +98,7 @@ module Hopsa
         stream_hopstance=MyDatabaseEachHopstance.new(parent)
       elsif(@@hoplang_databases.include? type)
         typename=(type.capitalize+'Hopstance').to_class
-        stream_hopstance = typename.new parent, source
+        stream_hopstance = typename.new parent, source, current_var, where
       elsif(type=='split') then
         i=1
         types_list=Array.new
@@ -145,6 +160,7 @@ module Hopsa
       #hop_warn @group_expr.inspect
 
       @groups={}
+      @threads={}
 
       pos+=1
       hop_warn "GROUP: #{stream_var},#{current_var},#{group_expr},#{source},#{where}"
@@ -183,10 +199,12 @@ module Hopsa
       varStore.merge(@parent.varStore)
       @stream_hopstance.varStore.merge(varStore)
       @stream_hopstance.hop
+      workers={}
+      pipes={}
+      @new_mutex=Mutex.new
 
-#      new_thread do
+      new_thread do
         begin
-          workers=[]
           while not (val=readSource).nil?
             if @where_expr && !@where_expr.eval(self)
               next
@@ -195,58 +213,85 @@ module Hopsa
             # calculate group
             group=@group_expr.eval(self)
 #            hop_warn "GROUP EXPR #{@group_expr.inspect} = #{@group} (#{@current_var})"
-            if @groups[group].nil?
+            if pipes[group].nil?
               #create new group thread
-              @groups[group]=HopPipe.new
+#              hop_warn "HHH #{group} #{pipes[group]} #{Thread.current}"
+              pipe=HopPipe.new
+              pipes[group]=pipe
 
+#-              @groups[group]=Mutex.new
               #start group processor
-              workers << Thread.new {
-              #parent,pipe,store,current_var,stream_var,chain,final
-                hop_warn "GROUP THREAD #{Thread.current} start for #{group} (#{self})"
-                executor=GroupExecutor.new(self,@groups[group],varStore,
-                                       @current_var,@stream_var,
-                                       @mainChain,@finalChain,group)
-#                hop_warn "GROUP THREAD #{t} executor for #{group} #{executor}"
-                result=executor.hop
-                Thread.current['result']=result
-#                hop_warn "GROUP THREAD #{Thread.current} end: #{result.inspect}"
-              }
+              main_thread=Thread.current
+              main_thread['barrier']=true
+              t= Thread.new do
+                my_group=nil
+                my_pipe=nil  
+                executor=nil
+                  my_group=group
+                  Thread.current['input']=[]
+                  my_pipe=pipes[group]
+                  hop_warn "GROUP THREAD start #{my_group} #{Thread.current} (#{self})"
+                  #parent,pipe,store,current_var,stream_var,chain,final
+                  executor=GroupExecutor.new(self,my_pipe,varStore,
+                                         @current_var,@stream_var,
+                                         @mainChain,@finalChain,my_group)
+                Thread.current['result']=[]
+                main_thread['barrier']=false
+                executor.hop
+                hop_warn "GROUP THREAD end #{my_group} #{Thread.current}: #{Thread.current['result'].inspect}"
+              end
+
+              @threads[group]=t
+              t.abort_on_exception=true
+              while main_thread['barrier']
+                sleep 0.1
+              end
             end
 
-            @groups[group].put(val)
 #            hop_warn "PUT #{group} #{val.inspect}"
+#-            @groups[group].synchronize do
+#-              @threads[group]['input'] << val
+#-            end
+            pipes[group].put(val)
           end #while read source
 
           # process final section
-#          hop_warn "START GROUP final chain (#{@finalChain})"
+          hop_warn "START GROUP final chain (#{@finalChain})"
           #hop_warn @groups.inspect
-          @groups.each_pair do |name,pipe|
-#            hop_warn "GROUP thread finishing #{name}"
+          pipes.each_pair do |name,pipe|
+            hop_warn "GROUP thread finishing #{name}"
             pipe.put(nil)
+#-            @groups[group].synchronize do
+#-              @threads[group]['input'] << nil
+#-              @threads[group]['input'] << nil
+#-              @threads[group]['input'] << nil
+#-            end
           end
 
-          workers.each do |t|
-#            hop_warn "Try to join #{t} (#{t.status})"
+          @threads.each_pair do |name,t|
+            hop_warn "Try to join #{name} #{t} (#{t.status})"
             fin=t.join
-#            hop_warn "GROUP Thread #{t} joined (#{fin}/#{t.status})"
+            hop_warn "GROUP Thread #{t} joined (#{fin}/#{t.status})"
             #put result to output stream
-            a=[]
-            a<< t['result']
-#            hop_warn "Result: #{a.inspect}"
-            a.each {|val| do_yield val}
+            #a=[]
+            a= t['result']
+            hop_warn "Result (#{name}): #{a.inspect}"
+            a.each {|val|  do_yield(val)}
+            hop_warn "Yielded"
           end
-#          hop_warn "GROUP FINISHED!\n-------------------------------"
+          hop_warn "GROUP FINISHED!\n-------------------------------"
           # write EOF to out stream
           do_yield(nil)
         rescue => e
           hop_warn "Exception in #{@stream_var} <- #{@source} (#{@mainChain}: #{e}. "+e.backtrace.join("\t\n")
         end
-#      end #~Thread
+      end #~Thread
     end
 
-    def do_yield(hash)
+    def do_yield(hash) # FOR EXECUTOR ACTUALLY!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       # push data into out pipe
-#      hop_warn "YYYY1 (#{hash.inspect})"
+    
+      hop_warn "YYYY1 #{@name}: #{hash.inspect}"
       varStore.set(@stream_var,hash)
     end
 

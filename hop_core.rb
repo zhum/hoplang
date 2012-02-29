@@ -1,79 +1,151 @@
 require 'thread'
+require 'json'
 
 module Hopsa
   class HopPipe
 
-    def initialize(copy=nil)
+    attr_reader :pipe_mutex
+#    @pipe_mutex=Mutex.new
+
+    def initialize(copy=nil,old_mutex=nil)
       copy ||= File.pipe
       @read_io, @write_io = copy
+      @pipe_mutex= old_mutex.nil? ? Mutex.new : old_mutex
+#      hop_warn "MUTEX: #{@pipe_mutex} / #{old_mutex}"
+      @data=''
+      @buffer=[]
     end
 
     def hop_clone
-      HopsaPipe.new(@read_io)
+      hop_log "PIPE CLONE: #{@pipe_mutex}"
+      HopsaPipe.new([@read_io,@write_io],@pipe_mutex)
+    end
+
+    def unpack_data(data)
+      ret=nil
+      begin
+        ret=JSON::load data
+        unless ret.is_a? Hash
+          hop_warn "Not a hash readed: (class=#{ret.class}, data=#{ret.inspect})"
+          ret=nil
+        end
+      rescue => e
+        if data =~ /null/
+          hop_warn "NULL READED: #{data}"
+          return nil
+        end
+#        return nil if data == ""
+        hop_warn "DATA READ ERROR: #{e.message} (#{data.inspect})\n"+e.backtrace.join("\t\n");
+        return nil
+      end
+      return ret
     end
 
     def get
 
-      if @read_io.eof?
-        hop_warn "EOF!"
-        return nil
+#      if @read_io.eof?
+#        hop_warn "EOF!"
+#        return unpack_data @data
+#      end
+
+      if @buffer.size >0
+        return unpack_data @buffer.shift
       end
 
-      data=''
-      while true do
-      begin
-        new_data=@read_io.gets
-        if new_data.nil? or /~END~RECORD~/ =~ new_data
-          ret=YAML::load data
-#          hop_warn "PIPE GET #{object_id} VAL: #{ret.inspect}"
-          hop_warn "AND EOF!" if new_data.nil?
-          hop_warn "PIPE NIL!!! (class=#{ret.class})" if ret.class != Hash
-          return ret
-        else
-          data+=new_data
-        end
-      rescue EOFError
-        hop_warn "EOF #{object_id}"
-        return YAML::load data
-      rescue => e
-        hop_warn "PIPE Error #{object_id} (#{data}) #{e}"
-        return YAML::load data
-      end
-      end
-
+      new_data=''
       while true do
         begin
-          Thread.critical=true
-#          hop_warn "PIPE: #{@buffer.size}"
-          if @buffer.nil?
-            hop_warn "EMTY PIPE"
-            Thread.critical=false
-            Thread.pass
-          else
-            ret = @buffer.shift
-            Thread.critical=false
-            return ret
+#          r=[]
+#          @pipe_mutex.synchronize do
+#            r=select([@read_io],[],[],0.01)
+#            unless r.nil?
+              new_data=@read_io.gets
+#            end
+#          end
+#          if r.nil?
+#            sleep 0.1
+#            redo
+#          end
+          @data+=new_data
+
+          ret=nil
+#          hop_warn "GOT DATA0: '#{@data}'"
+          @data.gsub!(/^(.*?)\n~END~RECORD~\n/) {|str|
+            str.gsub!(/\n~END~RECORD~\n/,'')
+#            hop_warn "SHIFT #{str}"
+            @buffer << str
+            ''
+          }
+#          hop_warn "REST DATA: '#{@data}'\n("+@buffer.join(';')+")\n"
+          if @buffer.size>0
+            return unpack_data @buffer.shift
           end
-        rescue => e
-          Thread.critical=false
-          hop_warn "PIPE IS EMPTY. Wait for new values... #{e}"
-          Thread.pass
-#          sleep 1
+
+        rescue EOFError
+#          hop_warn "EOF #{object_id} / #{@data.inspect}"
+          begin
+            @data+=new_data
+
+            ret=nil
+#            hop_warn "GOT DATA1: '#{new_data}'"
+            @data.gsub!(/^(.*?)\n~END~RECORD~\n/) {|str|
+              str.gsub!(/\n~END~RECORD~\n/,'')
+              @buffer << str
+              ''
+            }
+            if @buffer.size>0
+              return unpack_data @buffer.shift
+            end
+          rescue => e
+            hop_warn "JSON ERROR: #{@data.inspect}"
+          end
+          return nil
+        rescue Exception => e
+          hop_warn "PIPE Error #{object_id} (#{@data}) #{e.message}"+e.backtrace.join("\t\n")
+          return nil
         end
       end
+
+      return nil
+#      while true do
+#        begin
+#          Thread.critical=true
+##          hop_warn "PIPE: #{@buffer.size}"
+#          if @buffer.nil?
+#            hop_warn "EMTY PIPE"
+#            Thread.critical=false
+#            Thread.pass
+#          else
+#            ret = @buffer.shift
+#            Thread.critical=false
+#            return ret
+#          end
+#        rescue => e
+#          Thread.critical=false
+#          hop_warn "PIPE IS EMPTY. Wait for new values... #{e}"
+#          Thread.pass
+##          sleep 1
+#        end
+#      end
     end
 
     def put(value)
 
-#      hop_warn "PUT #{object_id} #{value.inspect}"
-      @write_io.puts(value.to_yaml)
-      @write_io.puts('~END~RECORD~')
-      @write_io.sync
+#      hop_warn "PUT #{value.inspect}"
+      begin
+#      @pipe_mutex.synchronize do
+        @write_io.puts(value.to_json)
+        @write_io.puts("~END~RECORD~")
+#        @write_io.sync
+#      end
+      rescue =>e
+        hop_warn "WRITE Exception: #{e.message}"
+      end
     end
 
     def empty?
 
-      return @read_io.eof?
+#      return @read_io.eof?
 
       return true if @buffer.nil?
       return @buffer.empty?

@@ -55,28 +55,15 @@ module Hopsa
       new_data=''
       while true do
         begin
-#          r=[]
-#          @pipe_mutex.synchronize do
-#            r=select([@read_io],[],[],0.01)
-#            unless r.nil?
-              new_data=@read_io.gets
-#            end
-#          end
-#          if r.nil?
-#            sleep 0.1
-#            redo
-#          end
+          new_data=@read_io.gets
           @data+=new_data
 
           ret=nil
-#          hop_warn "GOT DATA0: '#{@data}'"
           @data.gsub!(/^(.*?)\n~END~RECORD~\n/) {|str|
             str.gsub!(/\n~END~RECORD~\n/,'')
-#            hop_warn "SHIFT #{str}"
             @buffer << str
             ''
           }
-#          hop_warn "REST DATA: '#{@data}'\n("+@buffer.join(';')+")\n"
           if @buffer.size>0
             return unpack_data @buffer.shift
           end
@@ -107,52 +94,23 @@ module Hopsa
       end
 
       return nil
-#      while true do
-#        begin
-#          Thread.critical=true
-##          hop_warn "PIPE: #{@buffer.size}"
-#          if @buffer.nil?
-#            hop_warn "EMTY PIPE"
-#            Thread.critical=false
-#            Thread.pass
-#          else
-#            ret = @buffer.shift
-#            Thread.critical=false
-#            return ret
-#          end
-#        rescue => e
-#          Thread.critical=false
-#          hop_warn "PIPE IS EMPTY. Wait for new values... #{e}"
-#          Thread.pass
-##          sleep 1
-#        end
-#      end
     end
 
     def put(value)
-
-#      hop_warn "PUT #{value.inspect}"
       begin
-#      @pipe_mutex.synchronize do
         @write_io.puts(value.to_json)
         @write_io.puts("~END~RECORD~")
-#        @write_io.sync
-#      end
       rescue =>e
         hop_warn "WRITE Exception: #{e.message}"
       end
     end
 
     def empty?
-
-#      return @read_io.eof?
-
       return true if @buffer.nil?
       return @buffer.empty?
     end
 
     def to_s
-#      "#HopPipe: #{@buffer.size} elements inside."
       @read_io.nil? ? "HopPipe: non-init" : "HopPipe: is #{object_id}"
     end
     private
@@ -222,4 +180,3 @@ module Hopsa
   Thread.abort_on_exception = true
 
 end
-

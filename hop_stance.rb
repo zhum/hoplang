@@ -1,6 +1,9 @@
 class String
   def csv_escape
     gsub('"','\\"')
+    if self == ''
+      return '0'
+    end
     if(self =~ /,/)
       return '"'+self+'"'
     end
@@ -257,6 +260,10 @@ module Hopsa
       return nil if value.nil?
       if(not Config['local'].nil? and
          Config['local']['out_format'] == 'csv')
+        if value['__hoplang_cols_order'].nil?
+          hop_warn "BAD YIELD: #{value.inspect}"
+          return value
+        end
         if @out_heads.nil?
           $hoplang_print_mutex ||= Mutex.new
           @out_heads=value['__hoplang_cols_order'].split(/,/)
@@ -267,7 +274,8 @@ module Hopsa
         end
 
         $hoplang_print_mutex.synchronize do
-          puts @out_heads.map {|key| value[key].to_s.csv_escape}.join(',')
+          out= @out_heads.map {|key| value[key].to_s.csv_escape}.join(',')
+          puts out unless out =~ /NaN/ #!!!!!!!!!!!!!!!!!!!!!   HACK   !!!!!!!!!!!!!!!!!!!!!!!
         end
       else
         puts "OUT>>#{value.inspect}"
@@ -288,6 +296,12 @@ module Hopsa
     end
 
     def createNewRetLineNum(parent,text,startLine)
+      # load arguments from config file
+      Config.parmap.each do |par, val| 
+        varStore.addScalar par
+        varStore.set par, (Param.cmd_arg_val(par) || val)
+      end
+
       begin
         while true
           hopstance,startLine=Hopstance.createNewRetLineNum(self,text,startLine)

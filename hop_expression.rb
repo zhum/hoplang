@@ -106,18 +106,23 @@ module Hopsa
     end
     def eval(ex)
 #      hop_warn "REF #{@rname} =>#{ex.to_s}\n#{ex.varStore.print_store}"
-      ex.varStore.get(@rname)
+      ex.varStore.get @rname
     end
     # assigns result to a variable
     def ass(ex, val)
-      ex.varStore.set(@rname, val)
+      ex.varStore.set @rname, val
       return nil
     end
 
-    def to_db(ex,db)
+    def to_db(ex,db)      
       hop_warn "REF=#{@rname}"
-      #val=eval(ex)
-      db.value(@rname)
+      if @rname == db.db_var
+        # special case of iterator variable
+        db.value @rname
+      else
+        # just an outer variable, get the value
+        ex.varStore.get @rname
+      end
     end
 
     def to_s
@@ -154,7 +159,10 @@ module Hopsa
     end
     def eval(ex)
       o = @obj.eval(ex)
-      hop_warn "applying . to not a tuple (#{o.class} = #{o.inspect})" unless o.is_a? Hash
+      unless o.is_a? Hash
+        hop_warn "applying . to not a tuple (#{o.class} = #{o.inspect}) #{ex.varStore.print_store}"
+        return nil
+      end
       # puts "obj = #{o.inspect}"
       r = o[@field_name]
       # puts "obj.#{field_name} = #{r}"
@@ -238,6 +246,7 @@ module Hopsa
     end
     # performs assignment and always returns nil
     def eval(ex)
+#      hop_warn "DO #{expr2}"
       val = expr2.eval(ex)
       expr1.ass(ex, val)
       return nil

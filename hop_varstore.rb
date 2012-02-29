@@ -9,7 +9,11 @@ class Hash
 #        hop_warn "CLONE: #{k} => #{v.inspect}"
         ret[k]=v.hop_clone
       rescue
-        ret[k]=v.clone
+        begin
+          ret[k]=v.clone
+        rescue
+          ret[k]=v
+        end
       end
     end
     ret

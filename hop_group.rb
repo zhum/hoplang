@@ -36,7 +36,7 @@ module Hopsa
       loop do
         var=@pipe.get
 #-        empty=true
-#-        while empty 
+#-        while empty
 #-          @pipe.synchronize do
 #-            unless Thread.current['input'].empty?
 #-              var=Thread.current['input'].shift
@@ -55,9 +55,7 @@ module Hopsa
           @finalChain.executor=self
           @finalChain.hop
           result=varStore.get(@stream_var)
-#          hop_warn "<< #{@finalChain.executor.varStore.print_store}"
 #          hop_warn "GROUP #{@name} final end (#{result})"
-#          hop_warn "final success #{varStore.print_store}"
           return result
         end
         varStore.set(@current_var,var)
@@ -219,13 +217,12 @@ module Hopsa
               pipe=HopPipe.new
               pipes[group]=pipe
 
-#-              @groups[group]=Mutex.new
               #start group processor
               main_thread=Thread.current
               main_thread['barrier']=true
               t= Thread.new do
                 my_group=nil
-                my_pipe=nil  
+                my_pipe=nil
                 executor=nil
                   my_group=group
                   Thread.current['input']=[]
@@ -275,9 +272,11 @@ module Hopsa
             #put result to output stream
             #a=[]
             a= t['result']
-            hop_warn "Result (#{name}): #{a.inspect}"
-            a.each {|val|  do_yield(val)}
-            hop_warn "Yielded"
+#            hop_warn "Result (#{name}): #{a.inspect}"
+            a.each {|val|
+              do_yield(val)
+            }
+#            hop_warn "Yielded"
           end
           hop_warn "GROUP FINISHED!\n-------------------------------"
           # write EOF to out stream
@@ -290,8 +289,8 @@ module Hopsa
 
     def do_yield(hash) # FOR EXECUTOR ACTUALLY!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       # push data into out pipe
-    
-      hop_warn "YYYY1 #{@name}: #{hash.inspect}"
+
+#      hop_warn "GROUP YIELD #{@name}: #{hash.inspect}"
       varStore.set(@stream_var,hash)
     end
 

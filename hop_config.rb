@@ -20,6 +20,9 @@ module Hopsa
       def varmap
         return @data["varmap"]
       end
+      def parmap
+        return @data["parmap"]
+      end
     end
   end
 end

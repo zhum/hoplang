@@ -15,62 +15,45 @@ module Hopsa
     end
 
     def unary(ex,op)
-      #return '(not '+ex.to_s+')' if (op == 'not') or (op == '!')
-      return nil
+      return '! ('+ex.to_s+')' if (op == 'not') or (op == '!')
+      #return nil
     end
 
-    OPS={'>' => '$gt', '<' => '$lt', '<=' => '$lte', '>=' => '$gte',
-         '!=' => '$ne'}
-    REV_OPS={'<' => '$gt', '>' => '$le', '>=' => '$lte', '<=' => '$gte',
-         '!=' => '$ne'}
+#    OPS={'>' => '$gt', '<' => '$lt', '<=' => '$lte', '>=' => '$gte',
+#         '!=' => '$ne'}
+    REV_OPS={'<' => '>', '>' => '<', '>=' => '<=', '<=' => '=>',
+         '!=' => '!=', '==' => '=='}
 
     def binary(ex1,ex2,op)
 
       hop_warn "MONGO BINARY TODB: #{ex1}, #{ex2}, #{op}"
       case op
       when '+'
-        return nil
-      when '*'
-        return nil
-      when '/'
-        return nil
+        return "#{ex1} + #{ex2}"
       when '-'
-        return nil
-      when '=='
-        if ex1 =~ /^\w+$/
-          # first argument = 'dbname.field'
-          left=ex1
-        elsif ex2 =~ /^\w+$/
-          # second argument is... So swap 'em!
-          left=ex2
-          ex2=ex1
-        else
-          # not field name...
-          return nil
-        end
-        ex2= ex2.to_i if ex2 =~ /^\d+$/
+        return "#{ex1} - #{ex2}"
+      when '*'
+        return "#{ex1} * #{ex2}"
+      when '/'
+        return "#{ex1} / #{ex2}"
 
-        return {left => ex2}
-      when /^(<|>|>=|<=|!=)$/
+      when /^<|>|(>=)|(<=)|(!=)|(==)$/
         if ex1 =~ /^\w+$/
           # first argument = 'dbname.field'
           left=ex1
-          op_map=OPS
+          op2=op
         elsif ex2 =~ /^\w+$/
           # second argument is... So swap 'em!
           left=ex2
           ex2=ex1
-          op_map=REV_OPS
+          op2=REV_OPS[op]
         else
           # not field name...
           return nil
         end
 
-        #right=ex2.to_db
-        #return nil if right.nil?
-        ex2= ex2.to_i if ex2 =~ /^\d+$/
-
-        return {left => {op_map[op] => ex2}}
+        hop_warn "RET: (this.#{left} #{op2} #{ex2})"
+        return "(this.#{left} #{op2} #{ex2})"
       when '&' # string catenation
         return nil
 
@@ -79,24 +62,22 @@ module Hopsa
     end
 
     def or(ex1,ex2)
-        #left=ex1.to_db
-        #right=ex2.to_db
-        #return nil if left.nil? or right.nil?
-
-      return {'$or' => [ex1, ex2]}
+      return "(#{ex1} || #{ex2})"
     end
 
     def and(ex1,ex2)
-        #left=ex1.to_db
-        #right=ex2.to_db
-        #return nil if left.nil? or right.nil?
-
-      return {'$and' => [ex1, ex2]}
+      return "(#{ex1} && #{ex2})"
     end
 
     def value(ex)
       ret = ex.gsub(Regexp.new('\W'+@db_var+'\.'),'')
       return ret.to_s
+    end
+    
+    def wrapper(ex)
+      ex.gsub!('"','\\"');
+      hop_warn "WRAPPER: #{ex}."
+      return {'$where' => ex}
     end
   end
 
@@ -201,9 +182,9 @@ module Hopsa
 
       cfinfo = @db.collection_names
 
-      db_conv=MongoDBConv.new(@current_var)
+      db_adapter=MongoDBConv.new(@current_var)
 
-      db_expr,hop_expr=filter.to_db(self,db_conv)
+      db_expr,hop_expr=filter.db_conv(self,db_adapter)
     end
 
     # lazy initialization, done on reading first element

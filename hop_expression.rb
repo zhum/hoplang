@@ -74,6 +74,12 @@ module Hopsa
     def to_s
       ''
     end
+    
+    def db_conv(ex,db)
+      ret_db, ret_hop= self.to_db(ex,db)
+      return db.wrapper(ret_db) unless ret_db.nil?
+      return ret_hop
+    end
   end # HopExpr
 
   # expression containing a single value
@@ -90,7 +96,12 @@ module Hopsa
     def to_db(ex,db)
       #val=@expr.eval(ex)
       hop_warn "VAL=#{@val}"
-      return db.value(@val),ex #???
+      if @val =~ /^\d+$/
+        val=@val
+      else
+        val="'"+@val.to_s+"'"
+      end
+      return db.value(val),ex #???
     end
 
     def to_s
@@ -358,7 +369,7 @@ module Hopsa
               return db.or(db_val1, db_val2), ex
             else
               hop_warn "#{op}: unsupported short-cirtuit binary operator"
-              return nil, nil
+              return nil, ex
           end
         else
           # sometnig cannot be calculated

@@ -15,33 +15,44 @@ module Hopsa
     end
 
     def unary(ex,op)
-      return '! ('+ex.to_s+')' if (op == 'not') or (op == '!')
-      #return nil
+#      return '! ('+ex.to_s+')' if (op == 'not') or (op == '!')
+      return nil
     end
 
-#    OPS={'>' => '$gt', '<' => '$lt', '<=' => '$lte', '>=' => '$gte',
-#         '!=' => '$ne'}
-    REV_OPS={'<' => '>', '>' => '<', '>=' => '<=', '<=' => '=>',
-         '!=' => '!=', '==' => '=='}
+    OPS={'>' => '$gt', '<' => '$lt', '<=' => '$lte', '>=' => '$gte',
+         '!=' => '$ne'}
+    REV_OPS={'>' => '$lt', '<' => '$gt', '<=' => '$gte', '>=' => '$lte',
+         '!=' => '$ne'}
 
     def binary(ex1,ex2,op)
 
-      hop_warn "MONGO BINARY TODB: #{ex1}, #{ex2}, #{op}"
+      hop_warn "MONGO BINARY TODB: #{op}, #{ex1}, #{ex2}"
       case op
       when '+'
-        return "#{ex1} + #{ex2}"
+        return nil #"#{ex1} + #{ex2}"
       when '-'
-        return "#{ex1} - #{ex2}"
+        return nil # "#{ex1} - #{ex2}"
       when '*'
-        return "#{ex1} * #{ex2}"
+        return nil # "#{ex1} * #{ex2}"
       when '/'
-        return "#{ex1} / #{ex2}"
+        return nil # "#{ex1} / #{ex2}"
 
-      when /^<|>|(>=)|(<=)|(!=)|(==)$/
+      when /^==$/
+        if ex1 =~ /^\w+$/
+          # first argument = 'dbname.field'
+          return {ex1 => ex2}
+        elsif ex2 =~ /^\w+$/
+          # second argument is... So swap 'em!
+          return {ex2 => ex1}
+        else
+          # not field name...
+          return nil
+        end
+      when /^<|>|(>=)|(<=)|(!=)$/
         if ex1 =~ /^\w+$/
           # first argument = 'dbname.field'
           left=ex1
-          op2=op
+          op2=OPS[op]
         elsif ex2 =~ /^\w+$/
           # second argument is... So swap 'em!
           left=ex2
@@ -52,8 +63,8 @@ module Hopsa
           return nil
         end
 
-        hop_warn "RET: (this.#{left} #{op2} #{ex2})"
-        return "(this.#{left} #{op2} #{ex2})"
+        #hop_warn "RET: (this.#{left} #{op2} #{ex2})"
+        return {left => {op2 => ex2}}
       when '&' # string catenation
         return nil
 
@@ -62,22 +73,25 @@ module Hopsa
     end
 
     def or(ex1,ex2)
-      return "(#{ex1} || #{ex2})"
+      return {'$or' => [ex1,ex2]}
     end
 
     def and(ex1,ex2)
-      return "(#{ex1} && #{ex2})"
+      return {'$and' => [ex1,ex2]}
     end
 
     def value(ex)
       ret = ex.gsub(Regexp.new('\W'+@db_var+'\.'),'')
+      return ret.to_i if ret =~ /^[0-9]+$/
+      ret.gsub! /^'|"/, ''
+      ret.gsub! /'|"$/, ''
       return ret.to_s
     end
-    
+
     def wrapper(ex)
-      ex.gsub!('"','\\"');
-      hop_warn "WRAPPER: #{ex}."
-      return {'$where' => ex}
+      #ex.gsub!('"','\\"');
+      hop_warn "WRAPPER: #{ex.inspect}."
+      return ex
     end
   end
 

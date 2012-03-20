@@ -42,7 +42,7 @@ module Hopsa
       end
       value = nil if @max_items != -1 && @items_read > @max_items
       hop_warn 'finished cassandra2d iteration' if !value
-      varStore.set @current_var, value
+      return value
     end # readSource
   end # Cassandra2dHopstance
 

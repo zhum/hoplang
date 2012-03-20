@@ -14,6 +14,7 @@ module Hopsa
         require db.to_s
         db =~ /hop_db_(.+)\.rb/
         @@hoplang_databases.push $1
+        hop_warn "OK! (#{$1})"
       rescue LoadError => e
         hop_warn "DB Driver load failed (but ignored): #{db.to_s} (#{e.message})"
       rescue => e
@@ -27,4 +28,3 @@ module Hopsa
   db_load
 
 end
-

@@ -7,8 +7,8 @@ module Hopsa
       @mainChain=chain.hop_clone
       @finalChain=final.hop_clone
       @current_var=current_var
-      @stream_var=stream_var
-      varStore.delStream(@stream_var)
+      @stream_var='__group_var_'+object_id.to_s #stream_var
+#      varStore.delStream(@stream_var)
       varStore.addCortege(@stream_var)
       @pipe=pipe
       @name=name
@@ -23,45 +23,23 @@ module Hopsa
     end
 
     def do_yield(hash)
-      #dump_parents
-#      hop_warn "GROUP EX YIELD #{@name}/#{object_id}: (#{hash.inspect})"
-#      hop_warn "GROUP EX Y #{@parent.to_s}/#{@parent.object_id}"
-#      varStore.set(@stream_var,hash)
       Thread.current['result'] << hash
     end
 
     def hop
-#      hop_warn "GROUP loop #{@name}"
       var=nil
       loop do
         var=@pipe.get
-#-        empty=true
-#-        while empty
-#-          @pipe.synchronize do
-#-            unless Thread.current['input'].empty?
-#-              var=Thread.current['input'].shift
-#-              empty=false
-#-              hop_warn "THREAD #{@name} GOT #{var.inspect}"
-#-            end
-#-          end
-#-          sleep 0.1 if empty
-#-        end
-
 #        hop_warn "GROUP #{@name}: GOT #{var.inspect}"
-#        hop_warn "VAR(#{@name})=#{var.inspect}"
         if(var.nil?)
           hop_warn "GROUP #{@name} final start -> #{@stream_var}"
-#          hop_warn ">> #{@finalChain.executor.varStore.print_store}"
           @finalChain.executor=self
           @finalChain.hop
           result=varStore.get(@stream_var)
-#          hop_warn "GROUP #{@name} final end (#{result})"
           return result
         end
         varStore.set(@current_var,var)
-        #hop_warn "GROUP MAIN #{@name} .....#{varStore.print_store}"
         @mainChain.hop
-        #hop_warn "main success #{varStore.print_store}"
       end
     end
   end
@@ -86,36 +64,42 @@ module Hopsa
       end
 
       stream_var,current_var,group_expr,source,where=$1,$2,$3,$4,$6
+      source_driver=initSourceDriver(parent, source, current_var, where)
 
-      cfg_entry = Config["db_type_#{source}"]
-      src=Config.varmap[source]
-      type=src.nil? ? nil : src['type']
-      if(parent.varStore.testStream(source)) then
-        stream_hopstance=StreamEachHopstance.new(parent)
-      elsif(type=='csv') then
-        stream_hopstance=MyDatabaseEachHopstance.new(parent)
-      elsif(@@hoplang_databases.include? type)
-        typename=(type.capitalize+'Hopstance').to_class
-        stream_hopstance = typename.new parent, source, current_var, where
-      elsif(type=='split') then
-        i=1
-        types_list=Array.new
-        while name=Config["n_#{i}_#{source}"] do
-          types_list << {:n => i, :name => name}
-          i+=1
-        end
-        stream_hopstance=SplitEachHopstance.new(parent, types_list)
-      elsif(not type.nil?) then
-        begin
-          stream_hopstance=Object.const_get(type+'Hopstance').new(parent)
-        rescue NameError
-          hop_warn "No such driver: #{type}!"
-          stream_hopstance=EachHopstance.new(parent)
-        end
-      else
-        hop_warn "GROUP DEFAULT Each"
-        stream_hopstance=EachHopstance.new(parent)
-      end
+#      cfg_entry = Config["db_type_#{source}"]
+#      src=Config.varmap[source]
+#      type=src.nil? ? nil : src['type']
+#      if(parent.varStore.test_stream(source)) then
+#        stream_hopstance=StreamEachHopstance.new(parent)
+#      elsif(type=='csv') then
+#        stream_hopstance=MyDatabaseEachHopstance.new(parent)
+#      elsif(@@hoplang_databases.include? type)
+#        typename=(type.capitalize+'Hopstance').to_class
+#        stream_hopstance = typename.new parent, source, current_var, where
+#      elsif(type=='split') then
+#        i=1
+#        types_list=Array.new
+#        while name=Config["n_#{i}_#{source}"] do
+#          types_list << {:n => i, :name => name}
+#          i+=1
+#        end
+#        stream_hopstance=SplitEachHopstance.new(parent, types_list)
+#      elsif(not type.nil?) then
+#        begin
+#          stream_hopstance=Object.const_get(type+'Hopstance').new(parent)
+#        rescue NameError
+#          hop_warn "No such driver: #{type}!"
+#          stream_hopstance=EachHopstance.new(parent)
+#        end
+#      else
+#        hop_warn "GROUP DEFAULT Each"
+#        stream_hopstance=EachHopstance.new(parent)
+#      end
+
+      stream_hopstance=EachHopstance.new(parent)
+      stream_hopstance.varStore.addScalar(current_var)
+      parent.varStore.addStream(stream_var)
+      #stream_hopstance.varStore.copyStreamFromParent(stream_var,parent.varStore)
 
       local_stream=stream_var+"__group_#{@@global_count}"
       @@global_count+=1
@@ -129,15 +113,18 @@ module Hopsa
       # It will be ignored, so just let it be.
 
 #      hop_warn "FAKE TEXT: #{fake_text.join(';')}"
-      stream_hopstance.init(fake_text,0,local_stream,current_var,source,where)
+      stream_hopstance.init(fake_text,0,local_stream,current_var,source_driver,where)
 
       hop_warn "ADDED STREAM FOR GROUP: #{stream_hopstance} #{local_stream} #{current_var}"
 
+      #
+      #  Now prepare GROUPING hopstance!
+      #
       hopstance = GroupHopstance.new(stream_hopstance)
-      hopstance.varStore.copyStreamFromParent(local_stream,stream_hopstance.varStore)
+      #hopstance.varStore.copyStreamFromParent(local_stream,stream_hopstance.varStore)
       hopstance.varStore.addCortege(current_var)
       parent.varStore.addStream(stream_var)
-      hopstance.varStore.copyStreamFromParent(stream_var,parent.varStore)
+      #hopstance.varStore.copyStreamFromParent(stream_var,parent.varStore)
 
       return hopstance.init(text,pos,stream_var,current_var,group_expr,source,where,stream_hopstance,local_stream)
     end
@@ -201,7 +188,7 @@ module Hopsa
       pipes={}
       @new_mutex=Mutex.new
 
-      new_thread do
+      new_thread self.to_s do
         begin
           while not (val=readSource).nil?
             if @where_expr && !@where_expr.eval(self)
@@ -213,7 +200,6 @@ module Hopsa
 #            hop_warn "GROUP EXPR #{@group_expr.inspect} = #{@group} (#{@current_var})"
             if pipes[group].nil?
               #create new group thread
-#              hop_warn "HHH #{group} #{pipes[group]} #{Thread.current}"
               pipe=HopPipe.new
               pipes[group]=pipe
 
@@ -274,35 +260,35 @@ module Hopsa
             a= t['result']
 #            hop_warn "Result (#{name}): #{a.inspect}"
             a.each {|val|
-              do_yield(val)
+              self.do_yield(val)
             }
 #            hop_warn "Yielded"
           end
           hop_warn "GROUP FINISHED!\n-------------------------------"
           # write EOF to out stream
-          do_yield(nil)
+          self.do_yield(nil)
         rescue => e
           hop_warn "Exception in #{@stream_var} <- #{@source} (#{@mainChain}: #{e}. "+e.backtrace.join("\t\n")
         end
       end #~Thread
     end
 
-    def do_yield(hash) # FOR EXECUTOR ACTUALLY!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    def do_yield(hash)
       # push data into out pipe
 
-#      hop_warn "GROUP YIELD #{@name}: #{hash.inspect}"
-      varStore.set(@stream_var,hash)
+#      hop_warn "GROUP YIELD #{@name} to #{stream_var} #{hash.inspect}"
+      varStore.setStream(@stream_var,hash)
     end
 
     # read next source line and write it into @source_var
     def readSource
       value=varStore.get(@local_stream)
-#      hop_warn "GROUP READED from #{@local_stream} #{value.inspect}\n#{varStore.print_store}"
+#      hop_warn "GROUP READED from #{@local_stream} #{value.inspect}\n"
 
       varStore.set(@current_var, value)
 #      group=@group_expr.eval(self)
 #      hop_warn "#{@current_var}= #{@group_expr.inspect} = #{group.inspect}"
-      value
+      return value
     end
   end
 

@@ -4,24 +4,27 @@ require 'json'
 module Hopsa
   class HopPipe
 
-    attr_reader :pipe_mutex
-#    @pipe_mutex=Mutex.new
+#    attr_reader :pipe_mutex
 
-    def initialize(copy=nil,old_mutex=nil)
+    def initialize(copy=nil)
       copy ||= File.pipe
       @read_io, @write_io = copy
-      @pipe_mutex= old_mutex.nil? ? Mutex.new : old_mutex
-#      hop_warn "MUTEX: #{@pipe_mutex} / #{old_mutex}"
+#      @pipe_mutex= old_mutex.nil? ? Mutex.new : old_mutex
       @data=''
       @buffer=[]
     end
 
     def hop_clone
-      hop_log "PIPE CLONE: #{@pipe_mutex}"
-      HopsaPipe.new([@read_io,@write_io],@pipe_mutex)
+#      hop_log "PIPE CLONE: #{@pipe_mutex}"
+      HopsaPipe.new([@read_io,@write_io])
     end
 
     def unpack_data(data)
+      if data=='NIL'
+        hop_warn "TRUE NIL READED!"
+        return nil
+      end
+
       ret=nil
       begin
         ret=JSON::load data
@@ -34,7 +37,7 @@ module Hopsa
           hop_warn "NULL READED: #{data}"
           return nil
         end
-#        return nil if data == ""
+        return nil if data == ''
         hop_warn "DATA READ ERROR: #{e.message} (#{data.inspect})\n"+e.backtrace.join("\t\n");
         return nil
       end
@@ -42,64 +45,18 @@ module Hopsa
     end
 
     def get
-
-#      if @read_io.eof?
-#        hop_warn "EOF!"
-#        return unpack_data @data
-#      end
-
-      if @buffer.size >0
-        return unpack_data @buffer.shift
-      end
-
-      new_data=''
-      while true do
-        begin
-          new_data=@read_io.gets
-          @data+=new_data
-
-          ret=nil
-          @data.gsub!(/^(.*?)\n~END~RECORD~\n/) {|str|
-            str.gsub!(/\n~END~RECORD~\n/,'')
-            @buffer << str
-            ''
-          }
-          if @buffer.size>0
-            return unpack_data @buffer.shift
-          end
-
-        rescue EOFError
-#          hop_warn "EOF #{object_id} / #{@data.inspect}"
-          begin
-            @data+=new_data
-
-            ret=nil
-#            hop_warn "GOT DATA1: '#{new_data}'"
-            @data.gsub!(/^(.*?)\n~END~RECORD~\n/) {|str|
-              str.gsub!(/\n~END~RECORD~\n/,'')
-              @buffer << str
-              ''
-            }
-            if @buffer.size>0
-              return unpack_data @buffer.shift
-            end
-          rescue => e
-            hop_warn "JSON ERROR: #{@data.inspect}"
-          end
-          return nil
-        rescue Exception => e
-          hop_warn "PIPE Error #{object_id} (#{@data}) #{e.message}"+e.backtrace.join("\t\n")
-          return nil
-        end
-      end
-
-      return nil
+      new_data=@read_io.gets("\n")
+      return unpack_data(new_data.chomp!)
     end
 
     def put(value)
       begin
-        @write_io.puts(value.to_json)
-        @write_io.puts("~END~RECORD~")
+        if(value.nil?)
+          @write_io.puts("NIL\n")
+        else
+          @write_io.puts(value.to_json+"\n")
+        end
+        #hop_warn "PUT: #{value.inspect}"
       rescue =>e
         hop_warn "WRITE Exception: #{e.message}"
       end
@@ -156,6 +113,24 @@ module Hopsa
 
   end
 
+  class BadDriver <StandardError
+  end
+
+  class HopsaDBDriver
+    def initialize(parent,source,current_var,where)
+      @parent,@source,@current_var,@where=parent,source,current_var,where
+      if where.nil? or where == ''
+        @where_expression=nil
+      else
+        @where_expression=HopExpr.parse(where)
+      end
+    end
+
+    def readSource
+      raise BadDriver("Diver not implemented corretly!")
+    end
+  end
+
   def self.hop_warn(str)
     $hoplang_warn_mutex ||= Mutex.new
 
@@ -176,7 +151,5 @@ module Hopsa
   def hop_warn(str)
     Hopsa::hop_warn(str)
   end
-
-  Thread.abort_on_exception = true
 
 end

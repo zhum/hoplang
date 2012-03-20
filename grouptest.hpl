@@ -1,4 +1,4 @@
-out = group x by x.user in ttt2 where x.np > 1
+out = group x by x.user in ttt3 where x.np > 1
  var delta
  var sum
  var count

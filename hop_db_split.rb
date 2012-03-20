@@ -39,11 +39,10 @@ module Hopsa
       saved_source=@current_source
 
       begin
-        @current_source+=1
-        @current_source=0 if @current_source>=@hopsources.size
+        @current_source = (@current_source+1) % @hopsources.size
 
         #!!!! Must be deleted on thread version!!!
-        @hopsources[@current_source].hop
+        @hopsources[@current_source].readSource
 
         if @hopsources[@current_source].varStore.canRead?(
                             @hopsources[@current_source].streamvar) then
@@ -58,4 +57,3 @@ module Hopsa
     end
   end
 end
-

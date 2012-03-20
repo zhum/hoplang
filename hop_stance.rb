@@ -15,11 +15,15 @@ class String
   end
 end
 
+class ConfigError <StandardError
+end
+
 module Hopsa
   # Statement, which process stream.
   # So, it has inPipe, which is connected to previous Hopstance output.
   class Hopstance < Statement
-    def initialize(parent,inPipe=nil)
+
+    def initialize(parent)
       super(parent)
 
       @varStore=VarStore.new(self)
@@ -28,21 +32,72 @@ module Hopsa
     attr_accessor :outPipe, :inPipe, :varStore
 
     def join_threads
+      @@threads_mutex ||=Mutex.new
+
       @@threads ||= []
-      @@threads.each do |t|
-        hop_warn "T: #{t} #{t.status}"
-        t.join
+      loop do
+        @@threads_mutex.synchronize do
+          new_threads=[]
+          @@threads.each do |t|
+            hop_warn "T: #{t} #{t.status}"
+            if t.status == false || t.status.nil?
+              t.join
+            else
+              new_threads << t
+            end
+          end
+          @@threads = new_threads
+        end
+        hop_warn "THREADS:#{@@threads.count}"
+        sleep(0.1)
+        break if @@threads.count==0
       end
-      @@threads=[]
+#      @@threads=[]
     end
 
-    def new_thread &block
+    def new_thread(name,&block)
+
+      @@threads_mutex ||=Mutex.new
 
       @@threads ||= []
-      t=Thread.new(&block)
-      t.abort_on_exception=true
-      @@threads.push(t)
+      @@threads_mutex.synchronize do
+        t=Thread.new(&block)
+        t.abort_on_exception=true
+        @@threads.push(t)
+        hop_warn "Thread #{name} started(#{t})"
+      end
     end
+
+    def self.initSourceDriver(parent, source, current_var, where)
+      cfg_entry = Config["db_type_#{source}"]
+      src=Config.varmap[source]
+      type=src.nil? ? nil : src['type']
+      if(parent.varStore.test_stream(source)) then
+        source_stream=StreamDBDriver.new(parent, source, current_var, where)
+      elsif(type=='csv') then
+        source_stream=MyDatabaseEachHopstance.new(parent,source)
+      elsif(@@hoplang_databases.include? type)
+        typename=(type.capitalize+'DBDriver').to_class
+        source_stream = typename.new parent, source, current_var, where
+      elsif(type=='split') then
+        #!!!!!!! zip.
+        #!!!!!!! REWORK!!!!!
+        i=1
+        types_list=Array.new
+        while name=Config["n_#{i}_#{source}"] do
+          types_list << {:n => i, :name => name}
+          i+=1
+        end
+        hopstance=SplitEachHopstance.new(parent, types_list)
+        #^^^^^^^^^^^^^^^^^^^^^^^^^
+        #source_stream=DBDRiverXXXXX
+      else
+        source_stream=CSVDriver.new(parent, source, current_var, where)
+#        raise ConfigError("Cannot find source #{source}")
+      end
+      return source_stream
+    end
+
   end
 
   class EachHopstance < Hopstance
@@ -62,49 +117,16 @@ module Hopsa
       end
 
       streamvar,current_var,source,where=$1,$2,$3,$5
+      source_driver=initSourceDriver(parent, source, current_var, where)
 
-      cfg_entry = Config["db_type_#{source}"]
-      src=Config.varmap[source]
-      type=src.nil? ? nil : src['type']
-      if(parent.varStore.testStream(source)) then
-        hopstance=StreamEachHopstance.new(parent)
-#      elsif(Config["db_type_#{source}"]=='csv') then
-      elsif(type=='csv') then
-        hopstance=MyDatabaseEachHopstance.new(parent,source)
-#      elsif(type=='cassandra') then
-#        hopstance=CassandraHopstance.new parent, source
-#      elsif(type=='mongo') then
-#        hopstance=MongoHopstance.new parent, source
-      elsif(@@hoplang_databases.include? type)
-        typename=(type.capitalize+'Hopstance').to_class
-        hopstance = typename.new parent, source, current_var, where
-      elsif(type=='split') then
-        i=1
-        types_list=Array.new
-        while name=Config["n_#{i}_#{source}"] do
-          types_list << {:n => i, :name => name}
-          i+=1
-        end
-        hopstance=SplitEachHopstance.new(parent, types_list)
-      elsif(not type.nil?) then
-        begin
-          hopstance=Object.const_get(type+'Hopstance').new(parent)
-        rescue NameError
-          hop_warn "No such driver: #{type}!"
-          hopstance=EachHopstance.new(parent)
-        end
-      else
-        hop_warn "DEFAULT Each"
-        hopstance=EachHopstance.new(parent)
-      end
-
+      hopstance=EachHopstance.new(parent)
       hopstance.varStore.addScalar(current_var)
       parent.varStore.addStream(streamvar)
       hopstance.varStore.copyStreamFromParent(streamvar,parent.varStore)
 
       hop_warn "ADDED STREAM: #{parent.varStore.object_id} #{streamvar}"
 
-      return hopstance.init(text,pos,streamvar,current_var,source,where)
+      return hopstance.init(text,pos,streamvar,current_var,source_driver,where)
     end
 
     def to_s
@@ -144,25 +166,28 @@ module Hopsa
               return self,pos+1
             end
           end
-      elsif line == 'end'
+        elsif line == 'end'
           return self,pos+1
         end
       end
-      raise SyntaxError.new(line)
+      raise SyntaxError, "Syntax error line #{pos} (#{text[pos].chomp})"
     end
 
     def hop
       hop_warn "START main chain #{self.to_s} (#{@mainChain})"
+#      hop_warn "MY VARSTORE BEFORE:\n#{varStore.print_store}"
 #      hop_warn "PARENT VARSTORE:\n#{@parent.varStore.print_store}"
       varStore.merge(@parent.varStore)
-      new_thread do
+#      hop_warn "MY VARSTORE AFTER:\n#{varStore.print_store}"
+
+      new_thread "#{self.to_s}" do
         begin
-          while not (self.readSource).nil?
-            if @where_expr && !@where_expr.eval(self)
-              #puts @where_expr.eval(self)
-              next
-            end
+          loop do
+            value=@source.readSource
+            break if value.nil?
+
             # process body
+            varStore.set(@current_var, value)
             @mainChain.hop
           end
           # process final section
@@ -172,11 +197,6 @@ module Hopsa
           hop_warn "FINISHED! #{self.to_s}\n-------------------------------"
           # write EOF to out stream
           do_yield(nil)
-#          while not (val=outPipe.get).nil?
-#            hop_warn ":>> "
-#            hop_warn val.map {|key,val| "#{key} => #{val}"} .join("; ")
-#            hop_warn "\n"
-#          end
         rescue => e
           hop_warn "Exception in #{self.to_s} (#{@mainChain}: #{e}. "+e.backtrace.join("\t\n")
         end
@@ -187,44 +207,6 @@ module Hopsa
       # push data into out pipe
 #      hop_warn "!!! YIELD #{@streamvar} #{hash.inspect}"
       varStore.set(@streamvar,hash)
-    end
-
-    # read next source line and write it into @source_var
-    def readSource
-      if @source_in.nil?
-        @source_in = open @source
-        # fields titles
-        head=@source_in.readline.strip
-        @heads=head.split(/\s*,\s*/)
-      end
-
-      begin
-        line=@source_in.readline.strip
-        datas=line.split(/\s*,\s*/)
-
-        i=0
-        value={}
-        @heads.each {|h|
-          value[h]=datas[i]
-          i+=1
-        }
-        # now store variable!
-        varStore.set(@current_var, value)
-      rescue EOFError
-        hop_warn "EOF.....\n"
-        varStore.set(@current_var, nil)
-        return nil
-      end
-        line
-    end
-  end
-
-  class StreamEachHopstance < EachHopstance
-    # read next source line and write it into @source_var
-    def readSource
-      value=varStore.get(@source)
-      varStore.set(@current_var, value)
-      value
     end
   end
 
@@ -239,7 +221,8 @@ module Hopsa
       end
 
       hopstance=PrintEachHopstance.new(parent)
-      return hopstance.init($1),pos+1
+      source_driver=initSourceDriver(parent, $1, 'none', nil)
+      return hopstance.init(source_driver),pos+1
     end
 
     def init(source)
@@ -247,16 +230,20 @@ module Hopsa
       self
     end
 
+    def to_s
+      'PrintEachHopstance'
+    end
+
     def hop
-      new_thread do
+      new_thread  "#{self.to_s}" do
         while not (self.readSource).nil?
         end
       end
     end
 
     def readSource
-      value=varStore.get(@source)
-#      hop_warn "DD val=#{value.inspect}"
+      value=@source.readSource
+#      hop_warn "PRINT: #{value}"
       return nil if value.nil?
       if(not Config['local'].nil? and
          Config['local']['out_format'] == 'csv')
@@ -286,8 +273,32 @@ module Hopsa
 
   # a special hopstance which processes elements in strict sequential order
   # can be used, for instance, for easy implementation of accumulators
-  # currently, just an empty class
-  class SeqHopstance < StreamEachHopstance
+  class SeqHopstance < EachHopstance
+    def hop
+      hop_warn "START main chain SEQ #{self.to_s} (#{@mainChain})"
+      varStore.merge(@parent.varStore)
+
+      begin
+        loop do
+          value=@source.readSource
+          break if value.nil?
+
+          # process body
+          varStore.set(@current_var, value)
+          @mainChain.hop
+        end
+        # process final section
+        hop_warn "START final chain #{self.to_s} (#{@finalChain})"
+        @finalChain.hop
+
+        hop_warn "FINISHED! #{self.to_s}\n-------------------------------"
+        # write EOF to out stream
+        do_yield(nil)
+      rescue => e
+        hop_warn "Exception in #{self.to_s} (#{@mainChain}: #{e}. "+e.backtrace.join("\t\n")
+      end
+    end
+
   end
 
   class TopStatement < Hopstance
@@ -297,7 +308,7 @@ module Hopsa
 
     def createNewRetLineNum(parent,text,startLine)
       # load arguments from config file
-      Config.parmap.each do |par, val| 
+      Config.parmap.each do |par, val|
         varStore.addScalar par
         varStore.set par, (Param.cmd_arg_val(par) || val)
       end
@@ -318,7 +329,7 @@ module Hopsa
     end
 
     def initialize
-      super(nil,HopPipe.new)
+      super(nil)
     end
 
     def hop

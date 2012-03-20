@@ -4,6 +4,8 @@ require './hoplang.rb'
 include Hopsa
 
 #begin
+Thread.abort_on_exception = true
+
 file_found = nil
 ARGV.each do |a|
   # miss arguments

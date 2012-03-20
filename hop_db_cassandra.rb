@@ -41,7 +41,7 @@ module Hopsa
       @column_family = cfg['cf'].to_sym
       @max_items = -1
       @max_items = cfg['max_items'].to_i if cfg['max_items']
-      @push_index = true 
+      @push_index = true
       @push_index = false if cfg['push_index'] && cfg['push_index'] == 'false'
       @items_read = 0
       conn_addr = "#{address}:#{port}"
@@ -71,7 +71,7 @@ module Hopsa
         value = nil if @max_items != -1 && @items_read > @max_items
       end
       #puts value.inspect
-      varStore.set(@current_var, value)
+      return value
     end
 
     # checks whether filter can be pushed into DB (Cassandra), and returns an
@@ -80,7 +80,7 @@ module Hopsa
     # conditions, each of which has the form of v.f op expr, where
     # v is the variable name declared in each (@current_var.name)
     # f is the name of the field of the variable, and that field is indexed (for
-    # Cassandra) 
+    # Cassandra)
     # op is one of <, <=, >, >=, ==
     # expr is an expression of simple form, currently must be either a constant
     # or a variable declared outside of this hopsance
@@ -89,20 +89,20 @@ module Hopsa
     # the return tuple is of the form:
     # key_start, key_finish, col_start, col_end, filter_expr
     # any of the components may be null if it is absent; currently, col_start
-    # and col_finish are both null. 
+    # and col_finish are both null.
     PUSH_OPS = ['<', '<=', '>', '>=', '<.', '>.', '<=.', '>=.', '==']
     def filter_exprs?(filter)
       return nil if !filter
       @filter_leaves = []
       # check binary and collect leaves
       def check_binary(e)
-        return nil if !(e.instance_of? BinaryExpr)        
+        return nil if !(e.instance_of? BinaryExpr)
         if e.op == 'and'
           check_binary(e.expr1) && check_binary(e.expr2)
         elsif PUSH_OPS.include? e.op
           @filter_leaves += [e]
           true
-        else 
+        else
           nil
         end
       end
@@ -149,7 +149,7 @@ module Hopsa
           unless cvar_name == @current_var
             begin
               expr2_val = varStore.get cvar_name
-            rescue VarNotFound              
+            rescue VarNotFound
             end
           end
         end
@@ -178,7 +178,7 @@ module Hopsa
             col_end = to_cassandra_val(expr2_val, col_type)
           end
         else
-          column_index = cfinfo.column_metadata.index do |col| 
+          column_index = cfinfo.column_metadata.index do |col|
             col.name == e.expr1.field_name
           end
           if !column_index
@@ -192,10 +192,10 @@ module Hopsa
             hop_warn "column #{e.expr1.field_name} is not indexed"
             next
           end
-          index_clause += 
+          index_clause +=
             [{
-               :column_name => column.name, 
-               :comparison => eop, 
+               :column_name => column.name,
+               :comparison => eop,
                :value => to_cassandra_val(
                   expr2_val, cassandra_type(column.validation_class))
              }]
@@ -247,12 +247,12 @@ module Hopsa
         end
       end
       # build index clause if possible
-      key_start,key_end,col_start,col_end,@index_clause = 
+      key_start,key_end,col_start,col_end,@index_clause =
         filter_exprs?(@where_expr)
       opts = {}
       if @index_clause && @push_index
         opts[:key_start] = key_start if key_start
-        ind_iter = 
+        ind_iter =
           IndexedIterator.new @cassandra, @column_family, @index_clause, opts
         @enumerator = ind_iter.to_enum :each
         hop_warn 'index filter pushed to Cassandra'

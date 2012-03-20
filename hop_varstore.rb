@@ -1,4 +1,5 @@
 # TODO: deprecate all 'Cortege' things and remove them in future versions
+#require 'pp'
 
 class Hash
   # add simple(!) cloninig
@@ -45,17 +46,17 @@ module Hopsa
     end
 
     def copy(vs)
-      hop_warn "Copy varstore #{@ex.to_s} from #{vs.ex.to_s}. (#{@ex})"
+      hop_warn "Copy varstore #{@ex.to_s} from #{vs.ex.to_s}."
       @scalarStore=vs.scalarStore.hop_clone
       @cortegeStore=vs.cortegeStore.hop_clone
       @streamStore=vs.streamStore.hop_clone
     end
 
     def merge(vs)
-      hop_warn "Merge varstore #{@ex.to_s} from #{vs.ex.to_s}. (#{@ex})"
-      @scalarStore.merge(vs.scalarStore.hop_clone)
-      @cortegeStore.merge(vs.cortegeStore.hop_clone)
-      @streamStore.merge(vs.streamStore.hop_clone)
+      hop_warn "Merge varstore #{@ex.to_s} from #{vs.ex.to_s}."
+      @scalarStore.merge!(vs.scalarStore.hop_clone)
+      @cortegeStore.merge!(vs.cortegeStore.hop_clone)
+      @streamStore.merge!(vs.streamStore.hop_clone)
     end
 
     def addScalar(name)
@@ -101,7 +102,9 @@ module Hopsa
 
       #!!!! TODO - only in debug version
       raise VarNotFound unless @streamStore.has_key? name
-      @streamStore[name].get
+      ret = @streamStore[name].get
+#      hop_warn ">>GET #{name} = #{ret}"
+      return ret
     end
 
     def setScalar(name, val)
@@ -121,9 +124,10 @@ module Hopsa
       }
     end
 
-    def setSream(name, val)
+    def setStream(name, val)
 
       #!!!! TODO - only in debug version
+#      hop_warn ">>SET #{name} = #{val.inspect}"
       raise VarNotFound unless @streamStore.has_key? name
       @streamStore[name].put val
     end
@@ -165,15 +169,31 @@ module Hopsa
 
     def get(name)
 
-      if @streamStore.has_key? name
-        return @streamStore[name].get
-      elsif @scalarStore.has_key? name
+      if @scalarStore.has_key? name
         return @scalarStore[name]
       elsif @cortegeStore.has_key? name
         return @cortegeStore[name]
+      elsif @streamStore.has_key? name
+        return @streamStore[name].get
       end
       raise VarNotFound, "Var not found: #{name} (#{@ex})\n[#{print_store}]\n"
 
+    end
+
+    def test_stream(name)
+      return @streamStore.has_key? name
+    end
+
+    def test_scalar(name)
+      return @scalarStore.has_key? name
+    end
+
+    def test_cortege(name)
+      return @cortegeStore.has_key? name
+    end
+
+    def test(name)
+      return test_steam(name) || test_scalar(name) || test_scalar(name)
     end
 
     # variables iterator
@@ -206,11 +226,5 @@ module Hopsa
       each_scalar(&block)
     end
 
-    def testStream(name)
-      return true if @streamStore.has_key? name
-      false
-    end
-
   end
 end
-

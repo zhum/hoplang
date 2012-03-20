@@ -4,9 +4,14 @@ module Hopsa
     attr_accessor :parent, :hopid
 
     @@globalId=0
+    @@current_line=0
 
     def self.nextId
       @@globalId+=1
+    end
+
+    def self.current_line
+      @@current_line
     end
 
     def varStore
@@ -181,6 +186,7 @@ module Hopsa
     end
 
     def self.nextLine(text,pos)
+      current_line=pos
       return nil,pos if text[pos].nil?
       begin
         while text[pos].match(/\s*#/)
@@ -189,8 +195,17 @@ module Hopsa
       rescue NoMethodError
         pos-=1
       end
+      current_line=pos
       return text[pos].strip,pos
     end
+
+    private
+
+    def current_line=(line)
+      @@current_line=line
+    end
+
+
   end
 
   # represents if ... [ else ... ] end statement
@@ -411,12 +426,15 @@ module Hopsa
       ret = {}
       if @reference
         # one variable
+        if @expression.is_stream?(self)
+          while ret=@expression.eval(self)
+            @parent.do_yield(ret)
+          end
+          #@parent.do_yield(nil)
+          return
+        end
         ret=@expression.eval(self)
-#        @fields.map do |name, expr|
-#          ret[name] = expr.eval(self) unless name == '__hoplang_cols_order'
-#        end
-#        hop_warn "WWWWWWWWWW: #{value.inspect}"
-#        {"__hoplang_cols_order"=>"u,sum4,avg4", "avg4"=>"116.0", "sum4"=>"464.0", "u"=>"vasya16"}
+
       else
         # named list
         @fields.map do |name, expr|

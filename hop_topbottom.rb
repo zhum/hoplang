@@ -57,7 +57,7 @@ module Hopsa
 
     def hop
       varStore.merge(@parent.varStore)
-      new_thread do
+      new_thread 'topbottom' do
         hop_warn varStore.print_store
         while not (self.readSource).nil?
         end

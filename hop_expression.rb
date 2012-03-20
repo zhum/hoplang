@@ -52,6 +52,14 @@ module Hopsa
       HopExprGram.parse(line, :root => :topexprlist).value
     end
 
+    def is_stream?
+      false
+    end
+
+    def initialize(*args)
+      @code_line=Statement.current_line || 0
+    end
+
     # returns the name associated with the expression, default is empty
     def name
       ''
@@ -74,18 +82,21 @@ module Hopsa
     def to_s
       ''
     end
-    
+
     def db_conv(ex,db)
       ret_db, ret_hop= self.to_db(ex,db)
       return db.wrapper(ret_db) unless ret_db.nil?
       return ret_hop
     end
+
   end # HopExpr
 
   # expression containing a single value
   class ValExpr < HopExpr
     attr_reader :val
+
     def initialize(val)
+      super
       @val = val
     end
 
@@ -95,7 +106,7 @@ module Hopsa
 
     def to_db(ex,db)
       #val=@expr.eval(ex)
-      hop_warn "VAL=#{@val}"
+      #hop_warn "VAL=#{@val}"
       if @val =~ /^\d+$/
         val=@val
       else
@@ -113,26 +124,45 @@ module Hopsa
     attr_reader :rname
     # creates a reference expression with a variable
     def initialize(rname)
+      super
       @rname = rname
     end
+
     def eval(ex)
 #      hop_warn "REF #{@rname} =>#{ex.to_s}\n#{ex.varStore.print_store}"
-      ex.varStore.get @rname
+      begin
+        ex.varStore.get @rname
+      rescue => e
+        raise #e.message.chomp+' at line '+@code_line.to_s
+      end
     end
+
+    def is_stream?(ex)
+      return ex.varStore.test_stream @rname
+    end
+
     # assigns result to a variable
     def ass(ex, val)
-      ex.varStore.set @rname, val
+      begin
+        ex.varStore.set @rname, val
+      rescue => e
+        raise #e.message.chomp+' at line '+@code_line.to_s
+      end
       return nil
     end
 
-    def to_db(ex,db)      
+    def to_db(ex,db)
       hop_warn "REF=#{@rname}"
       if @rname == db.db_var
         # special case of iterator variable
         db.value @rname
       else
         # just an outer variable, get the value
-        ex.varStore.get @rname
+        begin
+          ex.varStore.get @rname
+        rescue => e
+          raise #e.message.chomp+' at line '+@code_line.to_s
+        end
       end
     end
 
@@ -145,6 +175,7 @@ module Hopsa
     attr_reader :fun_expr, :args
     # function call with function expression (must be RefExpr) and arguments
     def initialize(fun_name, args)
+      super
       @fun_name = fun_name
       @args = args
     end
@@ -165,28 +196,41 @@ module Hopsa
     attr_reader :obj, :field_name
     # field reference with object and field name
     def initialize(obj, field_name)
+      super
       @obj = obj
       @field_name = field_name
     end
     def eval(ex)
-      o = @obj.eval(ex)
-      unless o.is_a? Hash
-        hop_warn "applying . to not a tuple (#{o.class} = #{o.inspect}) #{ex.varStore.print_store}"
-        return nil
+      begin
+        o = @obj.eval(ex)
+        unless o.is_a? Hash
+          hop_warn "applying . to not a tuple (#{o.class} = #{o.inspect}) at #{@code_line}#{ex.varStore.print_store}"
+          return nil
+        end
+        # puts "obj = #{o.inspect}"
+        r = o[@field_name]
+        # puts "obj.#{field_name} = #{r}"
+        hop_warn "no field #{@field_name} in object (#{o.inspect})" if !r
+      rescue => e
+        raise #e.message.chomp+' at line '+@code_line.to_s
       end
-      # puts "obj = #{o.inspect}"
-      r = o[@field_name]
-      # puts "obj.#{field_name} = #{r}"
-      hop_warn "no field #{@field_name} in object (#{o.inspect})" if !r
       r
     end
     def ass(ex, val)
-      @obj.eval(ex)[@field_name] = val
+      begin
+        @obj.eval(ex)[@field_name] = val
+      rescue => e
+        raise #e.message.chomp+' at line '+@code_line.to_s
+      end
     end
 
     def to_db(ex,db)
       #val=@obj.eval(ex)
-      return db.value(@field_name), ex
+      begin
+        return db.value(@field_name), ex
+      rescue => e
+        raise #e.message.chomp+' at line '+@code_line.to_s
+      end
       #val[@field_name]
     end
 
@@ -198,27 +242,36 @@ module Hopsa
   class UnaryExpr < HopExpr
     attr_reader :op, :expr
     def initialize(op, expr)
+      super
       @op = op
       @expr = expr
     end
     def eval(ex)
-      val = @expr.eval(ex)
-      case @op
-        when '-'
-          return (-val.to_f).to_s
-        when 'not'
-          return !val
-        when 'int'
-          return val.to_i
-        else
-          hop_warn "#{@op}: unsupported unary operator"
-          return nil
+      begin
+        val = @expr.eval(ex)
+        case @op
+          when '-'
+            return (-val.to_f).to_s
+          when 'not'
+            return !val
+          when 'int'
+            return val.to_i
+          else
+            hop_warn "#{@op}: unsupported unary operator"
+            return nil
+        end
+      rescue => e
+        raise #e.message.chomp+' at line '+@code_line.to_s
       end
     end
 
     def to_db(ex,db)
       #val=@expr.eval(ex)
-      return db.unary(val,@op), ex
+      begin
+        return db.unary(val,@op), ex
+      rescue => e
+        raise #e.message.chomp+' at line '+@code_line.to_s
+      end
     end
 
     def to_s
@@ -230,11 +283,16 @@ module Hopsa
   class NamedExpr < HopExpr
     attr_reader :expr
     def initialize(name, expr)
+      super
       @name = name
       @expr = expr
     end
     def eval(ex)
-      expr.eval(ex)
+      begin
+        expr.eval(ex)
+      rescue => e
+        raise #e.message.chomp+' at line '+@code_line.to_s
+      end
     end
     # gets the name associated with the expression
     def name
@@ -243,7 +301,11 @@ module Hopsa
 
     def to_db(ex,db)
       #val=eval(ex)
-      return db.value(@name), ex
+      begin
+        return db.value(@name), ex
+      rescue => e
+        raise #e.message.chomp+' at line '+@code_line.to_s
+      end
     end
 
   end
@@ -252,6 +314,7 @@ module Hopsa
   class AssExpr < HopExpr
     attr_reader :expr1, :expr2
     def initialize(expr1, expr2)
+      super
       @expr1 = expr1
       @expr2 = expr2
     end
@@ -259,7 +322,11 @@ module Hopsa
     def eval(ex)
 #      hop_warn "DO #{expr2}"
       val = expr2.eval(ex)
-      expr1.ass(ex, val)
+      begin
+        expr1.ass(ex, val)
+      rescue => e
+        raise #e.message.chomp+' at line '+@code_line.to_s
+      end
       return nil
     end
 
@@ -280,6 +347,7 @@ module Hopsa
     attr_reader :op, :expr1, :expr2, :short
 
     def initialize(expr1, op, expr2)
+      super
       @op = op
       @expr1 = expr1
       @expr2 = expr2
@@ -289,6 +357,7 @@ module Hopsa
     end
 
     def eval(ex)
+      begin
       if @short
         #short-circuit
         val1 = @expr1.eval(ex)
@@ -351,10 +420,14 @@ module Hopsa
         res = res.to_s if @post_conv
         return res
       end
+      rescue => e
+        raise #e.message.chomp+' at line '+@code_line.to_s
+      end
     end # eval
 
     # return: DB_EXPRESSION, hoplang string
     def to_db(ex,db)
+      begin
       db_val1, hop_val1 = @expr1.to_db(ex,db)
       db_val2, hop_val2 = @expr2.to_db(ex,db)
       if @short
@@ -397,6 +470,9 @@ module Hopsa
         #res = res.to_s if @post_conv
 
         return db_res, res
+      end
+      rescue => e
+        raise #e.message+' at line '+@code_line.to_s
       end
     end # to_db
 

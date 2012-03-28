@@ -199,6 +199,7 @@ module Hopsa
           do_yield(nil)
         rescue => e
           hop_warn "Exception in #{self.to_s} (#{@mainChain}: #{e}. "+e.backtrace.join("\t\n")
+          raise
         end
       end #~Thread
     end
@@ -251,9 +252,9 @@ module Hopsa
           hop_warn "BAD YIELD: #{value.inspect}"
           return value
         end
-        if @out_heads.nil?
+        if @@out_heads.nil?
           $hoplang_print_mutex ||= Mutex.new
-          @out_heads=value['__hoplang_cols_order'].split(/,/)
+          @@out_heads=value['__hoplang_cols_order'].split(/,/)
           # print header
           $hoplang_print_mutex.synchronize do
             puts value['__hoplang_cols_order']
@@ -261,7 +262,7 @@ module Hopsa
         end
 
         $hoplang_print_mutex.synchronize do
-          out= @out_heads.map {|key| value[key].to_s.csv_escape}.join(',')
+          out= @@out_heads.map {|key| value[key].to_s.csv_escape}.join(',')
           puts out unless out =~ /NaN/ #!!!!!!!!!!!!!!!!!!!!!   HACK   !!!!!!!!!!!!!!!!!!!!!!!
         end
       else
@@ -296,6 +297,7 @@ module Hopsa
         do_yield(nil)
       rescue => e
         hop_warn "Exception in #{self.to_s} (#{@mainChain}: #{e}. "+e.backtrace.join("\t\n")
+        raise
       end
     end
 

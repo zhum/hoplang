@@ -1,5 +1,5 @@
 out = each x in cpu_user where x.node == 'cn10' or x.node=='cn11'
-  out2 = each y in ttt2 where y.start>100
+  out2 = each y in ttt where y.start>100
     if x.value+10 > y.np
       yield node => x.node, value => x.value, time => x.time, np => y.np, user => y.user
     end

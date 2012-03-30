@@ -212,6 +212,11 @@ module Hopsa
   end
 
   class PrintEachHopstance < EachHopstance
+
+    #
+    #  nil   => not initialized yet
+    #  false => do not print heads
+    #  [...] => heads printed if needed, here are fields in right order
     @@out_heads=nil
 
     # read next source line and write it into @source_var
@@ -219,17 +224,39 @@ module Hopsa
       line,pos=Statement.nextLine(text,pos)
 
       raise UnexpectedEOF if line.nil?
-      unless(line =~ /print\s+(\S+)/)
+      unless(line =~ /print(\(\s*(\S*)\s*\))?\s+(\S.+)/)
         raise SyntaxError.new(line)
       end
+      opts,src=$2,$3
 
+      if opts.nil?
+        opts=[]
+      else
+        opts=opts.split(/\s*,\s*/)
+      end
+
+      sources = src.split(/\s*,\s*/)
       hopstance=PrintEachHopstance.new(parent)
-      source_driver=initSourceDriver(parent, $1, 'none', nil)
-      return hopstance.init(source_driver),pos+1
+      source_drivers=[]
+      sources.each do |s|
+        source_drivers << initSourceDriver(parent, s, 'none', nil)
+      end
+      return hopstance.init(source_drivers,opts),pos+1
     end
 
-    def init(source)
-      @source=source
+    def init(sources,opts)
+      @sources=sources
+      @opts={}
+      opts.each{|o|
+        @opts[o.to_sym]=true
+      }
+      @index=0
+
+      @out_format = :csv if @opts[:csv] || @opts[:raw]
+      @@out_heads ||= @opts[:raw] ? false : nil
+
+      @out_format ||= :csv if(not Config['local'].nil? and
+                               Config['local']['out_format'] == 'csv')
       self
     end
 
@@ -245,33 +272,60 @@ module Hopsa
     end
 
     def readSource
-      value=@source.readSource
-#      hop_warn "PRINT: #{value}"
-      return nil if value.nil?
-      if(not Config['local'].nil? and
-         Config['local']['out_format'] == 'csv')
-        if value['__hoplang_cols_order'].nil?
-          hop_warn "BAD YIELD: #{value.inspect}"
-          return value
-        end
-        if @@out_heads.nil?
-          $hoplang_print_mutex ||= Mutex.new
-          @@out_heads=value['__hoplang_cols_order'].split(/,/)
-          # print header
-          $hoplang_print_mutex.synchronize do
-            puts value['__hoplang_cols_order']
-          end
-        end
 
-        $hoplang_print_mutex.synchronize do
-          out= @@out_heads.map {|key| value[key].to_s.csv_escape}.join(',')
-          puts out unless out =~ /NaN/ #!!!!!!!!!!!!!!!!!!!!!   HACK   !!!!!!!!!!!!!!!!!!!!!!!
-        end
+      # read current source. switch to next if closed
+      while (value=@sources[@index].readSource).nil?
+        @sources.delete_at(@index)
+        return nil if @sources.size==0
+        next_index
+      end
+
+      next_index if @opts[:zip]
+
+      if value['__hoplang_cols_order'].nil?
+        hop_warn "BAD YIELD: #{value.inspect}"
+        return value
+      end
+
+      if @out_format == :csv
+         print_heads(value) if @@out_heads.nil?
+         init_heads(value)  if @@out_heads == false
+         print_csv(value)
       else
         puts "OUT>>#{value.inspect}"
       end
       value
     end
+
+    protected
+
+    def next_index
+      @index +=1
+      @index=0 if @index>=@sources.size
+    end
+
+    def print_heads(value)
+
+      $hoplang_print_mutex ||= Mutex.new
+      init_heads(value)
+      # print header
+      $hoplang_print_mutex.synchronize do
+        puts value['__hoplang_cols_order']
+      end
+    end
+
+    def init_heads(value)
+      @@out_heads=value['__hoplang_cols_order'].split(/,/)
+    end
+
+    def print_csv(value)
+      $hoplang_print_mutex ||= Mutex.new
+      $hoplang_print_mutex.synchronize do
+        out= @@out_heads.map {|key| value[key].to_s.csv_escape}.join(',')
+        puts out unless out =~ /NaN/ #!!!!!!!!!!!!!!!!!!!!!   HACK   !!!!!!!!!!!!!!!!!!!!!!!
+      end
+    end
+
   end
 
   # a special hopstance which processes elements in strict sequential order

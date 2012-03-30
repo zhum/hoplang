@@ -29,5 +29,6 @@ begin
 rescue => e
   puts "--"
   puts "Error: #{e.message}"
+  puts 'Trace: '+e.backtrace.join("\t\n");
   exit 100
 end

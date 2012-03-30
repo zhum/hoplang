@@ -52,7 +52,80 @@ module Hopsa
       HopExprGram.parse(line, :root => :topexprlist).value
     end
 
-    def is_stream?
+    # number of aggregation variables created
+    @@agg_var_count = 0
+
+    # get the name of a new aggregation variable
+    # must not be called from multiple threads simultaneously
+    def self.new_agg_var
+      name = "__agg_var_" + @@agg_var_count.to_s
+      @@agg_var_count += 1
+      name
+    end
+
+    # extract aggregation variables; this is the version for the client code
+    # expr - the expression from which to extract aggregation variables
+    # returns - (new_expr, agg_var_map):
+    # new_expr - the transformed expression which must be used instead
+    # agg_var_map - {agg_var => (init_val, update_expr)}
+    # based on aggregation variable map, a hopstance can add statements
+    def self.extract_agg(expr)
+      agg_var_map = {}
+      new_expr = extract_agg_into expr, agg_var_map
+      [new_expr, agg_var_map]
+    end
+
+    # extracts aggregation variables and accumulates them into the map; this is
+    # the version called internally; the new expression is returned
+    def self.extract_agg_into(expr, map) 
+      if expr.class == Array
+        # list of expressions
+        res_exprs = expr.map do |e| 
+          extract_agg_into e, map
+        end
+        return res_exprs
+      elsif expr.class == CallExpr && expr.fun.aggregate?
+        agg_var = new_agg_var
+        neutral = expr.fun.neutral
+        expr2 = extract_agg_into expr.args[0], map
+        agg_ref = RefExpr.new agg_var
+        agg_direct = expr.fun.direct        
+        update_expr = nil
+        if expr.fun.op?
+          update_expr = BinaryExpr.new agg_ref, agg_direct, expr2
+        else
+          update_expr = CallExpr.new agg_direct, [agg_ref, expr2]
+        end
+        agg_expr = AssExpr.new agg_ref, update_expr        
+        map[agg_var] = [neutral, agg_expr]
+        return agg_ref
+      else
+        # new_members = expr.expr_members.map do |e| 
+        #   extract_agg_into e, map
+        # end
+        # expr.expr_subst new_members
+        return expr.expr_subst extract_agg_into expr.expr_members, map
+      end
+    end
+
+    # returns the array of subexpression of a given expression; an empty array
+    # is returned for leaves. Attributes of expressions that are not members,
+    # such as names, field names etc., are not returned
+    def expr_members
+      []
+    end
+
+    # clones the expression with same type and non-members, but with new members supplied
+    def expr_subst(new_members)
+      self
+    end
+
+    # destructive version of expr_subst
+    def expr_subst!(new_members)
+      self
+    end
+
+    def is_stream?(ex)
       false
     end
 
@@ -131,7 +204,8 @@ module Hopsa
     def eval(ex)
 #      hop_warn "REF #{@rname} =>#{ex.to_s}\n#{ex.varStore.print_store}"
       begin
-        ex.varStore.get @rname
+        res = ex.varStore.get @rname
+        res
       rescue => e
         raise #e.message.chomp+' at line '+@code_line.to_s
       end
@@ -172,19 +246,28 @@ module Hopsa
   end # RefExpr
 
   class CallExpr < HopExpr
-    attr_reader :fun_expr, :args
+    attr_reader :fun_name, :args, :fun
     # function call with function expression (must be RefExpr) and arguments
     def initialize(fun_name, args)
-      super
       @fun_name = fun_name
       @args = args
+      @fun = Function.by_name_argnum fun_name, args.count
     end
     def eval(ex)
-      # not implemented
-      hop_warn 'warning: function eval not yet implemented'
-      return nil
+      evaluated_args = args.map do |arg| arg.eval ex end
+      res = fun.call evaluated_args
+      res = res.to_s if fun.post_conv
+      res
     end
-
+    def expr_members
+      args
+    end
+    def expr_subst(new_members)
+      CallExpr.new @fun_name, new_members
+    end
+    def expr_subst!(new_members)
+      @args = new_members
+    end
     def to_db(ex,db)
       hop_warn 'warning: function eval not yet implemented'
       #db.function()
@@ -207,14 +290,21 @@ module Hopsa
           hop_warn "applying . to not a tuple (#{o.class} = #{o.inspect}) at #{@code_line}#{ex.varStore.print_store}"
           return nil
         end
-        # puts "obj = #{o.inspect}"
         r = o[@field_name]
-        # puts "obj.#{field_name} = #{r}"
         hop_warn "no field #{@field_name} in object (#{o.inspect})" if !r
       rescue => e
         raise #e.message.chomp+' at line '+@code_line.to_s
       end
       r
+    end
+    def expr_members
+      [@obj]
+    end
+    def expr_subst(new_members)
+      DotExpr.new new_members[0], @field_name
+    end
+    def expr_subst!(new_members)
+      @obj = new_members[0]
     end
     def ass(ex, val)
       begin
@@ -255,6 +345,7 @@ module Hopsa
           when 'not'
             return !val
           when 'int'
+            hop_warn "#{@op}: this operation is deprecated, use function instead"
             return val.to_i
           else
             hop_warn "#{@op}: unsupported unary operator"
@@ -264,7 +355,15 @@ module Hopsa
         raise #e.message.chomp+' at line '+@code_line.to_s
       end
     end
-
+    def expr_members
+      [@expr]
+    end
+    def expr_subst(new_members)
+      UnaryExpr.new @op, new_members[0]
+    end
+    def expr_subst!(new_members)
+      @expr = new_members[0]
+    end
     def to_db(ex,db)
       #val=@expr.eval(ex)
       begin
@@ -293,6 +392,15 @@ module Hopsa
       rescue => e
         raise #e.message.chomp+' at line '+@code_line.to_s
       end
+    end
+    def expr_members
+      [@expr]
+    end
+    def expr_subst(new_members)
+      NamedExpr.new @name, new_members[0]
+    end
+    def expr_subst!(new_members)
+      @expr = new_members[0]
     end
     # gets the name associated with the expression
     def name
@@ -328,6 +436,16 @@ module Hopsa
         raise #e.message.chomp+' at line '+@code_line.to_s
       end
       return nil
+    end
+    def expr_members
+      [@expr1, @expr2]
+    end
+    def expr_subst(new_members)
+      AssExpr.new new_members[0], new_members[1]
+    end
+    def expr_subst!(new_members)
+      @expr1 = new_members[0]
+      @expr2 = new_members[1]
     end
 
     def to_db(ex,db)
@@ -424,7 +542,16 @@ module Hopsa
         raise #e.message.chomp+' at line '+@code_line.to_s
       end
     end # eval
-
+    def expr_members
+      [@expr1, @expr2]
+    end
+    def expr_subst(new_members)
+      BinaryExpr.new new_members[0], @op, new_members[1]
+    end
+    def expr_subst!(new_members)
+      @expr1 = new_members[0]
+      @expr2 = new_members[1]
+    end
     # return: DB_EXPRESSION, hoplang string
     def to_db(ex,db)
       begin

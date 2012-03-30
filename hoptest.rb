@@ -5,27 +5,33 @@ include Hopsa
 
 #ex=TopStatement.new
 raw_text = <<_PROGRAM
-var abc
 #  test
-abc = 1
-yield abc + 1, 10
-out = each x in ttt where x.np > 97
- var delta
- delta = x.end - x.start * 1 + 0
- var i
- i = 0
- while i < 2
-  if i == 0
-    yield d => delta, u => x.user, i => i
-  else
-    yield d => delta, u => x.user, i => i + 1 
-  end
-  i = i + 1
- end
-end
+# var abc
+# abc = 1
+# yield abc + 1, 10
+# out = each x in ttt where x.np > 97
+#  var delta
+#  delta = x.end - x.start * 1 + 0
+#  var i
+#  i = 0
+#  while i < 2
+#   if i == 0
+#     yield d => delta, u => x.user, i => i
+#   else
+#     yield d => delta, u => x.user, i => i + 1 
+#   end
+#   i = i + 1
+#  end
+# end
 
-# hangs if this is commented out when x.np > 97, but not for x.np > 98
-# and greater values
+# print out
+
+out10 = each x in ttt where x.np > 97
+final
+  yield min => min(x.np), max => max(x.np), avg => sum(x.np) / count(x)
+end
+print out10
+
 # print out
 
 #out2 = seq y in out
@@ -37,9 +43,9 @@ end
 #end
 
 #out2 = each z in testbase
-#  yield z.np, z.user
+# yield z.np, z.user
 #end
-# print out2
+#print out2
 
 #include test_include.hpl
 
@@ -49,10 +55,10 @@ end
 # end
 # print out3
 
-out5 = each v in cheb_cpu_user where v.node == 'node-44-03'
-  yield time => v.time, node => v.node, cpu => v.value
-end
-print out5
+# out5 = each v in cheb_cpu_user where v.node == 'node-44-03'
+#   yield time => v.time, node => v.node, cpu => v.value
+# end
+# print out5
 
 # out6 = seq v in out5
 # var s,n

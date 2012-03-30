@@ -15,6 +15,7 @@ end
 require './hop_errors.rb'
 require './hop_core.rb'
 require './hop_varstore.rb'
+require './hop_fun.rb'
 require './hop_expression.rb'
 require './hop_statement.rb'
 require './hop_stance.rb'

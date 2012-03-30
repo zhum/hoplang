@@ -1,9 +1,10 @@
 module Hopsa
 
   class GroupExecutor < Hopstance
-    def initialize(parent,pipe,store,current_var,stream_var,chain,final,name=nil)
+    def initialize(parent,pipe,store,current_var,stream_var,init,chain,final,name=nil)
 #      hop_warn "PAR: #{parent} -> #{name} #{object_id}"
       super(parent)
+      @initChain=init.hop_clone
       @mainChain=chain.hop_clone
       @finalChain=final.hop_clone
       @current_var=current_var
@@ -28,6 +29,7 @@ module Hopsa
 
     def hop
       var=nil
+      @initChain.hop
       loop do
         var=@pipe.get
 #        hop_warn "GROUP #{@name}: GOT #{var.inspect}"
@@ -164,6 +166,7 @@ module Hopsa
           begin
             while true
               hopstance,pos=Statement.createNewRetLineNum(self,text,pos)
+              handle_agg_in_statement hopstance
               @finalChain.add hopstance
             end
           rescue SyntaxError
@@ -217,7 +220,7 @@ module Hopsa
                   #parent,pipe,store,current_var,stream_var,chain,final
                   executor=GroupExecutor.new(self,my_pipe,varStore,
                                          @current_var,@stream_var,
-                                         @mainChain,@finalChain,my_group)
+                                         @initChain,@mainChain,@finalChain,my_group)
                 Thread.current['result']=[]
                 main_thread['barrier']=false
                 executor.hop

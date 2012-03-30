@@ -131,7 +131,7 @@ grammar HopExprGram
              ([*/] spacecom) { to_s.strip }
         end
         rule unlop
-             (('-' | 'not' | 'int') spacecom) { to_s.strip }
+             (('-' | 'not') spacecom) { to_s.strip }
         end
         rule arrow
              ('=>' spacecom) { to_s.strip }

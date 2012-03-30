@@ -33,9 +33,20 @@ module Hopsa
       @finished=false
       @started=false
       @input=nil
-      @finalChain=HopChain.new(self)
-      @mainChain=HopChain.new(self)
+      # init chain is executed before main hopstance body, and mainly contains
+      # initializers
+      @initChain=HopChain.new self
+      @finalChain=HopChain.new self
+      @mainChain=HopChain.new self
       @hopid=Hopstance.nextId
+    end
+
+    # extracts aggregates from expressions in the statement, and replaces
+    # aggregate expressions with new expressions. The returned value is the
+    # dictionary part from the result of extract_agg for expressions
+    def extract_agg!      
+      # nothing to do
+      {}
     end
 
     # read next line and process it...
@@ -343,7 +354,6 @@ module Hopsa
       #line =~ /^(\S+)\s*=\s*(.*)/
       #expression,* = HopExpression.line2expr($2)
       expression = HopExpr.parse(line)
-      #puts expression.inspect
       #ret = LetStatement.new parent, $1, expression
       ret = LetStatement.new parent, expression, startLine
       return ret,startLine+1
@@ -355,9 +365,14 @@ module Hopsa
       @expression=expr
       @line=line
     end
-
+    
     def hop_clone
       LetStatement.new(@parent,@expression.hop_clone,@line)
+    end
+
+    def extract_agg!
+      @expression, agg_map = HopExpr.extract_agg @expression
+      agg_map
     end
 
     def hop
@@ -384,12 +399,32 @@ module Hopsa
       return YieldStatement.new(@parent,@fields.hop_clone)
     end
 
+    def extract_agg!
+      if @reference
+        # single expression
+        @expression, agg_map = HopExpr.extract_agg @expression
+        agg_map
+      else
+        # parse all fields
+        agg_map = {}
+        new_fields = {}
+        @fields.map do |name, expr|
+          unless name[0, 2] == '__'
+            new_fields[name], new_agg_map = HopExpr.extract_agg expr
+            agg_map = agg_map.merge new_agg_map
+          end
+        end
+        new_fields["__hoplang_cols_order"] = @fields["__hoplang_cols_order"]
+        @fields = new_fields
+        agg_map
+      end
+    end  
+
     def self.createNewRetLineNum(parent,text,pos)
       return YieldStatement.new(parent).createNewRetLineNum(text,pos)
     end
 
     def createNewRetLineNum(text,pos)
-      #puts 'creating yield statement'
       line,pos=Statement.nextLine(text,pos)
       field_num=1
       # maps names to expressions
@@ -399,7 +434,6 @@ module Hopsa
       raise (SyntaxError) if(not line.match /^\s*yield(\s*(.*))/)
 
       # parse expressions
-      #puts $2
       elist = HopExpr.parse_list $2
 #      hop_warn "DDDDDDDDDDDD:: #{elist.size} / #{elist[0].class} / #{elist[0]}"
       if (elist.size == 1) and (elist[0].name == '')
@@ -408,15 +442,17 @@ module Hopsa
         hop_warn "TRUE! #{@expression.inspect}"
       else
         @reference=false
+        names = []
         elist.each do |e|
           name = e.name
           if name == ''
             name = "field_#{field_num}"
           end
+          names += [name]
           field_num += 1
           @fields[name] = e
         end
-        @fields['__hoplang_cols_order']=elist.map{|e| e.name}.join(',')
+        @fields['__hoplang_cols_order'] = names.join ','
       end
 
       return self,pos+1
@@ -433,8 +469,7 @@ module Hopsa
           #@parent.do_yield(nil)
           return
         end
-        ret=@expression.eval(self)
-
+        ret = @expression.eval self
       else
         # named list
         @fields.map do |name, expr|
@@ -443,6 +478,7 @@ module Hopsa
         ret['__hoplang_cols_order'] = @fields['__hoplang_cols_order']
       end
       @parent.do_yield(ret)
+      #puts "yielded #{ret.inspect}"
     end
 
   end

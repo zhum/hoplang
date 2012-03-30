@@ -98,6 +98,22 @@ module Hopsa
       return source_stream
     end
 
+    # handles aggregation in the statement
+    def handle_agg_in_statement(statement)
+      agg_map = statement.extract_agg!
+      agg_map.each do |agg_var, v|
+        init_value, agg_expr = v
+        varStore.addScalar agg_var
+        init_expr = AssExpr.new(RefExpr.new(agg_var),
+                                ValExpr.new(init_value))
+        init_statement = LetStatement.new self, init_expr, nil
+        agg_statement = LetStatement.new self, agg_expr, nil
+        @initChain.add init_statement
+        @mainChain.add agg_statement
+      end
+    end
+
+
   end
 
   class EachHopstance < Hopstance
@@ -138,7 +154,6 @@ module Hopsa
 
       # parse predicate expression, if any
       @where_expr = HopExpr.parse_cond where if where
-      #puts @where_expr.inspect if @where_expr
 
       pos+=1
       hop_warn ":: #{text[pos]}"
@@ -158,6 +173,7 @@ module Hopsa
           begin
             while true
               hopstance,pos=Statement.createNewRetLineNum(self,text,pos)
+              handle_agg_in_statement hopstance
               @finalChain.add hopstance
             end
           rescue SyntaxError
@@ -182,6 +198,8 @@ module Hopsa
 
       new_thread "#{self.to_s}" do
         begin
+          @initChain.hop
+
           loop do
             value=@source.readSource
             break if value.nil?
@@ -242,6 +260,8 @@ module Hopsa
       end
     end
 
+    @@out_heads = nil
+
     def readSource
       value=@source.readSource
 #      hop_warn "PRINT: #{value}"
@@ -280,6 +300,7 @@ module Hopsa
       varStore.merge(@parent.varStore)
 
       begin
+        @initChain.hop
         loop do
           value=@source.readSource
           break if value.nil?

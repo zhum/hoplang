@@ -126,7 +126,7 @@ module Hopsa
       #hopstance.varStore.copyStreamFromParent(local_stream,stream_hopstance.varStore)
       hopstance.varStore.addCortege(current_var)
       parent.varStore.addStream(stream_var)
-      #hopstance.varStore.copyStreamFromParent(stream_var,parent.varStore)
+      hopstance.varStore.copyStreamFromParent(stream_var,parent.varStore)
 
       return hopstance.init(text,pos,stream_var,current_var,group_expr,source,where,stream_hopstance,local_stream)
     end

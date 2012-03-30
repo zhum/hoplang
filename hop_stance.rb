@@ -212,6 +212,8 @@ module Hopsa
   end
 
   class PrintEachHopstance < EachHopstance
+    @@out_heads=nil
+
     # read next source line and write it into @source_var
     def self.createNewRetLineNum(parent,text,pos)
       line,pos=Statement.nextLine(text,pos)

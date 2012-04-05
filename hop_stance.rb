@@ -1,3 +1,5 @@
+require 'pp'
+
 class String
   def csv_escape
     gsub('"','\\"')

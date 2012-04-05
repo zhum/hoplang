@@ -3,21 +3,21 @@
 module Hopsa
 
   # implementation of specific hopsa functions
-  class HopsaFuns
-    def self.int 
-      x.to_i
-    end
-    def self.min x, y
-      [x, y].min
-    end
-    def self.max x, y
-      [x, y].max
-    end
-    # to be called from "count" only, not for direct use
-    def self._incr x, y
-      x.to_f + 1
-    end
-  end
+#  class HopsaFuns
+#    def self.int x
+#      x.to_i
+#    end
+#    def self.min x, y
+#      [x, y].min
+#    end
+#    def self.max x, y
+#      [x, y].max
+#    end
+#    # to be called from "count" only, not for direct use
+#    def self._incr x, y
+#      x.to_f + 1
+#    end
+#  end
 
   # a Hoplagn function; either a directly called function, or an aggregate function
   class Function
@@ -47,21 +47,19 @@ module Hopsa
     end
 
     # adds a new direct function
-    def self.direct(name, argnum, pre_conv, post_conv, ruby_fun)
+    def self.direct(name, argnum, pre_conv, post_conv, code)
       key = key_for_map name, argnum
-      if @@fun_map[key]      
-        warn "function #{name} with #{argnum} parameter(s) is redefined" 
-      end
-      @@fun_map[key] = DirectFunction.new(name, argnum, pre_conv, post_conv, ruby_fun)
+      warn "function #{name} with #{argnum} parameter(s) is redefined"  if @@fun_map[key]
+      @@fun_map[key] = DirectFunction.new(name, argnum, pre_conv, post_conv, code)
     end
 
     # initializes the list of functions
     def self.load
       # direct functions
-      direct "int", 1, false, true, "HopsaFuns.int"
-      direct "min", 2, true, true, "HopsaFuns.min"
-      direct "max", 2, true, true, "HopsaFuns.max"
-      direct "incr", 2, false, true, "HopsaFuns._incr"
+      direct "int", 1, false, true, lambda{|x| int(x)}
+      direct "min", 2, true, true, lambda{|x,y| [x,y].min}
+      direct "max", 2, true, true, lambda{|x,y| [x,y].max}
+      direct "incr", 2, false, true, lambda{|x,y| x.to_f+1 }
       # aggregate functions
       agg "min", "min", "1e300"
       agg "max", "max", "-1e300"
@@ -88,17 +86,17 @@ module Hopsa
   end # class Function
 
   # directly called function
-  class DirectFunction < Function 
+  class DirectFunction < Function
 
     attr_reader :post_conv, :ruby_fun
-    
+
     # post_conv - whether result must be converted to string
     # ruby_fun - the name of (non-instance) ruby fun to be called
-    def initialize(name, argnum, pre_conv, post_conv, ruby_fun) 
+    def initialize(name, argnum, pre_conv, post_conv, code)
       super name, argnum
       @pre_conv = pre_conv
       @post_conv = post_conv
-      @ruby_fun = ruby_fun
+      @code = code
     end
 
     def call(args)
@@ -106,7 +104,8 @@ module Hopsa
         args.map! {|arg| arg.to_f}
       end
       #puts "args = " + args.inspect
-      res = eval("#{ruby_fun} " + (args.map{|arg| arg.inspect}.join ','))
+      #res = eval("#{ruby_fun} " + (args.map{|arg| arg.inspect}.join ','))
+      res = @code.call(*args)
       res = res.to_s if @post_conv
     end
   end # DirectFunction
@@ -116,7 +115,7 @@ module Hopsa
   class AggregateFunction < Function
 
     attr_reader :direct, :neutral
-    
+
     # direct - name of direct function or operation to be called
     # neutral - neutral element
     # number of arguments is always 1

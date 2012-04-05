@@ -77,30 +77,30 @@ module Hopsa
 
     # extracts aggregation variables and accumulates them into the map; this is
     # the version called internally; the new expression is returned
-    def self.extract_agg_into(expr, map) 
-      if expr.class == Array
+    def self.extract_agg_into(expr, map)
+      if expr.kind_of?(Array)
         # list of expressions
-        res_exprs = expr.map do |e| 
+        res_exprs = expr.map do |e|
           extract_agg_into e, map
         end
         return res_exprs
-      elsif expr.class == CallExpr && expr.fun.aggregate?
+      elsif expr.kind_of?(CallExpr) && expr.fun.aggregate?
         agg_var = new_agg_var
         neutral = expr.fun.neutral
         expr2 = extract_agg_into expr.args[0], map
         agg_ref = RefExpr.new agg_var
-        agg_direct = expr.fun.direct        
+        agg_direct = expr.fun.direct
         update_expr = nil
         if expr.fun.op?
           update_expr = BinaryExpr.new agg_ref, agg_direct, expr2
         else
           update_expr = CallExpr.new agg_direct, [agg_ref, expr2]
         end
-        agg_expr = AssExpr.new agg_ref, update_expr        
+        agg_expr = AssExpr.new agg_ref, update_expr
         map[agg_var] = [neutral, agg_expr]
         return agg_ref
       else
-        # new_members = expr.expr_members.map do |e| 
+        # new_members = expr.expr_members.map do |e|
         #   extract_agg_into e, map
         # end
         # expr.expr_subst new_members

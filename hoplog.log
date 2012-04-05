@@ -1,1568 +1,1273 @@
-DB Driver load: ./hop_db_cassandra.rb
-OK! (cassandra)
-DB Driver load: ./hop_db_cassandra2d.rb
-OK! (cassandra2d)
 DB Driver load: ./hop_db_dummy.rb
 OK! (dummy)
+DB Driver load: ./hop_db_cassandra.rb
+DB Driver load failed (but ignored): ./hop_db_cassandra.rb (no such file to load -- cassandra/0.8)
+DB Driver load: ./hop_db_cassandra2d.rb
+DB Driver init failed: ./hop_db_cassandra2d.rb (uninitialized constant Hopsa::CassandraHopstance)
 DB Driver load: ./hop_db_mongo.rb
-DB Driver load failed (but ignored): ./hop_db_mongo.rb (no such file to load -- bson)
+OK! (mongo)
 DB Driver load: ./hop_db_split.rb
 OK! (split)
 DB Driver load: ./hop_db_stream.rb
 OK! (stream)
-CONFIG YAML: {"local"=>{"out_format"=>"csv"}, "varmap"=>{"cheb_cpu_user"=>{"keyname"=>"time", "colname"=>"node", "cf"=>"cheb_cpu_user", "type"=>"cassandra2d", "keyspace"=>"zhopsa"}, "testbase"=>{"type"=>"csv"}, "cpu_user"=>{"address"=>"localhost", "push_index"=>true, "type"=>"mongo", "database"=>"test", "collection"=>"mycoll"}, "tasks"=>{"keyname"=>"taskid", "cf"=>"tasks_gra", "push_index"=>true, "type"=>"cassandra", "max_items"=>-1, "keyspace"=>"hopsa"}}, "parmap"=>{"end_time"=>"5000000000000000", "node"=>"node-00-00", "start_time"=>"1"}}
->>Statement NilClass => Hopsa::TopStatement
-NEW EMPTY VARSTORE
-Comment 
-Comment 
->>Statement Hopsa::TopStatement => Hopsa::EachHopstance
-Copy varstore #EachHopstance(<-) from #<Hopsa::TopStatement:0x101dba6f8>.
-ADDED STREAM: 2163069680 out10
-:: final 
-EACH: out10,x,#<Hopsa::CSVDriver:0x101db9348>,x.np > 97
->>final<<
-TRUE! #<Hopsa::CallExpr:0x101da53c0 @fun_name=#<Hopsa::RefExpr:0x101da7f58 @code_line=0, @rname="sum">, @args=[#<Hopsa::DotExpr:0x101da54b0 @code_line=0, @field_name="np", @obj=#<Hopsa::RefExpr:0x101da5708 @code_line=0, @rname="x">>], @fun=#<Hopsa::AggregateFunction:0x101dba900 @arg_num=1, @neutral="0", @name="sum", @direct="+">>
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::TopStatement => Hopsa::PrintEachHopstance
-Copy varstore PrintEachHopstance from #<Hopsa::TopStatement:0x101dba6f8>.
-STREAM "out10"
-Comment 
-Comment 
-Comment 
-Comment 
-Comment 
-Comment 
-Comment 
-Comment # print out6
-
-
-***********   START   *********************
-
-START main chain #EachHopstance(out10<-#<Hopsa::CSVDriver:0x101db9348>) (#HopChain (1 statements))
-Merge varstore #EachHopstance(out10<-#<Hopsa::CSVDriver:0x101db9348>) from #<Hopsa::TopStatement:0x101dba6f8>.
-Thread #EachHopstance(out10<-#<Hopsa::CSVDriver:0x101db9348>) started(#<Thread:0x101da0690>)
-Thread PrintEachHopstance started(#<Thread:0x101d86560>)
-EOF.....
-
-T: #<Thread:0x101da0690> sleep
-START final chain #EachHopstance(out10<-#<Hopsa::CSVDriver:0x101db9348>) (#HopChain (1 statements))
-T: #<Thread:0x101d86560> sleep
-THREADS:2
-FINISHED! #EachHopstance(out10<-#<Hopsa::CSVDriver:0x101db9348>)
--------------------------------
-DATA READ ERROR: 743: unexpected token at '"20100.0"' ("\"20100.0\"")
-/Library/Ruby/Gems/1.8/gems/json-1.6.1/lib/json/common.rb:148:in `parse'	
-/Library/Ruby/Gems/1.8/gems/json-1.6.1/lib/json/common.rb:148:in `parse'	
-/Library/Ruby/Gems/1.8/gems/json-1.6.1/lib/json/common.rb:302:in `load'	
-./hop_core.rb:30:in `unpack_data'	
-./hop_core.rb:49:in `get'	
-./hop_varstore.rb:105:in `getStream'	
-./hop_db_stream.rb:29:in `readSource'	
-./hop_db_stream.rb:27:in `loop'	
-./hop_db_stream.rb:27:in `readSource'	
-./hop_stance.rb:266:in `readSource'	
-./hop_stance.rb:258:in `hop'	
-./hop_stance.rb:64:in `initialize'	
-./hop_stance.rb:64:in `new'	
-./hop_stance.rb:64:in `new_thread'	
-./hop_stance.rb:63:in `synchronize'	
-./hop_stance.rb:63:in `new_thread'	
-./hop_stance.rb:257:in `hop'	
-./hop_core.rb:89:in `hop'	
-./hop_core.rb:89:in `each'	
-./hop_core.rb:89:in `hop'	
-./hop_statement.rb:55:in `hop'	
-./hop_stance.rb:360:in `hop'	
-./hoptest.rb:76
-T: #<Thread:0x101da0690> false
-T: #<Thread:0x101d86560> false
-THREADS:0
-
-***********   END     *********************
-
-VAR: out10HopPipe: is 2163055020
-VAR: end_time5000000000000000
-VAR: abc
-VAR: nodenode-00-00
-VAR: start_time1
-DB Driver load: ./hop_db_cassandra.rb
-OK! (cassandra)
-DB Driver load: ./hop_db_cassandra2d.rb
-OK! (cassandra2d)
-DB Driver load: ./hop_db_dummy.rb
-OK! (dummy)
-DB Driver load: ./hop_db_mongo.rb
-DB Driver load failed (but ignored): ./hop_db_mongo.rb (no such file to load -- bson)
-DB Driver load: ./hop_db_split.rb
-OK! (split)
-DB Driver load: ./hop_db_stream.rb
-OK! (stream)
-CONFIG YAML: {"local"=>{"out_format"=>"csv"}, "varmap"=>{"cheb_cpu_user"=>{"keyname"=>"time", "colname"=>"node", "cf"=>"cheb_cpu_user", "type"=>"cassandra2d", "keyspace"=>"zhopsa"}, "testbase"=>{"type"=>"csv"}, "cpu_user"=>{"address"=>"localhost", "push_index"=>true, "type"=>"mongo", "database"=>"test", "collection"=>"mycoll"}, "tasks"=>{"keyname"=>"taskid", "cf"=>"tasks_gra", "push_index"=>true, "type"=>"cassandra", "max_items"=>-1, "keyspace"=>"hopsa"}}, "parmap"=>{"end_time"=>"5000000000000000", "node"=>"node-00-00", "start_time"=>"1"}}
->>Statement NilClass => Hopsa::TopStatement
-NEW EMPTY VARSTORE
-Comment 
-Comment 
->>Statement Hopsa::TopStatement => Hopsa::EachHopstance
-Copy varstore #EachHopstance(<-) from #<Hopsa::TopStatement:0x101be2650>.
-ADDED STREAM: 2162102940 out10
-:: final 
-EACH: out10,x,#<Hopsa::CSVDriver:0x101be12a0>,x.np > 97
->>final<<
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::TopStatement => Hopsa::PrintEachHopstance
-Copy varstore PrintEachHopstance from #<Hopsa::TopStatement:0x101be2650>.
-STREAM "out10"
-Comment 
-Comment 
-Comment 
-Comment 
-Comment 
-Comment 
-Comment 
-Comment # print out6
-
-
-***********   START   *********************
-
-START main chain #EachHopstance(out10<-#<Hopsa::CSVDriver:0x101be12a0>) (#HopChain (1 statements))
-Merge varstore #EachHopstance(out10<-#<Hopsa::CSVDriver:0x101be12a0>) from #<Hopsa::TopStatement:0x101be2650>.
-Thread #EachHopstance(out10<-#<Hopsa::CSVDriver:0x101be12a0>) started(#<Thread:0x101bc7d50>)
-Thread PrintEachHopstance started(#<Thread:0x101badc20>)
-EOF.....
-
-T: #<Thread:0x101bc7d50> sleep
-START final chain #EachHopstance(out10<-#<Hopsa::CSVDriver:0x101be12a0>) (#HopChain (1 statements))
-T: #<Thread:0x101badc20> sleep
-THREADS:2
-FINISHED! #EachHopstance(out10<-#<Hopsa::CSVDriver:0x101be12a0>)
--------------------------------
-TRUE NIL READED!
-T: #<Thread:0x101bc7d50> false
-T: #<Thread:0x101badc20> false
-THREADS:0
-
-***********   END     *********************
-
-VAR: out10HopPipe: is 2162088280
-VAR: end_time5000000000000000
-VAR: abc
-VAR: nodenode-00-00
-VAR: start_time1
-DB Driver load: ./hop_db_cassandra.rb
-OK! (cassandra)
-DB Driver load: ./hop_db_cassandra2d.rb
-OK! (cassandra2d)
-DB Driver load: ./hop_db_dummy.rb
-OK! (dummy)
-DB Driver load: ./hop_db_mongo.rb
-DB Driver load failed (but ignored): ./hop_db_mongo.rb (no such file to load -- bson)
-DB Driver load: ./hop_db_split.rb
-OK! (split)
-DB Driver load: ./hop_db_stream.rb
-OK! (stream)
-CONFIG YAML: {"local"=>{"out_format"=>"csv"}, "varmap"=>{"cheb_cpu_user"=>{"keyname"=>"time", "colname"=>"node", "cf"=>"cheb_cpu_user", "type"=>"cassandra2d", "keyspace"=>"zhopsa"}, "testbase"=>{"type"=>"csv"}, "cpu_user"=>{"address"=>"localhost", "push_index"=>true, "type"=>"mongo", "database"=>"test", "collection"=>"mycoll"}, "tasks"=>{"keyname"=>"taskid", "cf"=>"tasks_gra", "push_index"=>true, "type"=>"cassandra", "max_items"=>-1, "keyspace"=>"hopsa"}}, "parmap"=>{"end_time"=>"5000000000000000", "node"=>"node-00-00", "start_time"=>"1"}}
->>Statement NilClass => Hopsa::TopStatement
-NEW EMPTY VARSTORE
-Comment 
-Comment 
->>Statement Hopsa::TopStatement => Hopsa::EachHopstance
-Copy varstore #EachHopstance(<-) from #<Hopsa::TopStatement:0x106631648>.
-ADDED STREAM: 2201062040 out10
-:: final 
-EACH: out10,x,#<Hopsa::CSVDriver:0x106630298>,x.np > 97
->>final<<
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::TopStatement => Hopsa::PrintEachHopstance
-Copy varstore PrintEachHopstance from #<Hopsa::TopStatement:0x106631648>.
-STREAM "out10"
-Comment 
-Comment 
-Comment 
-Comment 
-Comment 
-Comment 
-Comment 
-Comment # print out6
-
-
-***********   START   *********************
-
-START main chain #EachHopstance(out10<-#<Hopsa::CSVDriver:0x106630298>) (#HopChain (1 statements))
-Merge varstore #EachHopstance(out10<-#<Hopsa::CSVDriver:0x106630298>) from #<Hopsa::TopStatement:0x106631648>.
-Thread #EachHopstance(out10<-#<Hopsa::CSVDriver:0x106630298>) started(#<Thread:0x106616d48>)
-Thread PrintEachHopstance started(#<Thread:0x1065fcc18>)
-EOF.....
-
-T: #<Thread:0x106616d48> sleep
-START final chain #EachHopstance(out10<-#<Hopsa::CSVDriver:0x106630298>) (#HopChain (1 statements))
-T: #<Thread:0x1065fcc18> sleep
-THREADS:2
-FINISHED! #EachHopstance(out10<-#<Hopsa::CSVDriver:0x106630298>)
--------------------------------
-TRUE NIL READED!
-T: #<Thread:0x106616d48> false
-T: #<Thread:0x1065fcc18> false
-THREADS:0
-
-***********   END     *********************
-
-VAR: out10HopPipe: is 2201047380
-VAR: end_time5000000000000000
-VAR: abc
-VAR: nodenode-00-00
-VAR: start_time1
-DB Driver load: ./hop_db_cassandra.rb
-OK! (cassandra)
-DB Driver load: ./hop_db_cassandra2d.rb
-OK! (cassandra2d)
-DB Driver load: ./hop_db_dummy.rb
-OK! (dummy)
-DB Driver load: ./hop_db_mongo.rb
-DB Driver load failed (but ignored): ./hop_db_mongo.rb (no such file to load -- bson)
-DB Driver load: ./hop_db_split.rb
-OK! (split)
-DB Driver load: ./hop_db_stream.rb
-OK! (stream)
-CONFIG YAML: {"local"=>{"out_format"=>"csv"}, "varmap"=>{"cheb_cpu_user"=>{"keyname"=>"time", "colname"=>"node", "cf"=>"cheb_cpu_user", "type"=>"cassandra2d", "keyspace"=>"zhopsa"}, "testbase"=>{"type"=>"csv"}, "cpu_user"=>{"address"=>"localhost", "push_index"=>true, "type"=>"mongo", "database"=>"test", "collection"=>"mycoll"}, "tasks"=>{"keyname"=>"taskid", "cf"=>"tasks_gra", "push_index"=>true, "type"=>"cassandra", "max_items"=>-1, "keyspace"=>"hopsa"}}, "parmap"=>{"end_time"=>"5000000000000000", "node"=>"node-00-00", "start_time"=>"1"}}
->>Statement NilClass => Hopsa::TopStatement
-NEW EMPTY VARSTORE
->>Statement Hopsa::TopStatement => Hopsa::LetStatement
->>Statement Hopsa::TopStatement => Hopsa::EachHopstance
-Copy varstore #EachHopstance(<-) from #<Hopsa::TopStatement:0x103893808>.
-ADDED STREAM: 2177145720 out
-::  var delta
-EACH: out,x,#<Hopsa::CSVDriver:0x103883b10>,x.np > 97
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::EachHopstance => Hopsa::WhileStatement
-#<Hopsa::BinaryExpr:0x10385f080 @short=false, @op="<", @post_conv=false, @code_line=0, @pre_conv=true, @expr2=#<Hopsa::ValExpr:0x10385f2b0 @val="2", @code_line=0>, @expr1=#<Hopsa::RefExpr:0x103860728 @code_line=0, @rname="i">>
->>Statement Hopsa::EachHopstance => Hopsa::IfStatement
-#<Hopsa::BinaryExpr:0x103859c20 @short=false, @op="==", @post_conv=false, @code_line=0, @pre_conv=false, @expr2=#<Hopsa::ValExpr:0x103859e50 @val="0", @code_line=0>, @expr1=#<Hopsa::RefExpr:0x10385b2c8 @code_line=0, @rname="i">>
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>end<<
-Comment 
-Comment 
->>Statement Hopsa::TopStatement => Hopsa::EachHopstance
-Copy varstore #EachHopstance(<-) from #<Hopsa::TopStatement:0x103893808>.
-ADDED STREAM: 2177145720 out10
-:: final 
-EACH: out10,x,#<Hopsa::CSVDriver:0x103836e00>,x.np > 97
->>final<<
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::TopStatement => Hopsa::PrintEachHopstance
-Copy varstore PrintEachHopstance from #<Hopsa::TopStatement:0x103893808>.
-STREAM "out10"
-Comment 
-Comment 
-Comment 
-Comment 
-Comment 
-Comment 
-Comment 
-Comment # print out6
-
-
-***********   START   *********************
-
-__hoplang_cols_order => field_1,field_2
-field_1 => 2.0
-field_2 => 10
-
-
-START main chain #EachHopstance(out<-#<Hopsa::CSVDriver:0x103883b10>) (#HopChain (3 statements))
-Merge varstore #EachHopstance(out<-#<Hopsa::CSVDriver:0x103883b10>) from #<Hopsa::TopStatement:0x103893808>.
-Thread #EachHopstance(out<-#<Hopsa::CSVDriver:0x103883b10>) started(#<Thread:0x10381c9b0>)
-START main chain #EachHopstance(out10<-#<Hopsa::CSVDriver:0x103836e00>) (#HopChain (1 statements))
-Merge varstore #EachHopstance(out10<-#<Hopsa::CSVDriver:0x103836e00>) from #<Hopsa::TopStatement:0x103893808>.
-Thread #EachHopstance(out10<-#<Hopsa::CSVDriver:0x103836e00>) started(#<Thread:0x103819698>)
-Thread PrintEachHopstance started(#<Thread:0x1037fe3e8>)
-EOF.....
-
-T: #<Thread:0x10381c9b0> sleep
-START final chain #EachHopstance(out10<-#<Hopsa::CSVDriver:0x103836e00>) (#HopChain (1 statements))
-T: #<Thread:0x103819698> sleep
-T: #<Thread:0x1037fe3e8> sleep
-THREADS:3
-FINISHED! #EachHopstance(out10<-#<Hopsa::CSVDriver:0x103836e00>)
--------------------------------
-TRUE NIL READED!
-T: #<Thread:0x10381c9b0> sleep
-T: #<Thread:0x103819698> false
-T: #<Thread:0x1037fe3e8> false
-THREADS:1
-T: #<Thread:0x10381c9b0> sleep
-THREADS:1
-T: #<Thread:0x10381c9b0> sleep
-THREADS:1
-T: #<Thread:0x10381c9b0> sleep
-THREADS:1
-T: #<Thread:0x10381c9b0> sleep
-THREADS:1
-T: #<Thread:0x10381c9b0> sleep
-THREADS:1
-T: #<Thread:0x10381c9b0> sleep
-THREADS:1
-T: #<Thread:0x10381c9b0> sleep
-THREADS:1
-T: #<Thread:0x10381c9b0> sleep
-THREADS:1
-T: #<Thread:0x10381c9b0> sleep
-THREADS:1
-T: #<Thread:0x10381c9b0> sleep
-THREADS:1
-T: #<Thread:0x10381c9b0> sleep
-THREADS:1
-T: #<Thread:0x10381c9b0> sleep
-THREADS:1
-T: #<Thread:0x10381c9b0> sleep
-THREADS:1
-T: #<Thread:0x10381c9b0> sleep
-THREADS:1
-T: #<Thread:0x10381c9b0> sleep
-THREADS:1
-T: #<Thread:0x10381c9b0> sleep
-THREADS:1
-T: #<Thread:0x10381c9b0> sleep
-THREADS:1
-T: #<Thread:0x10381c9b0> sleep
-THREADS:1
-T: #<Thread:0x10381c9b0> sleep
-THREADS:1
-T: #<Thread:0x10381c9b0> sleep
-THREADS:1
-T: #<Thread:0x10381c9b0> sleep
-THREADS:1
-T: #<Thread:0x10381c9b0> sleep
-THREADS:1
-T: #<Thread:0x10381c9b0> sleep
-THREADS:1
-T: #<Thread:0x10381c9b0> sleep
-THREADS:1
-T: #<Thread:0x10381c9b0> sleep
-THREADS:1
-T: #<Thread:0x10381c9b0> sleep
-THREADS:1
-T: #<Thread:0x10381c9b0> sleep
-THREADS:1
-T: #<Thread:0x10381c9b0> sleep
-THREADS:1
-T: #<Thread:0x10381c9b0> sleep
-THREADS:1
-T: #<Thread:0x10381c9b0> sleep
-THREADS:1
-T: #<Thread:0x10381c9b0> sleep
-THREADS:1
-T: #<Thread:0x10381c9b0> sleep
-THREADS:1
-T: #<Thread:0x10381c9b0> sleep
-THREADS:1
-T: #<Thread:0x10381c9b0> sleep
-THREADS:1
-T: #<Thread:0x10381c9b0> sleep
-THREADS:1
-T: #<Thread:0x10381c9b0> sleep
-THREADS:1
-T: #<Thread:0x10381c9b0> sleep
-THREADS:1
-T: #<Thread:0x10381c9b0> sleep
-THREADS:1
-T: #<Thread:0x10381c9b0> sleep
-THREADS:1
-T: #<Thread:0x10381c9b0> sleep
-THREADS:1
-T: #<Thread:0x10381c9b0> sleep
-THREADS:1
-T: #<Thread:0x10381c9b0> sleep
-THREADS:1
-T: #<Thread:0x10381c9b0> sleep
-THREADS:1
-T: #<Thread:0x10381c9b0> sleep
-THREADS:1
-T: #<Thread:0x10381c9b0> sleep
-THREADS:1
-T: #<Thread:0x10381c9b0> sleep
-THREADS:1
-T: #<Thread:0x10381c9b0> sleep
-THREADS:1
-T: #<Thread:0x10381c9b0> sleep
-THREADS:1
-T: #<Thread:0x10381c9b0> sleep
-THREADS:1
-T: #<Thread:0x10381c9b0> sleep
-THREADS:1
-T: #<Thread:0x10381c9b0> sleep
-THREADS:1
-T: #<Thread:0x10381c9b0> sleep
-THREADS:1
-T: #<Thread:0x10381c9b0> sleep
-THREADS:1
-T: #<Thread:0x10381c9b0> sleep
-THREADS:1
-T: #<Thread:0x10381c9b0> sleep
-THREADS:1
-T: #<Thread:0x10381c9b0> sleep
-THREADS:1
-T: #<Thread:0x10381c9b0> sleep
-THREADS:1
-T: #<Thread:0x10381c9b0> sleep
-THREADS:1
-T: #<Thread:0x10381c9b0> sleep
-THREADS:1
-T: #<Thread:0x10381c9b0> sleep
-THREADS:1
-T: #<Thread:0x10381c9b0> sleep
-THREADS:1
-T: #<Thread:0x10381c9b0> sleep
-THREADS:1
-T: #<Thread:0x10381c9b0> sleep
-THREADS:1
-T: #<Thread:0x10381c9b0> sleep
-THREADS:1
-T: #<Thread:0x10381c9b0> sleep
-THREADS:1
-T: #<Thread:0x10381c9b0> sleep
-THREADS:1
-T: #<Thread:0x10381c9b0> sleep
-THREADS:1
-T: #<Thread:0x10381c9b0> sleep
-THREADS:1
-DB Driver load: ./hop_db_cassandra.rb
-OK! (cassandra)
-DB Driver load: ./hop_db_cassandra2d.rb
-OK! (cassandra2d)
-DB Driver load: ./hop_db_dummy.rb
-OK! (dummy)
-DB Driver load: ./hop_db_mongo.rb
-DB Driver load failed (but ignored): ./hop_db_mongo.rb (no such file to load -- bson)
-DB Driver load: ./hop_db_split.rb
-OK! (split)
-DB Driver load: ./hop_db_stream.rb
-OK! (stream)
-CONFIG YAML: {"local"=>{"out_format"=>"csv"}, "varmap"=>{"cheb_cpu_user"=>{"keyname"=>"time", "colname"=>"node", "cf"=>"cheb_cpu_user", "type"=>"cassandra2d", "keyspace"=>"zhopsa"}, "testbase"=>{"type"=>"csv"}, "cpu_user"=>{"address"=>"localhost", "push_index"=>true, "type"=>"mongo", "database"=>"test", "collection"=>"mycoll"}, "tasks"=>{"keyname"=>"taskid", "cf"=>"tasks_gra", "push_index"=>true, "type"=>"cassandra", "max_items"=>-1, "keyspace"=>"hopsa"}}, "parmap"=>{"end_time"=>"5000000000000000", "node"=>"node-00-00", "start_time"=>"1"}}
->>Statement NilClass => Hopsa::TopStatement
-NEW EMPTY VARSTORE
->>Statement Hopsa::TopStatement => Hopsa::LetStatement
->>Statement Hopsa::TopStatement => Hopsa::EachHopstance
-Copy varstore #EachHopstance(<-) from #<Hopsa::TopStatement:0x1031e97f0>.
-ADDED STREAM: 2173651820 out
-::  var delta
-EACH: out,x,#<Hopsa::CSVDriver:0x1031d9af8>,x.np > 97
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::EachHopstance => Hopsa::WhileStatement
-#<Hopsa::BinaryExpr:0x1031b5068 @short=false, @op="<", @post_conv=false, @code_line=0, @pre_conv=true, @expr2=#<Hopsa::ValExpr:0x1031b5298 @val="2", @code_line=0>, @expr1=#<Hopsa::RefExpr:0x1031b6710 @code_line=0, @rname="i">>
->>Statement Hopsa::EachHopstance => Hopsa::IfStatement
-#<Hopsa::BinaryExpr:0x1031afc08 @short=false, @op="==", @post_conv=false, @code_line=0, @pre_conv=false, @expr2=#<Hopsa::ValExpr:0x1031afe38 @val="0", @code_line=0>, @expr1=#<Hopsa::RefExpr:0x1031b12b0 @code_line=0, @rname="i">>
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>end<<
-Comment 
-Comment 
->>Statement Hopsa::TopStatement => Hopsa::EachHopstance
-Copy varstore #EachHopstance(<-) from #<Hopsa::TopStatement:0x1031e97f0>.
-ADDED STREAM: 2173651820 out10
-:: final 
-EACH: out10,x,#<Hopsa::CSVDriver:0x10318cde8>,x.np > 97
->>final<<
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::TopStatement => Hopsa::PrintEachHopstance
-Copy varstore PrintEachHopstance from #<Hopsa::TopStatement:0x1031e97f0>.
-STREAM "out10"
-Comment 
-Comment 
-Comment 
-Comment 
-Comment 
-Comment 
-Comment 
-Comment # print out6
-
-
-***********   START   *********************
-
-__hoplang_cols_order => field_1,field_2
-field_1 => 2.0
-field_2 => 10
-
-
-START main chain #EachHopstance(out<-#<Hopsa::CSVDriver:0x1031d9af8>) (#HopChain (3 statements))
-Merge varstore #EachHopstance(out<-#<Hopsa::CSVDriver:0x1031d9af8>) from #<Hopsa::TopStatement:0x1031e97f0>.
-Thread #EachHopstance(out<-#<Hopsa::CSVDriver:0x1031d9af8>) started(#<Thread:0x103172ad8>)
-START main chain #EachHopstance(out10<-#<Hopsa::CSVDriver:0x10318cde8>) (#HopChain (1 statements))
-Merge varstore #EachHopstance(out10<-#<Hopsa::CSVDriver:0x10318cde8>) from #<Hopsa::TopStatement:0x1031e97f0>.
-Thread #EachHopstance(out10<-#<Hopsa::CSVDriver:0x10318cde8>) started(#<Thread:0x10316f978>)
-Thread PrintEachHopstance started(#<Thread:0x103154858>)
-EOF.....
-
-T: #<Thread:0x103172ad8> sleep
-START final chain #EachHopstance(out10<-#<Hopsa::CSVDriver:0x10318cde8>) (#HopChain (1 statements))
-T: #<Thread:0x10316f978> sleep
-T: #<Thread:0x103154858> sleep
-THREADS:3
-FINISHED! #EachHopstance(out10<-#<Hopsa::CSVDriver:0x10318cde8>)
--------------------------------
-TRUE NIL READED!
-T: #<Thread:0x103172ad8> sleep
-T: #<Thread:0x10316f978> false
-T: #<Thread:0x103154858> false
-THREADS:1
-T: #<Thread:0x103172ad8> sleep
-THREADS:1
-T: #<Thread:0x103172ad8> sleep
-THREADS:1
-T: #<Thread:0x103172ad8> sleep
-THREADS:1
-T: #<Thread:0x103172ad8> sleep
-THREADS:1
-T: #<Thread:0x103172ad8> sleep
-THREADS:1
-T: #<Thread:0x103172ad8> sleep
-THREADS:1
-T: #<Thread:0x103172ad8> sleep
-THREADS:1
-T: #<Thread:0x103172ad8> sleep
-THREADS:1
-T: #<Thread:0x103172ad8> sleep
-THREADS:1
-T: #<Thread:0x103172ad8> sleep
-THREADS:1
-T: #<Thread:0x103172ad8> sleep
-THREADS:1
-T: #<Thread:0x103172ad8> sleep
-THREADS:1
-T: #<Thread:0x103172ad8> sleep
-THREADS:1
-T: #<Thread:0x103172ad8> sleep
-THREADS:1
-T: #<Thread:0x103172ad8> sleep
-THREADS:1
-T: #<Thread:0x103172ad8> sleep
-THREADS:1
-T: #<Thread:0x103172ad8> sleep
-THREADS:1
-T: #<Thread:0x103172ad8> sleep
-THREADS:1
-T: #<Thread:0x103172ad8> sleep
-THREADS:1
-T: #<Thread:0x103172ad8> sleep
-THREADS:1
-T: #<Thread:0x103172ad8> sleep
-THREADS:1
-T: #<Thread:0x103172ad8> sleep
-THREADS:1
-T: #<Thread:0x103172ad8> sleep
-THREADS:1
-T: #<Thread:0x103172ad8> sleep
-THREADS:1
-T: #<Thread:0x103172ad8> sleep
-THREADS:1
-T: #<Thread:0x103172ad8> sleep
-THREADS:1
-T: #<Thread:0x103172ad8> sleep
-THREADS:1
-T: #<Thread:0x103172ad8> sleep
-THREADS:1
-T: #<Thread:0x103172ad8> sleep
-THREADS:1
-T: #<Thread:0x103172ad8> sleep
-THREADS:1
-T: #<Thread:0x103172ad8> sleep
-THREADS:1
-T: #<Thread:0x103172ad8> sleep
-THREADS:1
-T: #<Thread:0x103172ad8> sleep
-THREADS:1
-T: #<Thread:0x103172ad8> sleep
-THREADS:1
-T: #<Thread:0x103172ad8> sleep
-THREADS:1
-T: #<Thread:0x103172ad8> sleep
-THREADS:1
-T: #<Thread:0x103172ad8> sleep
-THREADS:1
-T: #<Thread:0x103172ad8> sleep
-THREADS:1
-T: #<Thread:0x103172ad8> sleep
-THREADS:1
-T: #<Thread:0x103172ad8> sleep
-THREADS:1
-T: #<Thread:0x103172ad8> sleep
-THREADS:1
-T: #<Thread:0x103172ad8> sleep
-THREADS:1
-T: #<Thread:0x103172ad8> sleep
-THREADS:1
-T: #<Thread:0x103172ad8> sleep
-THREADS:1
-T: #<Thread:0x103172ad8> sleep
-THREADS:1
-T: #<Thread:0x103172ad8> sleep
-THREADS:1
-T: #<Thread:0x103172ad8> sleep
-THREADS:1
-T: #<Thread:0x103172ad8> sleep
-THREADS:1
-T: #<Thread:0x103172ad8> sleep
-THREADS:1
-T: #<Thread:0x103172ad8> sleep
-THREADS:1
-T: #<Thread:0x103172ad8> sleep
-THREADS:1
-T: #<Thread:0x103172ad8> sleep
-THREADS:1
-T: #<Thread:0x103172ad8> sleep
-THREADS:1
-T: #<Thread:0x103172ad8> sleep
-THREADS:1
-T: #<Thread:0x103172ad8> sleep
-THREADS:1
-T: #<Thread:0x103172ad8> sleep
-THREADS:1
-T: #<Thread:0x103172ad8> sleep
-THREADS:1
-T: #<Thread:0x103172ad8> sleep
-THREADS:1
-T: #<Thread:0x103172ad8> sleep
-THREADS:1
-T: #<Thread:0x103172ad8> sleep
-THREADS:1
-T: #<Thread:0x103172ad8> sleep
-THREADS:1
-T: #<Thread:0x103172ad8> sleep
-THREADS:1
-T: #<Thread:0x103172ad8> sleep
-THREADS:1
-T: #<Thread:0x103172ad8> sleep
-THREADS:1
-T: #<Thread:0x103172ad8> sleep
-THREADS:1
-T: #<Thread:0x103172ad8> sleep
-THREADS:1
-T: #<Thread:0x103172ad8> sleep
-THREADS:1
-T: #<Thread:0x103172ad8> sleep
-THREADS:1
-T: #<Thread:0x103172ad8> sleep
-THREADS:1
-T: #<Thread:0x103172ad8> sleep
-THREADS:1
-T: #<Thread:0x103172ad8> sleep
-THREADS:1
-T: #<Thread:0x103172ad8> sleep
-THREADS:1
-T: #<Thread:0x103172ad8> sleep
-THREADS:1
-T: #<Thread:0x103172ad8> sleep
-THREADS:1
-T: #<Thread:0x103172ad8> sleep
-THREADS:1
-T: #<Thread:0x103172ad8> sleep
-THREADS:1
-T: #<Thread:0x103172ad8> sleep
-THREADS:1
-T: #<Thread:0x103172ad8> sleep
-THREADS:1
-T: #<Thread:0x103172ad8> sleep
-THREADS:1
-T: #<Thread:0x103172ad8> sleep
-THREADS:1
-T: #<Thread:0x103172ad8> sleep
-THREADS:1
-T: #<Thread:0x103172ad8> sleep
-THREADS:1
-T: #<Thread:0x103172ad8> sleep
-THREADS:1
-T: #<Thread:0x103172ad8> sleep
-THREADS:1
-T: #<Thread:0x103172ad8> sleep
-THREADS:1
-T: #<Thread:0x103172ad8> sleep
-THREADS:1
-DB Driver load: ./hop_db_cassandra.rb
-OK! (cassandra)
-DB Driver load: ./hop_db_cassandra2d.rb
-OK! (cassandra2d)
-DB Driver load: ./hop_db_dummy.rb
-OK! (dummy)
-DB Driver load: ./hop_db_mongo.rb
-DB Driver load failed (but ignored): ./hop_db_mongo.rb (no such file to load -- bson)
-DB Driver load: ./hop_db_split.rb
-OK! (split)
-DB Driver load: ./hop_db_stream.rb
-OK! (stream)
-CONFIG YAML: {"local"=>{"out_format"=>"csv"}, "varmap"=>{"cheb_cpu_user"=>{"keyname"=>"time", "colname"=>"node", "cf"=>"cheb_cpu_user", "type"=>"cassandra2d", "keyspace"=>"zhopsa"}, "testbase"=>{"type"=>"csv"}, "cpu_user"=>{"address"=>"localhost", "push_index"=>true, "type"=>"mongo", "database"=>"test", "collection"=>"mycoll"}, "tasks"=>{"keyname"=>"taskid", "cf"=>"tasks_gra", "push_index"=>true, "type"=>"cassandra", "max_items"=>-1, "keyspace"=>"hopsa"}}, "parmap"=>{"end_time"=>"5000000000000000", "node"=>"node-00-00", "start_time"=>"1"}}
->>Statement NilClass => Hopsa::TopStatement
-NEW EMPTY VARSTORE
->>Statement Hopsa::TopStatement => Hopsa::LetStatement
->>Statement Hopsa::TopStatement => Hopsa::EachHopstance
-Copy varstore #EachHopstance(<-) from #<Hopsa::TopStatement:0x10f1fe838>.
-ADDED STREAM: 2274358160 out
-::  var delta
-EACH: out,x,#<Hopsa::CSVDriver:0x10f1eeb40>,x.np > 97
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::EachHopstance => Hopsa::WhileStatement
-#<Hopsa::BinaryExpr:0x10f1ca0b0 @short=false, @op="<", @post_conv=false, @code_line=0, @pre_conv=true, @expr2=#<Hopsa::ValExpr:0x10f1ca2e0 @val="2", @code_line=0>, @expr1=#<Hopsa::RefExpr:0x10f1cb758 @code_line=0, @rname="i">>
->>Statement Hopsa::EachHopstance => Hopsa::IfStatement
-#<Hopsa::BinaryExpr:0x10f1c4c50 @short=false, @op="==", @post_conv=false, @code_line=0, @pre_conv=false, @expr2=#<Hopsa::ValExpr:0x10f1c4e80 @val="0", @code_line=0>, @expr1=#<Hopsa::RefExpr:0x10f1c62f8 @code_line=0, @rname="i">>
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>end<<
-Comment 
->>Statement Hopsa::TopStatement => Hopsa::PrintEachHopstance
-Copy varstore PrintEachHopstance from #<Hopsa::TopStatement:0x10f1fe838>.
-STREAM "out"
-Comment 
->>Statement Hopsa::TopStatement => Hopsa::EachHopstance
-Copy varstore #EachHopstance(<-) from #<Hopsa::TopStatement:0x10f1fe838>.
-ADDED STREAM: 2274358160 out10
-:: final 
-EACH: out10,x,#<Hopsa::CSVDriver:0x10f1a0878>,x.np > 97
->>final<<
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::TopStatement => Hopsa::PrintEachHopstance
-Copy varstore PrintEachHopstance from #<Hopsa::TopStatement:0x10f1fe838>.
-STREAM "out10"
-Comment 
-Comment 
-Comment 
-Comment 
-Comment 
-Comment 
-Comment 
-Comment # print out6
-
-
-***********   START   *********************
-
-__hoplang_cols_order => field_1,field_2
-field_1 => 2.0
-field_2 => 10
-
-
-START main chain #EachHopstance(out<-#<Hopsa::CSVDriver:0x10f1eeb40>) (#HopChain (3 statements))
-Merge varstore #EachHopstance(out<-#<Hopsa::CSVDriver:0x10f1eeb40>) from #<Hopsa::TopStatement:0x10f1fe838>.
-Thread #EachHopstance(out<-#<Hopsa::CSVDriver:0x10f1eeb40>) started(#<Thread:0x10f186568>)
-Thread PrintEachHopstance started(#<Thread:0x10f1851e0>)
-START main chain #EachHopstance(out10<-#<Hopsa::CSVDriver:0x10f1a0878>) (#HopChain (1 statements))
-Merge varstore #EachHopstance(out10<-#<Hopsa::CSVDriver:0x10f1a0878>) from #<Hopsa::TopStatement:0x10f1fe838>.
-Thread #EachHopstance(out10<-#<Hopsa::CSVDriver:0x10f1a0878>) started(#<Thread:0x10f1816d0>)
-Thread PrintEachHopstance started(#<Thread:0x10f1663f8>)
-EOF.....
-
-T: #<Thread:0x10f186568> sleep
-START final chain #EachHopstance(out10<-#<Hopsa::CSVDriver:0x10f1a0878>) (#HopChain (1 statements))
-T: #<Thread:0x10f1851e0> sleep
-T: #<Thread:0x10f1816d0> sleep
-T: #<Thread:0x10f1663f8> sleep
-FINISHED! #EachHopstance(out10<-#<Hopsa::CSVDriver:0x10f1a0878>)
--------------------------------
-THREADS:4
-TRUE NIL READED!
-T: #<Thread:0x10f186568> sleep
-T: #<Thread:0x10f1851e0> sleep
-T: #<Thread:0x10f1816d0> false
-T: #<Thread:0x10f1663f8> false
-THREADS:2
-EOF.....
-
-START final chain #EachHopstance(out<-#<Hopsa::CSVDriver:0x10f1eeb40>) (#HopChain (0 statements))
-FINISHED! #EachHopstance(out<-#<Hopsa::CSVDriver:0x10f1eeb40>)
--------------------------------
-TRUE NIL READED!
-T: #<Thread:0x10f186568> false
-T: #<Thread:0x10f1851e0> false
-THREADS:0
-
-***********   END     *********************
-
-VAR: outHopPipe: is 2274313640
-VAR: out10HopPipe: is 2274153540
-VAR: end_time5000000000000000
-VAR: abc1
-VAR: nodenode-00-00
-VAR: start_time1
-DB Driver load: ./hop_db_cassandra.rb
-OK! (cassandra)
-DB Driver load: ./hop_db_cassandra2d.rb
-OK! (cassandra2d)
-DB Driver load: ./hop_db_dummy.rb
-OK! (dummy)
-DB Driver load: ./hop_db_mongo.rb
-DB Driver load failed (but ignored): ./hop_db_mongo.rb (no such file to load -- bson)
-DB Driver load: ./hop_db_split.rb
-OK! (split)
-DB Driver load: ./hop_db_stream.rb
-OK! (stream)
-CONFIG YAML: {"local"=>{"out_format"=>"csv"}, "varmap"=>{"cheb_cpu_user"=>{"keyname"=>"time", "colname"=>"node", "cf"=>"cheb_cpu_user", "type"=>"cassandra2d", "keyspace"=>"zhopsa"}, "testbase"=>{"type"=>"csv"}, "cpu_user"=>{"address"=>"localhost", "push_index"=>true, "type"=>"mongo", "database"=>"test", "collection"=>"mycoll"}, "tasks"=>{"keyname"=>"taskid", "cf"=>"tasks_gra", "push_index"=>true, "type"=>"cassandra", "max_items"=>-1, "keyspace"=>"hopsa"}}, "parmap"=>{"end_time"=>"5000000000000000", "node"=>"node-00-00", "start_time"=>"1"}}
->>Statement NilClass => Hopsa::TopStatement
-NEW EMPTY VARSTORE
-Comment 
->>Statement Hopsa::TopStatement => Hopsa::PrintEachHopstance
-Copy varstore PrintEachHopstance from #<Hopsa::TopStatement:0x105ad17d0>.
-Comment 
->>Statement Hopsa::TopStatement => Hopsa::EachHopstance
-Copy varstore #EachHopstance(<-) from #<Hopsa::TopStatement:0x105ad17d0>.
-ADDED STREAM: 2195098460 out10
-:: final 
-EACH: out10,x,#<Hopsa::CSVDriver:0x105acf6b0>,x.np > 97
->>final<<
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::TopStatement => Hopsa::PrintEachHopstance
-Copy varstore PrintEachHopstance from #<Hopsa::TopStatement:0x105ad17d0>.
-STREAM "out10"
-Comment 
-Comment 
-Comment 
-Comment 
-Comment 
-Comment 
-Comment 
-Comment # print out6
-
-
-***********   START   *********************
-
-Thread PrintEachHopstance started(#<Thread:0x105ab7830>)
-START main chain #EachHopstance(out10<-#<Hopsa::CSVDriver:0x105acf6b0>) (#HopChain (1 statements))
-Merge varstore #EachHopstance(out10<-#<Hopsa::CSVDriver:0x105acf6b0>) from #<Hopsa::TopStatement:0x105ad17d0>.
-Thread #EachHopstance(out10<-#<Hopsa::CSVDriver:0x105acf6b0>) started(#<Thread:0x105ab64a8>)
-Thread PrintEachHopstance started(#<Thread:0x105a9c3a0>)
-EOF.....
-
-T: #<Thread:0x105ab7830> 
-START final chain #EachHopstance(out10<-#<Hopsa::CSVDriver:0x105acf6b0>) (#HopChain (1 statements))
-DB Driver load: ./hop_db_cassandra.rb
-OK! (cassandra)
-DB Driver load: ./hop_db_cassandra2d.rb
-OK! (cassandra2d)
-DB Driver load: ./hop_db_dummy.rb
-OK! (dummy)
-DB Driver load: ./hop_db_mongo.rb
-DB Driver load failed (but ignored): ./hop_db_mongo.rb (no such file to load -- bson)
-DB Driver load: ./hop_db_split.rb
-OK! (split)
-DB Driver load: ./hop_db_stream.rb
-OK! (stream)
-CONFIG YAML: {"local"=>{"out_format"=>"csv"}, "varmap"=>{"cheb_cpu_user"=>{"keyname"=>"time", "colname"=>"node", "cf"=>"cheb_cpu_user", "type"=>"cassandra2d", "keyspace"=>"zhopsa"}, "testbase"=>{"type"=>"csv"}, "cpu_user"=>{"address"=>"localhost", "push_index"=>true, "type"=>"mongo", "database"=>"test", "collection"=>"mycoll"}, "tasks"=>{"keyname"=>"taskid", "cf"=>"tasks_gra", "push_index"=>true, "type"=>"cassandra", "max_items"=>-1, "keyspace"=>"hopsa"}}, "parmap"=>{"end_time"=>"5000000000000000", "node"=>"node-00-00", "start_time"=>"1"}}
->>Statement NilClass => Hopsa::TopStatement
-NEW EMPTY VARSTORE
-Comment 
-Comment 
->>Statement Hopsa::TopStatement => Hopsa::EachHopstance
-Copy varstore #EachHopstance(<-) from #<Hopsa::TopStatement:0x10332b848>.
-ADDED STREAM: 2174311320 out10
-:: final 
-EACH: out10,x,#<Hopsa::CSVDriver:0x10332a650>,x.np > 97
->>final<<
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::TopStatement => Hopsa::PrintEachHopstance
-Copy varstore PrintEachHopstance from #<Hopsa::TopStatement:0x10332b848>.
-STREAM "out10"
-Comment 
-Comment 
-Comment 
-Comment 
-Comment 
-Comment 
-Comment 
-Comment # print out6
-
-
-***********   START   *********************
-
-START main chain #EachHopstance(out10<-#<Hopsa::CSVDriver:0x10332a650>) (#HopChain (1 statements))
-Merge varstore #EachHopstance(out10<-#<Hopsa::CSVDriver:0x10332a650>) from #<Hopsa::TopStatement:0x10332b848>.
-Thread #EachHopstance(out10<-#<Hopsa::CSVDriver:0x10332a650>) started(#<Thread:0x103311a60>)
-Thread PrintEachHopstance started(#<Thread:0x1032f7930>)
-EOF.....
-
-T: #<Thread:0x103311a60> sleep
-START final chain #EachHopstance(out10<-#<Hopsa::CSVDriver:0x10332a650>) (#HopChain (1 statements))
-T: #<Thread:0x1032f7930> sleep
-THREADS:2
-FINISHED! #EachHopstance(out10<-#<Hopsa::CSVDriver:0x10332a650>)
--------------------------------
-TRUE NIL READED!
-T: #<Thread:0x103311a60> false
-T: #<Thread:0x1032f7930> false
-THREADS:0
-
-***********   END     *********************
-
-VAR: out10HopPipe: is 2174296880
-VAR: end_time5000000000000000
-VAR: nodenode-00-00
-VAR: start_time1
-DB Driver load: ./hop_db_cassandra.rb
-OK! (cassandra)
-DB Driver load: ./hop_db_cassandra2d.rb
-OK! (cassandra2d)
-DB Driver load: ./hop_db_dummy.rb
-OK! (dummy)
-DB Driver load: ./hop_db_mongo.rb
-DB Driver load failed (but ignored): ./hop_db_mongo.rb (no such file to load -- bson)
-DB Driver load: ./hop_db_split.rb
-OK! (split)
-DB Driver load: ./hop_db_stream.rb
-OK! (stream)
-CONFIG YAML: {"local"=>{"out_format"=>"csv"}, "varmap"=>{"cheb_cpu_user"=>{"keyname"=>"time", "colname"=>"node", "cf"=>"cheb_cpu_user", "type"=>"cassandra2d", "keyspace"=>"zhopsa"}, "testbase"=>{"type"=>"csv"}, "cpu_user"=>{"address"=>"localhost", "push_index"=>true, "type"=>"mongo", "database"=>"test", "collection"=>"mycoll"}, "tasks"=>{"keyname"=>"taskid", "cf"=>"tasks_gra", "push_index"=>true, "type"=>"cassandra", "max_items"=>-1, "keyspace"=>"hopsa"}}, "parmap"=>{"end_time"=>"5000000000000000", "node"=>"node-00-00", "start_time"=>"1"}}
->>Statement NilClass => Hopsa::TopStatement
-NEW EMPTY VARSTORE
-Comment 
-Comment 
->>Statement Hopsa::TopStatement => Hopsa::EachHopstance
-Copy varstore #EachHopstance(<-) from #<Hopsa::TopStatement:0x10b705998>.
-ADDED STREAM: 2243439680 out10
-:: final 
-EACH: out10,x,#<Hopsa::CSVDriver:0x10b7047a0>,x.np > 97
->>final<<
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::TopStatement => Hopsa::PrintEachHopstance
-Copy varstore PrintEachHopstance from #<Hopsa::TopStatement:0x10b705998>.
-STREAM "out10"
-Comment 
-Comment 
-Comment 
-Comment 
-Comment 
-Comment 
-Comment 
-Comment # print out6
-
-
-***********   START   *********************
-
-START main chain #EachHopstance(out10<-#<Hopsa::CSVDriver:0x10b7047a0>) (#HopChain (2 statements))
-Merge varstore #EachHopstance(out10<-#<Hopsa::CSVDriver:0x10b7047a0>) from #<Hopsa::TopStatement:0x10b705998>.
-Thread #EachHopstance(out10<-#<Hopsa::CSVDriver:0x10b7047a0>) started(#<Thread:0x10b6e37a8>)
-Thread PrintEachHopstance started(#<Thread:0x10b6a89c8>)
-T: #<Thread:0x10b6e37a8> sleep
-EOF.....
-
-T: #<Thread:0x10b6a89c8> sleep
-START final chain #EachHopstance(out10<-#<Hopsa::CSVDriver:0x10b7047a0>) (#HopChain (1 statements))
-THREADS:2
-FINISHED! #EachHopstance(out10<-#<Hopsa::CSVDriver:0x10b7047a0>)
--------------------------------
-TRUE NIL READED!
-T: #<Thread:0x10b6e37a8> false
-T: #<Thread:0x10b6a89c8> false
-THREADS:0
-
-***********   END     *********************
-
-VAR: out10HopPipe: is 2243425240
-VAR: end_time5000000000000000
-VAR: nodenode-00-00
-VAR: start_time1
-DB Driver load: ./hop_db_cassandra.rb
-OK! (cassandra)
-DB Driver load: ./hop_db_cassandra2d.rb
-OK! (cassandra2d)
-DB Driver load: ./hop_db_dummy.rb
-OK! (dummy)
-DB Driver load: ./hop_db_mongo.rb
-DB Driver load failed (but ignored): ./hop_db_mongo.rb (no such file to load -- bson)
-DB Driver load: ./hop_db_split.rb
-OK! (split)
-DB Driver load: ./hop_db_stream.rb
-OK! (stream)
-CONFIG YAML: {"local"=>{"out_format"=>"csv"}, "varmap"=>{"cheb_cpu_user"=>{"keyname"=>"time", "colname"=>"node", "cf"=>"cheb_cpu_user", "type"=>"cassandra2d", "keyspace"=>"zhopsa"}, "testbase"=>{"type"=>"csv"}, "cpu_user"=>{"address"=>"localhost", "push_index"=>true, "type"=>"mongo", "database"=>"test", "collection"=>"mycoll"}, "tasks"=>{"keyname"=>"taskid", "cf"=>"tasks_gra", "push_index"=>true, "type"=>"cassandra", "max_items"=>-1, "keyspace"=>"hopsa"}}, "parmap"=>{"end_time"=>"5000000000000000", "node"=>"node-00-00", "start_time"=>"1"}}
->>Statement NilClass => Hopsa::TopStatement
-NEW EMPTY VARSTORE
-Comment 
-Comment 
->>Statement Hopsa::TopStatement => Hopsa::EachHopstance
-Copy varstore #EachHopstance(<-) from #<Hopsa::TopStatement:0x10a2ba7e0>.
-ADDED STREAM: 2232800100 out10
-:: final 
-EACH: out10,x,#<Hopsa::CSVDriver:0x10a2b95e8>,x.np > 97
->>final<<
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::TopStatement => Hopsa::PrintEachHopstance
-Copy varstore PrintEachHopstance from #<Hopsa::TopStatement:0x10a2ba7e0>.
-STREAM "out10"
-Comment 
-Comment 
-Comment 
-Comment 
-Comment 
-Comment 
-Comment 
-Comment # print out6
-
-
-***********   START   *********************
-
-START main chain #EachHopstance(out10<-#<Hopsa::CSVDriver:0x10a2b95e8>) (#HopChain (2 statements))
-Merge varstore #EachHopstance(out10<-#<Hopsa::CSVDriver:0x10a2b95e8>) from #<Hopsa::TopStatement:0x10a2ba7e0>.
-Thread #EachHopstance(out10<-#<Hopsa::CSVDriver:0x10a2b95e8>) started(#<Thread:0x10a298d70>)
-Thread PrintEachHopstance started(#<Thread:0x10a218198>)
-T: #<Thread:0x10a298d70> sleep
-EOF.....
-
-T: #<Thread:0x10a218198> sleep
-START final chain #EachHopstance(out10<-#<Hopsa::CSVDriver:0x10a2b95e8>) (#HopChain (1 statements))
-THREADS:2
-FINISHED! #EachHopstance(out10<-#<Hopsa::CSVDriver:0x10a2b95e8>)
--------------------------------
-TRUE NIL READED!
-T: #<Thread:0x10a298d70> false
-T: #<Thread:0x10a218198> false
-THREADS:0
-
-***********   END     *********************
-
-VAR: out10HopPipe: is 2232785660
-VAR: end_time5000000000000000
-VAR: nodenode-00-00
-VAR: start_time1
-DB Driver load: ./hop_db_cassandra.rb
-OK! (cassandra)
-DB Driver load: ./hop_db_cassandra2d.rb
-OK! (cassandra2d)
-DB Driver load: ./hop_db_dummy.rb
-OK! (dummy)
-DB Driver load: ./hop_db_mongo.rb
-DB Driver load failed (but ignored): ./hop_db_mongo.rb (no such file to load -- bson)
-DB Driver load: ./hop_db_split.rb
-OK! (split)
-DB Driver load: ./hop_db_stream.rb
-OK! (stream)
-CONFIG YAML: {"local"=>{"out_format"=>"csv"}, "varmap"=>{"cheb_cpu_user"=>{"keyname"=>"time", "colname"=>"node", "cf"=>"cheb_cpu_user", "type"=>"cassandra2d", "keyspace"=>"zhopsa"}, "testbase"=>{"type"=>"csv"}, "cpu_user"=>{"address"=>"localhost", "push_index"=>true, "type"=>"mongo", "database"=>"test", "collection"=>"mycoll"}, "tasks"=>{"keyname"=>"taskid", "cf"=>"tasks_gra", "push_index"=>true, "type"=>"cassandra", "max_items"=>-1, "keyspace"=>"hopsa"}}, "parmap"=>{"end_time"=>"5000000000000000", "node"=>"node-00-00", "start_time"=>"1"}}
->>Statement NilClass => Hopsa::TopStatement
-NEW EMPTY VARSTORE
-Comment 
-Comment 
->>Statement Hopsa::TopStatement => Hopsa::EachHopstance
-Copy varstore #EachHopstance(<-) from #<Hopsa::TopStatement:0x1038c9840>.
-ADDED STREAM: 2177256340 out10
-:: final 
-EACH: out10,x,#<Hopsa::CSVDriver:0x1038c8648>,x.np > 97
->>final<<
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::TopStatement => Hopsa::PrintEachHopstance
-Copy varstore PrintEachHopstance from #<Hopsa::TopStatement:0x1038c9840>.
-STREAM "out10"
-Comment 
-Comment 
-Comment 
-Comment 
-Comment 
-Comment 
-Comment 
-Comment # print out6
-
-
-***********   START   *********************
-
-START main chain #EachHopstance(out10<-#<Hopsa::CSVDriver:0x1038c8648>) (#HopChain (2 statements))
-Merge varstore #EachHopstance(out10<-#<Hopsa::CSVDriver:0x1038c8648>) from #<Hopsa::TopStatement:0x1038c9840>.
-Thread #EachHopstance(out10<-#<Hopsa::CSVDriver:0x1038c8648>) started(#<Thread:0x1038a7dd0>)
-Thread PrintEachHopstance started(#<Thread:0x1038271f8>)
-T: #<Thread:0x1038a7dd0> sleep
-EOF.....
-
-T: #<Thread:0x1038271f8> sleep
-START final chain #EachHopstance(out10<-#<Hopsa::CSVDriver:0x1038c8648>) (#HopChain (1 statements))
-THREADS:2
-FINISHED! #EachHopstance(out10<-#<Hopsa::CSVDriver:0x1038c8648>)
--------------------------------
-TRUE NIL READED!
-T: #<Thread:0x1038a7dd0> false
-T: #<Thread:0x1038271f8> false
-THREADS:0
-
-***********   END     *********************
-
-VAR: out10HopPipe: is 2177241900
-VAR: end_time5000000000000000
-VAR: nodenode-00-00
-VAR: start_time1
-DB Driver load: ./hop_db_cassandra.rb
-OK! (cassandra)
-DB Driver load: ./hop_db_cassandra2d.rb
-OK! (cassandra2d)
-DB Driver load: ./hop_db_dummy.rb
-OK! (dummy)
-DB Driver load: ./hop_db_mongo.rb
-DB Driver load failed (but ignored): ./hop_db_mongo.rb (no such file to load -- bson)
-DB Driver load: ./hop_db_split.rb
-OK! (split)
-DB Driver load: ./hop_db_stream.rb
-OK! (stream)
-CONFIG YAML: {"local"=>{"out_format"=>"csv"}, "varmap"=>{"cheb_cpu_user"=>{"keyname"=>"time", "colname"=>"node", "cf"=>"cheb_cpu_user", "type"=>"cassandra2d", "keyspace"=>"zhopsa"}, "testbase"=>{"type"=>"csv"}, "cpu_user"=>{"address"=>"localhost", "push_index"=>true, "type"=>"mongo", "database"=>"test", "collection"=>"mycoll"}, "tasks"=>{"keyname"=>"taskid", "cf"=>"tasks_gra", "push_index"=>true, "type"=>"cassandra", "max_items"=>-1, "keyspace"=>"hopsa"}}, "parmap"=>{"end_time"=>"5000000000000000", "node"=>"node-00-00", "start_time"=>"1"}}
->>Statement NilClass => Hopsa::TopStatement
-NEW EMPTY VARSTORE
-Comment 
-Comment 
->>Statement Hopsa::TopStatement => Hopsa::EachHopstance
-Copy varstore #EachHopstance(<-) from #<Hopsa::TopStatement:0x10bf95838>.
-ADDED STREAM: 2247928720 out10
-:: final 
-EACH: out10,x,#<Hopsa::CSVDriver:0x10bf94640>,x.np > 97
->>final<<
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::TopStatement => Hopsa::PrintEachHopstance
-Copy varstore PrintEachHopstance from #<Hopsa::TopStatement:0x10bf95838>.
-STREAM "out10"
-Comment 
-Comment 
-Comment 
-Comment 
-Comment 
-Comment 
-Comment 
-Comment # print out6
-
-
-***********   START   *********************
-
-START main chain #EachHopstance(out10<-#<Hopsa::CSVDriver:0x10bf94640>) (#HopChain (4 statements))
-Merge varstore #EachHopstance(out10<-#<Hopsa::CSVDriver:0x10bf94640>) from #<Hopsa::TopStatement:0x10bf95838>.
-Thread #EachHopstance(out10<-#<Hopsa::CSVDriver:0x10bf94640>) started(#<Thread:0x10bf65f20>)
-Thread PrintEachHopstance started(#<Thread:0x10bef9528>)
-T: #<Thread:0x10bf65f20> sleep
-EOF.....
-
-T: #<Thread:0x10bef9528> sleep
-START final chain #EachHopstance(out10<-#<Hopsa::CSVDriver:0x10bf94640>) (#HopChain (1 statements))
-THREADS:2
-FINISHED! #EachHopstance(out10<-#<Hopsa::CSVDriver:0x10bf94640>)
--------------------------------
-TRUE NIL READED!
-T: #<Thread:0x10bf65f20> false
-T: #<Thread:0x10bef9528> false
-THREADS:0
-
-***********   END     *********************
-
-VAR: out10HopPipe: is 2247914280
-VAR: end_time5000000000000000
-VAR: nodenode-00-00
-VAR: start_time1
-DB Driver load: ./hop_db_cassandra.rb
-OK! (cassandra)
-DB Driver load: ./hop_db_cassandra2d.rb
-OK! (cassandra2d)
-DB Driver load: ./hop_db_dummy.rb
-OK! (dummy)
-DB Driver load: ./hop_db_mongo.rb
-DB Driver load failed (but ignored): ./hop_db_mongo.rb (no such file to load -- bson)
-DB Driver load: ./hop_db_split.rb
-OK! (split)
-DB Driver load: ./hop_db_stream.rb
-OK! (stream)
-CONFIG YAML: {"local"=>{"out_format"=>"csv"}, "varmap"=>{"cheb_cpu_user"=>{"keyname"=>"time", "colname"=>"node", "cf"=>"cheb_cpu_user", "type"=>"cassandra2d", "keyspace"=>"zhopsa"}, "testbase"=>{"type"=>"csv"}, "cpu_user"=>{"address"=>"localhost", "push_index"=>true, "type"=>"mongo", "database"=>"test", "collection"=>"mycoll"}, "tasks"=>{"keyname"=>"taskid", "cf"=>"tasks_gra", "push_index"=>true, "type"=>"cassandra", "max_items"=>-1, "keyspace"=>"hopsa"}}, "parmap"=>{"end_time"=>"5000000000000000", "node"=>"node-00-00", "start_time"=>"1"}}
->>Statement NilClass => Hopsa::TopStatement
-NEW EMPTY VARSTORE
-Comment 
-Comment 
->>Statement Hopsa::TopStatement => Hopsa::EachHopstance
-Copy varstore #EachHopstance(<-) from #<Hopsa::TopStatement:0x10387b870>.
-ADDED STREAM: 2177096620 out10
-:: final 
-EACH: out10,x,#<Hopsa::CSVDriver:0x10387a678>,x.np > 97
->>final<<
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::TopStatement => Hopsa::PrintEachHopstance
-Copy varstore PrintEachHopstance from #<Hopsa::TopStatement:0x10387b870>.
-STREAM "out10"
-Comment 
-Comment 
-Comment 
-Comment 
-Comment 
-Comment 
-Comment 
-Comment # print out6
-
-
-***********   START   *********************
-
-START main chain #EachHopstance(out10<-#<Hopsa::CSVDriver:0x10387a678>) (#HopChain (4 statements))
-Merge varstore #EachHopstance(out10<-#<Hopsa::CSVDriver:0x10387a678>) from #<Hopsa::TopStatement:0x10387b870>.
-Thread #EachHopstance(out10<-#<Hopsa::CSVDriver:0x10387a678>) started(#<Thread:0x10384bf58>)
-Thread PrintEachHopstance started(#<Thread:0x103789a20>)
-T: #<Thread:0x10384bf58> sleep
-EOF.....
-
-T: #<Thread:0x103789a20> sleep
-START final chain #EachHopstance(out10<-#<Hopsa::CSVDriver:0x10387a678>) (#HopChain (1 statements))
-THREADS:2
-FINISHED! #EachHopstance(out10<-#<Hopsa::CSVDriver:0x10387a678>)
--------------------------------
-TRUE NIL READED!
-T: #<Thread:0x10384bf58> false
-T: #<Thread:0x103789a20> false
-THREADS:0
-
-***********   END     *********************
-
-VAR: out10HopPipe: is 2177082180
-VAR: end_time5000000000000000
-VAR: nodenode-00-00
-VAR: start_time1
-DB Driver load: ./hop_db_cassandra.rb
-OK! (cassandra)
-DB Driver load: ./hop_db_cassandra2d.rb
-OK! (cassandra2d)
-DB Driver load: ./hop_db_dummy.rb
-OK! (dummy)
-DB Driver load: ./hop_db_mongo.rb
-DB Driver load failed (but ignored): ./hop_db_mongo.rb (no such file to load -- bson)
-DB Driver load: ./hop_db_split.rb
-OK! (split)
-DB Driver load: ./hop_db_stream.rb
-OK! (stream)
-CONFIG YAML: {"local"=>{"out_format"=>"csv"}, "varmap"=>{"cheb_cpu_user"=>{"keyname"=>"time", "colname"=>"node", "cf"=>"cheb_cpu_user", "type"=>"cassandra2d", "keyspace"=>"zhopsa"}, "testbase"=>{"type"=>"csv"}, "cpu_user"=>{"address"=>"localhost", "push_index"=>true, "type"=>"mongo", "database"=>"test", "collection"=>"mycoll"}, "tasks"=>{"keyname"=>"taskid", "cf"=>"tasks_gra", "push_index"=>true, "type"=>"cassandra", "max_items"=>-1, "keyspace"=>"hopsa"}}, "parmap"=>{"end_time"=>"5000000000000000", "node"=>"node-00-00", "start_time"=>"1"}}
+CONFIG YAML: {"local"=>{"out_format"=>"csv"}, "parmap"=>{"node"=>"node-00-00", "start_time"=>"1", "end_time"=>"5000000000000000"}, "varmap"=>{"cpu_user"=>{"type"=>"mongo", "collection"=>"mycoll", "push_index"=>true, "address"=>"localhost", "database"=>"test"}, "testbase"=>{"type"=>"csv"}, "cheb_cpu_user"=>{"type"=>"cassandra2d", "cf"=>"cheb_cpu_user", "keyspace"=>"zhopsa", "keyname"=>"time", "colname"=>"node"}, "tasks"=>{"type"=>"cassandra", "cf"=>"tasks_gra", "keyspace"=>"hopsa", "keyname"=>"taskid", "push_index"=>true, "max_items"=>-1}}}
 >>Statement NilClass => Hopsa::TopStatement
 NEW EMPTY VARSTORE
 >>Statement Hopsa::TopStatement => Hopsa::EachHopstance
-Copy varstore #EachHopstance(<-) from #<Hopsa::TopStatement:0x1106d6080>.
-ADDED STREAM: 2285285300 out10
+Copy varstore #EachHopstance(<-) from #<Hopsa::TopStatement:0x7ffddcfc6ea8>.
+ADDED STREAM: 70364155492100 out10
 :: final
 
-EACH: out10,x,#<Hopsa::CSVDriver:0x1106d5658>,x.np > 97
+EACH: out10,x,#<Hopsa::CSVDriver:0x7ffddcfc5940>,x.np > 97
 >>final<<
 >>Statement Hopsa::EachHopstance => Hopsa::LetStatement
 >>Statement Hopsa::EachHopstance => Hopsa::LetStatement
+ADDED AGG: #<Hopsa::LetStatement:0x7ffddcf88ce8
+ @expression=
+  #<Hopsa::AssExpr:0x7ffddcf88fb8
+   @code_line=0,
+   @expr1=#<Hopsa::RefExpr:0x7ffddcf89238 @code_line=0, @rname="__agg_var_3">,
+   @expr2=
+    #<Hopsa::CallExpr:0x7ffddcf89030
+     @args=
+      [#<Hopsa::RefExpr:0x7ffddcf89238 @code_line=0, @rname="__agg_var_3">,
+       #<Hopsa::DotExpr:0x7ffddcf890f8
+        @code_line=0,
+        @field_name="np",
+        @obj=#<Hopsa::RefExpr:0x7ffddcfa1f90 @code_line=0, @rname="x">>],
+     @fun=
+      #<Hopsa::DirectFunction:0x7ffddcfc7ad8
+       @arg_num=2,
+       @code=#<Proc:0x00007ffddda56580@./hop_fun.rb:60>,
+       @name="min",
+       @post_conv=true,
+       @pre_conv=true>,
+     @fun_name="min">>,
+ @finalChain=
+  #<Hopsa::HopChain:0x7ffddcf88a40
+   @chain=[],
+   @executor=#<Hopsa::LetStatement:0x7ffddcf88ce8 ...>>,
+ @finished=false,
+ @hopid=5,
+ @initChain=
+  #<Hopsa::HopChain:0x7ffddcf88a68
+   @chain=[],
+   @executor=#<Hopsa::LetStatement:0x7ffddcf88ce8 ...>>,
+ @input=nil,
+ @line=nil,
+ @mainChain=
+  #<Hopsa::HopChain:0x7ffddcf889c8
+   @chain=[],
+   @executor=#<Hopsa::LetStatement:0x7ffddcf88ce8 ...>>,
+ @parent=
+  #<Hopsa::EachHopstance:0x7ffddcfbc8e0
+   @current_var="x",
+   @finalChain=
+    #<Hopsa::HopChain:0x7ffddcfbc660
+     @chain=[],
+     @executor=#<Hopsa::EachHopstance:0x7ffddcfbc8e0 ...>>,
+   @finished=false,
+   @hopid=2,
+   @initChain=
+    #<Hopsa::HopChain:0x7ffddcfbc6b0
+     @chain=[],
+     @executor=#<Hopsa::EachHopstance:0x7ffddcfbc8e0 ...>>,
+   @input=nil,
+   @mainChain=
+    #<Hopsa::HopChain:0x7ffddcfbc5c0
+     @chain=[],
+     @executor=#<Hopsa::EachHopstance:0x7ffddcfbc8e0 ...>>,
+   @parent=
+    #<Hopsa::TopStatement:0x7ffddcfc6ea8
+     @finalChain=
+      #<Hopsa::HopChain:0x7ffddcfc6c78
+       @chain=[],
+       @executor=#<Hopsa::TopStatement:0x7ffddcfc6ea8 ...>>,
+     @finished=false,
+     @hopid=1,
+     @initChain=
+      #<Hopsa::HopChain:0x7ffddcfc6ca0
+       @chain=[],
+       @executor=#<Hopsa::TopStatement:0x7ffddcfc6ea8 ...>>,
+     @input=nil,
+     @mainChain=
+      #<Hopsa::HopChain:0x7ffddcfc6bd8
+       @chain=[],
+       @executor=#<Hopsa::TopStatement:0x7ffddcfc6ea8 ...>>,
+     @parent=nil,
+     @started=false,
+     @varStore=
+      #<Hopsa::VarStore:0x7ffddcfc6e08
+       @cortegeStore={},
+       @ex=#<Hopsa::TopStatement:0x7ffddcfc6ea8 ...>,
+       @scalarStore=
+        {"node"=>"node-00-00",
+         "start_time"=>"1",
+         "end_time"=>"5000000000000000"},
+       @streamStore=
+        {"out10"=>
+          #<Hopsa::HopPipe:0x7ffddcfbc430
+           @buffer=[],
+           @data="",
+           @read_io=#<File:0x7ffddcfbb238>,
+           @write_io=#<File:0x7ffddcfbb1e8>>}>>,
+   @source=
+    #<Hopsa::CSVDriver:0x7ffddcfc5940
+     @current_var="x",
+     @parent=
+      #<Hopsa::TopStatement:0x7ffddcfc6ea8
+       @finalChain=
+        #<Hopsa::HopChain:0x7ffddcfc6c78
+         @chain=[],
+         @executor=#<Hopsa::TopStatement:0x7ffddcfc6ea8 ...>>,
+       @finished=false,
+       @hopid=1,
+       @initChain=
+        #<Hopsa::HopChain:0x7ffddcfc6ca0
+         @chain=[],
+         @executor=#<Hopsa::TopStatement:0x7ffddcfc6ea8 ...>>,
+       @input=nil,
+       @mainChain=
+        #<Hopsa::HopChain:0x7ffddcfc6bd8
+         @chain=[],
+         @executor=#<Hopsa::TopStatement:0x7ffddcfc6ea8 ...>>,
+       @parent=nil,
+       @started=false,
+       @varStore=
+        #<Hopsa::VarStore:0x7ffddcfc6e08
+         @cortegeStore={},
+         @ex=#<Hopsa::TopStatement:0x7ffddcfc6ea8 ...>,
+         @scalarStore=
+          {"node"=>"node-00-00",
+           "start_time"=>"1",
+           "end_time"=>"5000000000000000"},
+         @streamStore=
+          {"out10"=>
+            #<Hopsa::HopPipe:0x7ffddcfbc430
+             @buffer=[],
+             @data="",
+             @read_io=#<File:0x7ffddcfbb238>,
+             @write_io=#<File:0x7ffddcfbb1e8>>}>>,
+     @source="ttt",
+     @where="x.np > 97",
+     @where_expression=
+      #<Hopsa::BinaryExpr:0x7ffddcfbcac0
+       @code_line=0,
+       @expr1=
+        #<Hopsa::DotExpr:0x7ffddcfbec58
+         @code_line=0,
+         @field_name="np",
+         @obj=#<Hopsa::RefExpr:0x7ffddcfbf428 @code_line=0, @rname="x">>,
+       @expr2=#<Hopsa::ValExpr:0x7ffddcfbce58 @code_line=0, @val="97">,
+       @op=">",
+       @post_conv=false,
+       @pre_conv=true,
+       @short=false>>,
+   @started=false,
+   @streamvar="out10",
+   @varStore=
+    #<Hopsa::VarStore:0x7ffddcfbc840
+     @cortegeStore={},
+     @ex=#<Hopsa::EachHopstance:0x7ffddcfbc8e0 ...>,
+     @scalarStore=
+      {"node"=>"node-00-00",
+       "start_time"=>"1",
+       "__agg_var_3"=>"",
+       "end_time"=>"5000000000000000",
+       "x"=>""},
+     @streamStore=
+      {"out10"=>
+        #<Hopsa::HopPipe:0x7ffddcfbc430
+         @buffer=[],
+         @data="",
+         @read_io=#<File:0x7ffddcfbb238>,
+         @write_io=#<File:0x7ffddcfbb1e8>>}>,
+   @where_expr=
+    #<Hopsa::BinaryExpr:0x7ffddcfb2c28
+     @code_line=0,
+     @expr1=
+      #<Hopsa::DotExpr:0x7ffddcfb47a8
+       @code_line=0,
+       @field_name="np",
+       @obj=#<Hopsa::RefExpr:0x7ffddcfb4a00 @code_line=0, @rname="x">>,
+     @expr2=#<Hopsa::ValExpr:0x7ffddcfb3100 @code_line=0, @val="97">,
+     @op=">",
+     @post_conv=false,
+     @pre_conv=true,
+     @short=false>>,
+ @started=false>
+
 >>Statement Hopsa::EachHopstance => Hopsa::LetStatement
 >>Statement Hopsa::EachHopstance => Hopsa::LetStatement
+ADDED AGG: #<Hopsa::LetStatement:0x7ffddf348db8
+ @expression=
+  #<Hopsa::AssExpr:0x7ffddcf8a4d0
+   @code_line=0,
+   @expr1=#<Hopsa::RefExpr:0x7ffddcf8a7c8 @code_line=0, @rname="__agg_var_0">,
+   @expr2=
+    #<Hopsa::BinaryExpr:0x7ffddcf8a660
+     @code_line=0,
+     @expr1=
+      #<Hopsa::RefExpr:0x7ffddcf8a7c8 @code_line=0, @rname="__agg_var_0">,
+     @expr2=
+      #<Hopsa::DotExpr:0x7ffddcf8a598
+       @code_line=0,
+       @field_name="np",
+       @obj=#<Hopsa::RefExpr:0x7ffddcf900b0 @code_line=0, @rname="x">>,
+     @op="+",
+     @post_conv=true,
+     @pre_conv=true,
+     @short=false>>,
+ @finalChain=
+  #<Hopsa::HopChain:0x7ffddf33dad0
+   @chain=[],
+   @executor=#<Hopsa::LetStatement:0x7ffddf348db8 ...>>,
+ @finished=false,
+ @hopid=7,
+ @initChain=
+  #<Hopsa::HopChain:0x7ffddf33dbe8
+   @chain=[],
+   @executor=#<Hopsa::LetStatement:0x7ffddf348db8 ...>>,
+ @input=nil,
+ @line=nil,
+ @mainChain=
+  #<Hopsa::HopChain:0x7ffddf33c4c8
+   @chain=[],
+   @executor=#<Hopsa::LetStatement:0x7ffddf348db8 ...>>,
+ @parent=
+  #<Hopsa::EachHopstance:0x7ffddcfbc8e0
+   @current_var="x",
+   @finalChain=
+    #<Hopsa::HopChain:0x7ffddcfbc660
+     @chain=[],
+     @executor=#<Hopsa::EachHopstance:0x7ffddcfbc8e0 ...>>,
+   @finished=false,
+   @hopid=2,
+   @initChain=
+    #<Hopsa::HopChain:0x7ffddcfbc6b0
+     @chain=
+      [#<Hopsa::LetStatement:0x7ffddcf88d60
+        @expression=
+         #<Hopsa::AssExpr:0x7ffddcf88e00
+          @code_line=0,
+          @expr1=
+           #<Hopsa::RefExpr:0x7ffddcf88e78 @code_line=0, @rname="__agg_var_3">,
+          @expr2=#<Hopsa::ValExpr:0x7ffddcf88e28 @code_line=0, @val="1e300">>,
+        @finalChain=
+         #<Hopsa::HopChain:0x7ffddcf88c20
+          @chain=[],
+          @executor=#<Hopsa::LetStatement:0x7ffddcf88d60 ...>>,
+        @finished=false,
+        @hopid=4,
+        @initChain=
+         #<Hopsa::HopChain:0x7ffddcf88c48
+          @chain=[],
+          @executor=#<Hopsa::LetStatement:0x7ffddcf88d60 ...>>,
+        @input=nil,
+        @line=nil,
+        @mainChain=
+         #<Hopsa::HopChain:0x7ffddcf88ba8
+          @chain=[],
+          @executor=#<Hopsa::LetStatement:0x7ffddcf88d60 ...>>,
+        @parent=#<Hopsa::EachHopstance:0x7ffddcfbc8e0 ...>,
+        @started=false>],
+     @executor=#<Hopsa::EachHopstance:0x7ffddcfbc8e0 ...>>,
+   @input=nil,
+   @mainChain=
+    #<Hopsa::HopChain:0x7ffddcfbc5c0
+     @chain=
+      [#<Hopsa::LetStatement:0x7ffddcf88ce8
+        @expression=
+         #<Hopsa::AssExpr:0x7ffddcf88fb8
+          @code_line=0,
+          @expr1=
+           #<Hopsa::RefExpr:0x7ffddcf89238 @code_line=0, @rname="__agg_var_3">,
+          @expr2=
+           #<Hopsa::CallExpr:0x7ffddcf89030
+            @args=
+             [#<Hopsa::RefExpr:0x7ffddcf89238
+               @code_line=0,
+               @rname="__agg_var_3">,
+              #<Hopsa::DotExpr:0x7ffddcf890f8
+               @code_line=0,
+               @field_name="np",
+               @obj=
+                #<Hopsa::RefExpr:0x7ffddcfa1f90 @code_line=0, @rname="x">>],
+            @fun=
+             #<Hopsa::DirectFunction:0x7ffddcfc7ad8
+              @arg_num=2,
+              @code=#<Proc:0x00007ffddda56580@./hop_fun.rb:60>,
+              @name="min",
+              @post_conv=true,
+              @pre_conv=true>,
+            @fun_name="min">>,
+        @finalChain=
+         #<Hopsa::HopChain:0x7ffddcf88a40
+          @chain=[],
+          @executor=#<Hopsa::LetStatement:0x7ffddcf88ce8 ...>>,
+        @finished=false,
+        @hopid=5,
+        @initChain=
+         #<Hopsa::HopChain:0x7ffddcf88a68
+          @chain=[],
+          @executor=#<Hopsa::LetStatement:0x7ffddcf88ce8 ...>>,
+        @input=nil,
+        @line=nil,
+        @mainChain=
+         #<Hopsa::HopChain:0x7ffddcf889c8
+          @chain=[],
+          @executor=#<Hopsa::LetStatement:0x7ffddcf88ce8 ...>>,
+        @parent=#<Hopsa::EachHopstance:0x7ffddcfbc8e0 ...>,
+        @started=false>],
+     @executor=#<Hopsa::EachHopstance:0x7ffddcfbc8e0 ...>>,
+   @parent=
+    #<Hopsa::TopStatement:0x7ffddcfc6ea8
+     @finalChain=
+      #<Hopsa::HopChain:0x7ffddcfc6c78
+       @chain=[],
+       @executor=#<Hopsa::TopStatement:0x7ffddcfc6ea8 ...>>,
+     @finished=false,
+     @hopid=1,
+     @initChain=
+      #<Hopsa::HopChain:0x7ffddcfc6ca0
+       @chain=[],
+       @executor=#<Hopsa::TopStatement:0x7ffddcfc6ea8 ...>>,
+     @input=nil,
+     @mainChain=
+      #<Hopsa::HopChain:0x7ffddcfc6bd8
+       @chain=[],
+       @executor=#<Hopsa::TopStatement:0x7ffddcfc6ea8 ...>>,
+     @parent=nil,
+     @started=false,
+     @varStore=
+      #<Hopsa::VarStore:0x7ffddcfc6e08
+       @cortegeStore={},
+       @ex=#<Hopsa::TopStatement:0x7ffddcfc6ea8 ...>,
+       @scalarStore=
+        {"node"=>"node-00-00",
+         "start_time"=>"1",
+         "end_time"=>"5000000000000000"},
+       @streamStore=
+        {"out10"=>
+          #<Hopsa::HopPipe:0x7ffddcfbc430
+           @buffer=[],
+           @data="",
+           @read_io=#<File:0x7ffddcfbb238>,
+           @write_io=#<File:0x7ffddcfbb1e8>>}>>,
+   @source=
+    #<Hopsa::CSVDriver:0x7ffddcfc5940
+     @current_var="x",
+     @parent=
+      #<Hopsa::TopStatement:0x7ffddcfc6ea8
+       @finalChain=
+        #<Hopsa::HopChain:0x7ffddcfc6c78
+         @chain=[],
+         @executor=#<Hopsa::TopStatement:0x7ffddcfc6ea8 ...>>,
+       @finished=false,
+       @hopid=1,
+       @initChain=
+        #<Hopsa::HopChain:0x7ffddcfc6ca0
+         @chain=[],
+         @executor=#<Hopsa::TopStatement:0x7ffddcfc6ea8 ...>>,
+       @input=nil,
+       @mainChain=
+        #<Hopsa::HopChain:0x7ffddcfc6bd8
+         @chain=[],
+         @executor=#<Hopsa::TopStatement:0x7ffddcfc6ea8 ...>>,
+       @parent=nil,
+       @started=false,
+       @varStore=
+        #<Hopsa::VarStore:0x7ffddcfc6e08
+         @cortegeStore={},
+         @ex=#<Hopsa::TopStatement:0x7ffddcfc6ea8 ...>,
+         @scalarStore=
+          {"node"=>"node-00-00",
+           "start_time"=>"1",
+           "end_time"=>"5000000000000000"},
+         @streamStore=
+          {"out10"=>
+            #<Hopsa::HopPipe:0x7ffddcfbc430
+             @buffer=[],
+             @data="",
+             @read_io=#<File:0x7ffddcfbb238>,
+             @write_io=#<File:0x7ffddcfbb1e8>>}>>,
+     @source="ttt",
+     @where="x.np > 97",
+     @where_expression=
+      #<Hopsa::BinaryExpr:0x7ffddcfbcac0
+       @code_line=0,
+       @expr1=
+        #<Hopsa::DotExpr:0x7ffddcfbec58
+         @code_line=0,
+         @field_name="np",
+         @obj=#<Hopsa::RefExpr:0x7ffddcfbf428 @code_line=0, @rname="x">>,
+       @expr2=#<Hopsa::ValExpr:0x7ffddcfbce58 @code_line=0, @val="97">,
+       @op=">",
+       @post_conv=false,
+       @pre_conv=true,
+       @short=false>>,
+   @started=false,
+   @streamvar="out10",
+   @varStore=
+    #<Hopsa::VarStore:0x7ffddcfbc840
+     @cortegeStore={},
+     @ex=#<Hopsa::EachHopstance:0x7ffddcfbc8e0 ...>,
+     @scalarStore=
+      {"node"=>"node-00-00",
+       "start_time"=>"1",
+       "__agg_var_0"=>"",
+       "__agg_var_3"=>"",
+       "end_time"=>"5000000000000000",
+       "x"=>""},
+     @streamStore=
+      {"out10"=>
+        #<Hopsa::HopPipe:0x7ffddcfbc430
+         @buffer=[],
+         @data="",
+         @read_io=#<File:0x7ffddcfbb238>,
+         @write_io=#<File:0x7ffddcfbb1e8>>}>,
+   @where_expr=
+    #<Hopsa::BinaryExpr:0x7ffddcfb2c28
+     @code_line=0,
+     @expr1=
+      #<Hopsa::DotExpr:0x7ffddcfb47a8
+       @code_line=0,
+       @field_name="np",
+       @obj=#<Hopsa::RefExpr:0x7ffddcfb4a00 @code_line=0, @rname="x">>,
+     @expr2=#<Hopsa::ValExpr:0x7ffddcfb3100 @code_line=0, @val="97">,
+     @op=">",
+     @post_conv=false,
+     @pre_conv=true,
+     @short=false>>,
+ @started=false>
+
 >>Statement Hopsa::EachHopstance => Hopsa::LetStatement
 >>Statement Hopsa::EachHopstance => Hopsa::LetStatement
+ADDED AGG: #<Hopsa::LetStatement:0x7ffddcfa7dc8
+ @expression=
+  #<Hopsa::AssExpr:0x7ffddcf89eb8
+   @code_line=0,
+   @expr1=#<Hopsa::RefExpr:0x7ffddcf8a2f0 @code_line=0, @rname="__agg_var_1">,
+   @expr2=
+    #<Hopsa::CallExpr:0x7ffddcf89fd0
+     @args=
+      [#<Hopsa::RefExpr:0x7ffddcf8a2f0 @code_line=0, @rname="__agg_var_1">,
+       #<Hopsa::RefExpr:0x7ffddcf8bab0 @code_line=0, @rname="x">],
+     @fun=
+      #<Hopsa::DirectFunction:0x7ffddcfc77b8
+       @arg_num=2,
+       @code=#<Proc:0x00007ffddda54ff0@./hop_fun.rb:62>,
+       @name="incr",
+       @post_conv=true,
+       @pre_conv=false>,
+     @fun_name="incr">>,
+ @finalChain=
+  #<Hopsa::HopChain:0x7ffddcfa7b20
+   @chain=[],
+   @executor=#<Hopsa::LetStatement:0x7ffddcfa7dc8 ...>>,
+ @finished=false,
+ @hopid=9,
+ @initChain=
+  #<Hopsa::HopChain:0x7ffddcfa7b48
+   @chain=[],
+   @executor=#<Hopsa::LetStatement:0x7ffddcfa7dc8 ...>>,
+ @input=nil,
+ @line=nil,
+ @mainChain=
+  #<Hopsa::HopChain:0x7ffddcfa7aa8
+   @chain=[],
+   @executor=#<Hopsa::LetStatement:0x7ffddcfa7dc8 ...>>,
+ @parent=
+  #<Hopsa::EachHopstance:0x7ffddcfbc8e0
+   @current_var="x",
+   @finalChain=
+    #<Hopsa::HopChain:0x7ffddcfbc660
+     @chain=[],
+     @executor=#<Hopsa::EachHopstance:0x7ffddcfbc8e0 ...>>,
+   @finished=false,
+   @hopid=2,
+   @initChain=
+    #<Hopsa::HopChain:0x7ffddcfbc6b0
+     @chain=
+      [#<Hopsa::LetStatement:0x7ffddcf88d60
+        @expression=
+         #<Hopsa::AssExpr:0x7ffddcf88e00
+          @code_line=0,
+          @expr1=
+           #<Hopsa::RefExpr:0x7ffddcf88e78 @code_line=0, @rname="__agg_var_3">,
+          @expr2=#<Hopsa::ValExpr:0x7ffddcf88e28 @code_line=0, @val="1e300">>,
+        @finalChain=
+         #<Hopsa::HopChain:0x7ffddcf88c20
+          @chain=[],
+          @executor=#<Hopsa::LetStatement:0x7ffddcf88d60 ...>>,
+        @finished=false,
+        @hopid=4,
+        @initChain=
+         #<Hopsa::HopChain:0x7ffddcf88c48
+          @chain=[],
+          @executor=#<Hopsa::LetStatement:0x7ffddcf88d60 ...>>,
+        @input=nil,
+        @line=nil,
+        @mainChain=
+         #<Hopsa::HopChain:0x7ffddcf88ba8
+          @chain=[],
+          @executor=#<Hopsa::LetStatement:0x7ffddcf88d60 ...>>,
+        @parent=#<Hopsa::EachHopstance:0x7ffddcfbc8e0 ...>,
+        @started=false>,
+       #<Hopsa::LetStatement:0x7ffddf349308
+        @expression=
+         #<Hopsa::AssExpr:0x7ffddf349b78
+          @code_line=0,
+          @expr1=
+           #<Hopsa::RefExpr:0x7ffddf34be78 @code_line=0, @rname="__agg_var_0">,
+          @expr2=#<Hopsa::ValExpr:0x7ffddf349c68 @code_line=0, @val="0">>,
+        @finalChain=
+         #<Hopsa::HopChain:0x7ffddf348070
+          @chain=[],
+          @executor=#<Hopsa::LetStatement:0x7ffddf349308 ...>>,
+        @finished=false,
+        @hopid=6,
+        @initChain=
+         #<Hopsa::HopChain:0x7ffddf348138
+          @chain=[],
+          @executor=#<Hopsa::LetStatement:0x7ffddf349308 ...>>,
+        @input=nil,
+        @line=nil,
+        @mainChain=
+         #<Hopsa::HopChain:0x7ffddf345f50
+          @chain=[],
+          @executor=#<Hopsa::LetStatement:0x7ffddf349308 ...>>,
+        @parent=#<Hopsa::EachHopstance:0x7ffddcfbc8e0 ...>,
+        @started=false>],
+     @executor=#<Hopsa::EachHopstance:0x7ffddcfbc8e0 ...>>,
+   @input=nil,
+   @mainChain=
+    #<Hopsa::HopChain:0x7ffddcfbc5c0
+     @chain=
+      [#<Hopsa::LetStatement:0x7ffddcf88ce8
+        @expression=
+         #<Hopsa::AssExpr:0x7ffddcf88fb8
+          @code_line=0,
+          @expr1=
+           #<Hopsa::RefExpr:0x7ffddcf89238 @code_line=0, @rname="__agg_var_3">,
+          @expr2=
+           #<Hopsa::CallExpr:0x7ffddcf89030
+            @args=
+             [#<Hopsa::RefExpr:0x7ffddcf89238
+               @code_line=0,
+               @rname="__agg_var_3">,
+              #<Hopsa::DotExpr:0x7ffddcf890f8
+               @code_line=0,
+               @field_name="np",
+               @obj=
+                #<Hopsa::RefExpr:0x7ffddcfa1f90 @code_line=0, @rname="x">>],
+            @fun=
+             #<Hopsa::DirectFunction:0x7ffddcfc7ad8
+              @arg_num=2,
+              @code=#<Proc:0x00007ffddda56580@./hop_fun.rb:60>,
+              @name="min",
+              @post_conv=true,
+              @pre_conv=true>,
+            @fun_name="min">>,
+        @finalChain=
+         #<Hopsa::HopChain:0x7ffddcf88a40
+          @chain=[],
+          @executor=#<Hopsa::LetStatement:0x7ffddcf88ce8 ...>>,
+        @finished=false,
+        @hopid=5,
+        @initChain=
+         #<Hopsa::HopChain:0x7ffddcf88a68
+          @chain=[],
+          @executor=#<Hopsa::LetStatement:0x7ffddcf88ce8 ...>>,
+        @input=nil,
+        @line=nil,
+        @mainChain=
+         #<Hopsa::HopChain:0x7ffddcf889c8
+          @chain=[],
+          @executor=#<Hopsa::LetStatement:0x7ffddcf88ce8 ...>>,
+        @parent=#<Hopsa::EachHopstance:0x7ffddcfbc8e0 ...>,
+        @started=false>,
+       #<Hopsa::LetStatement:0x7ffddf348db8
+        @expression=
+         #<Hopsa::AssExpr:0x7ffddcf8a4d0
+          @code_line=0,
+          @expr1=
+           #<Hopsa::RefExpr:0x7ffddcf8a7c8 @code_line=0, @rname="__agg_var_0">,
+          @expr2=
+           #<Hopsa::BinaryExpr:0x7ffddcf8a660
+            @code_line=0,
+            @expr1=
+             #<Hopsa::RefExpr:0x7ffddcf8a7c8
+              @code_line=0,
+              @rname="__agg_var_0">,
+            @expr2=
+             #<Hopsa::DotExpr:0x7ffddcf8a598
+              @code_line=0,
+              @field_name="np",
+              @obj=#<Hopsa::RefExpr:0x7ffddcf900b0 @code_line=0, @rname="x">>,
+            @op="+",
+            @post_conv=true,
+            @pre_conv=true,
+            @short=false>>,
+        @finalChain=
+         #<Hopsa::HopChain:0x7ffddf33dad0
+          @chain=[],
+          @executor=#<Hopsa::LetStatement:0x7ffddf348db8 ...>>,
+        @finished=false,
+        @hopid=7,
+        @initChain=
+         #<Hopsa::HopChain:0x7ffddf33dbe8
+          @chain=[],
+          @executor=#<Hopsa::LetStatement:0x7ffddf348db8 ...>>,
+        @input=nil,
+        @line=nil,
+        @mainChain=
+         #<Hopsa::HopChain:0x7ffddf33c4c8
+          @chain=[],
+          @executor=#<Hopsa::LetStatement:0x7ffddf348db8 ...>>,
+        @parent=#<Hopsa::EachHopstance:0x7ffddcfbc8e0 ...>,
+        @started=false>],
+     @executor=#<Hopsa::EachHopstance:0x7ffddcfbc8e0 ...>>,
+   @parent=
+    #<Hopsa::TopStatement:0x7ffddcfc6ea8
+     @finalChain=
+      #<Hopsa::HopChain:0x7ffddcfc6c78
+       @chain=[],
+       @executor=#<Hopsa::TopStatement:0x7ffddcfc6ea8 ...>>,
+     @finished=false,
+     @hopid=1,
+     @initChain=
+      #<Hopsa::HopChain:0x7ffddcfc6ca0
+       @chain=[],
+       @executor=#<Hopsa::TopStatement:0x7ffddcfc6ea8 ...>>,
+     @input=nil,
+     @mainChain=
+      #<Hopsa::HopChain:0x7ffddcfc6bd8
+       @chain=[],
+       @executor=#<Hopsa::TopStatement:0x7ffddcfc6ea8 ...>>,
+     @parent=nil,
+     @started=false,
+     @varStore=
+      #<Hopsa::VarStore:0x7ffddcfc6e08
+       @cortegeStore={},
+       @ex=#<Hopsa::TopStatement:0x7ffddcfc6ea8 ...>,
+       @scalarStore=
+        {"node"=>"node-00-00",
+         "start_time"=>"1",
+         "end_time"=>"5000000000000000"},
+       @streamStore=
+        {"out10"=>
+          #<Hopsa::HopPipe:0x7ffddcfbc430
+           @buffer=[],
+           @data="",
+           @read_io=#<File:0x7ffddcfbb238>,
+           @write_io=#<File:0x7ffddcfbb1e8>>}>>,
+   @source=
+    #<Hopsa::CSVDriver:0x7ffddcfc5940
+     @current_var="x",
+     @parent=
+      #<Hopsa::TopStatement:0x7ffddcfc6ea8
+       @finalChain=
+        #<Hopsa::HopChain:0x7ffddcfc6c78
+         @chain=[],
+         @executor=#<Hopsa::TopStatement:0x7ffddcfc6ea8 ...>>,
+       @finished=false,
+       @hopid=1,
+       @initChain=
+        #<Hopsa::HopChain:0x7ffddcfc6ca0
+         @chain=[],
+         @executor=#<Hopsa::TopStatement:0x7ffddcfc6ea8 ...>>,
+       @input=nil,
+       @mainChain=
+        #<Hopsa::HopChain:0x7ffddcfc6bd8
+         @chain=[],
+         @executor=#<Hopsa::TopStatement:0x7ffddcfc6ea8 ...>>,
+       @parent=nil,
+       @started=false,
+       @varStore=
+        #<Hopsa::VarStore:0x7ffddcfc6e08
+         @cortegeStore={},
+         @ex=#<Hopsa::TopStatement:0x7ffddcfc6ea8 ...>,
+         @scalarStore=
+          {"node"=>"node-00-00",
+           "start_time"=>"1",
+           "end_time"=>"5000000000000000"},
+         @streamStore=
+          {"out10"=>
+            #<Hopsa::HopPipe:0x7ffddcfbc430
+             @buffer=[],
+             @data="",
+             @read_io=#<File:0x7ffddcfbb238>,
+             @write_io=#<File:0x7ffddcfbb1e8>>}>>,
+     @source="ttt",
+     @where="x.np > 97",
+     @where_expression=
+      #<Hopsa::BinaryExpr:0x7ffddcfbcac0
+       @code_line=0,
+       @expr1=
+        #<Hopsa::DotExpr:0x7ffddcfbec58
+         @code_line=0,
+         @field_name="np",
+         @obj=#<Hopsa::RefExpr:0x7ffddcfbf428 @code_line=0, @rname="x">>,
+       @expr2=#<Hopsa::ValExpr:0x7ffddcfbce58 @code_line=0, @val="97">,
+       @op=">",
+       @post_conv=false,
+       @pre_conv=true,
+       @short=false>>,
+   @started=false,
+   @streamvar="out10",
+   @varStore=
+    #<Hopsa::VarStore:0x7ffddcfbc840
+     @cortegeStore={},
+     @ex=#<Hopsa::EachHopstance:0x7ffddcfbc8e0 ...>,
+     @scalarStore=
+      {"node"=>"node-00-00",
+       "start_time"=>"1",
+       "__agg_var_1"=>"",
+       "__agg_var_0"=>"",
+       "__agg_var_3"=>"",
+       "end_time"=>"5000000000000000",
+       "x"=>""},
+     @streamStore=
+      {"out10"=>
+        #<Hopsa::HopPipe:0x7ffddcfbc430
+         @buffer=[],
+         @data="",
+         @read_io=#<File:0x7ffddcfbb238>,
+         @write_io=#<File:0x7ffddcfbb1e8>>}>,
+   @where_expr=
+    #<Hopsa::BinaryExpr:0x7ffddcfb2c28
+     @code_line=0,
+     @expr1=
+      #<Hopsa::DotExpr:0x7ffddcfb47a8
+       @code_line=0,
+       @field_name="np",
+       @obj=#<Hopsa::RefExpr:0x7ffddcfb4a00 @code_line=0, @rname="x">>,
+     @expr2=#<Hopsa::ValExpr:0x7ffddcfb3100 @code_line=0, @val="97">,
+     @op=">",
+     @post_conv=false,
+     @pre_conv=true,
+     @short=false>>,
+ @started=false>
+
 >>Statement Hopsa::EachHopstance => Hopsa::LetStatement
 >>Statement Hopsa::EachHopstance => Hopsa::LetStatement
+ADDED AGG: #<Hopsa::LetStatement:0x7ffddb81a160
+ @expression=
+  #<Hopsa::AssExpr:0x7ffddcf89530
+   @code_line=0,
+   @expr1=#<Hopsa::RefExpr:0x7ffddcf89ad0 @code_line=0, @rname="__agg_var_2">,
+   @expr2=
+    #<Hopsa::CallExpr:0x7ffddcf895a8
+     @args=
+      [#<Hopsa::RefExpr:0x7ffddcf89ad0 @code_line=0, @rname="__agg_var_2">,
+       #<Hopsa::DotExpr:0x7ffddcf89828
+        @code_line=0,
+        @field_name="np",
+        @obj=#<Hopsa::RefExpr:0x7ffddcf98b98 @code_line=0, @rname="x">>],
+     @fun=
+      #<Hopsa::DirectFunction:0x7ffddcfc79c0
+       @arg_num=2,
+       @code=#<Proc:0x00007ffddda55900@./hop_fun.rb:61>,
+       @name="max",
+       @post_conv=true,
+       @pre_conv=true>,
+     @fun_name="max">>,
+ @finalChain=
+  #<Hopsa::HopChain:0x7ffddb819eb8
+   @chain=[],
+   @executor=#<Hopsa::LetStatement:0x7ffddb81a160 ...>>,
+ @finished=false,
+ @hopid=11,
+ @initChain=
+  #<Hopsa::HopChain:0x7ffddb819ee0
+   @chain=[],
+   @executor=#<Hopsa::LetStatement:0x7ffddb81a160 ...>>,
+ @input=nil,
+ @line=nil,
+ @mainChain=
+  #<Hopsa::HopChain:0x7ffddb819e40
+   @chain=[],
+   @executor=#<Hopsa::LetStatement:0x7ffddb81a160 ...>>,
+ @parent=
+  #<Hopsa::EachHopstance:0x7ffddcfbc8e0
+   @current_var="x",
+   @finalChain=
+    #<Hopsa::HopChain:0x7ffddcfbc660
+     @chain=[],
+     @executor=#<Hopsa::EachHopstance:0x7ffddcfbc8e0 ...>>,
+   @finished=false,
+   @hopid=2,
+   @initChain=
+    #<Hopsa::HopChain:0x7ffddcfbc6b0
+     @chain=
+      [#<Hopsa::LetStatement:0x7ffddcf88d60
+        @expression=
+         #<Hopsa::AssExpr:0x7ffddcf88e00
+          @code_line=0,
+          @expr1=
+           #<Hopsa::RefExpr:0x7ffddcf88e78 @code_line=0, @rname="__agg_var_3">,
+          @expr2=#<Hopsa::ValExpr:0x7ffddcf88e28 @code_line=0, @val="1e300">>,
+        @finalChain=
+         #<Hopsa::HopChain:0x7ffddcf88c20
+          @chain=[],
+          @executor=#<Hopsa::LetStatement:0x7ffddcf88d60 ...>>,
+        @finished=false,
+        @hopid=4,
+        @initChain=
+         #<Hopsa::HopChain:0x7ffddcf88c48
+          @chain=[],
+          @executor=#<Hopsa::LetStatement:0x7ffddcf88d60 ...>>,
+        @input=nil,
+        @line=nil,
+        @mainChain=
+         #<Hopsa::HopChain:0x7ffddcf88ba8
+          @chain=[],
+          @executor=#<Hopsa::LetStatement:0x7ffddcf88d60 ...>>,
+        @parent=#<Hopsa::EachHopstance:0x7ffddcfbc8e0 ...>,
+        @started=false>,
+       #<Hopsa::LetStatement:0x7ffddf349308
+        @expression=
+         #<Hopsa::AssExpr:0x7ffddf349b78
+          @code_line=0,
+          @expr1=
+           #<Hopsa::RefExpr:0x7ffddf34be78 @code_line=0, @rname="__agg_var_0">,
+          @expr2=#<Hopsa::ValExpr:0x7ffddf349c68 @code_line=0, @val="0">>,
+        @finalChain=
+         #<Hopsa::HopChain:0x7ffddf348070
+          @chain=[],
+          @executor=#<Hopsa::LetStatement:0x7ffddf349308 ...>>,
+        @finished=false,
+        @hopid=6,
+        @initChain=
+         #<Hopsa::HopChain:0x7ffddf348138
+          @chain=[],
+          @executor=#<Hopsa::LetStatement:0x7ffddf349308 ...>>,
+        @input=nil,
+        @line=nil,
+        @mainChain=
+         #<Hopsa::HopChain:0x7ffddf345f50
+          @chain=[],
+          @executor=#<Hopsa::LetStatement:0x7ffddf349308 ...>>,
+        @parent=#<Hopsa::EachHopstance:0x7ffddcfbc8e0 ...>,
+        @started=false>,
+       #<Hopsa::LetStatement:0x7ffddcfa7e40
+        @expression=
+         #<Hopsa::AssExpr:0x7ffddcfa7ee0
+          @code_line=0,
+          @expr1=
+           #<Hopsa::RefExpr:0x7ffddcfa7f80 @code_line=0, @rname="__agg_var_1">,
+          @expr2=#<Hopsa::ValExpr:0x7ffddcfa7f30 @code_line=0, @val="0">>,
+        @finalChain=
+         #<Hopsa::HopChain:0x7ffddcfa7d00
+          @chain=[],
+          @executor=#<Hopsa::LetStatement:0x7ffddcfa7e40 ...>>,
+        @finished=false,
+        @hopid=8,
+        @initChain=
+         #<Hopsa::HopChain:0x7ffddcfa7d28
+          @chain=[],
+          @executor=#<Hopsa::LetStatement:0x7ffddcfa7e40 ...>>,
+        @input=nil,
+        @line=nil,
+        @mainChain=
+         #<Hopsa::HopChain:0x7ffddcfa7c88
+          @chain=[],
+          @executor=#<Hopsa::LetStatement:0x7ffddcfa7e40 ...>>,
+        @parent=#<Hopsa::EachHopstance:0x7ffddcfbc8e0 ...>,
+        @started=false>],
+     @executor=#<Hopsa::EachHopstance:0x7ffddcfbc8e0 ...>>,
+   @input=nil,
+   @mainChain=
+    #<Hopsa::HopChain:0x7ffddcfbc5c0
+     @chain=
+      [#<Hopsa::LetStatement:0x7ffddcf88ce8
+        @expression=
+         #<Hopsa::AssExpr:0x7ffddcf88fb8
+          @code_line=0,
+          @expr1=
+           #<Hopsa::RefExpr:0x7ffddcf89238 @code_line=0, @rname="__agg_var_3">,
+          @expr2=
+           #<Hopsa::CallExpr:0x7ffddcf89030
+            @args=
+             [#<Hopsa::RefExpr:0x7ffddcf89238
+               @code_line=0,
+               @rname="__agg_var_3">,
+              #<Hopsa::DotExpr:0x7ffddcf890f8
+               @code_line=0,
+               @field_name="np",
+               @obj=
+                #<Hopsa::RefExpr:0x7ffddcfa1f90 @code_line=0, @rname="x">>],
+            @fun=
+             #<Hopsa::DirectFunction:0x7ffddcfc7ad8
+              @arg_num=2,
+              @code=#<Proc:0x00007ffddda56580@./hop_fun.rb:60>,
+              @name="min",
+              @post_conv=true,
+              @pre_conv=true>,
+            @fun_name="min">>,
+        @finalChain=
+         #<Hopsa::HopChain:0x7ffddcf88a40
+          @chain=[],
+          @executor=#<Hopsa::LetStatement:0x7ffddcf88ce8 ...>>,
+        @finished=false,
+        @hopid=5,
+        @initChain=
+         #<Hopsa::HopChain:0x7ffddcf88a68
+          @chain=[],
+          @executor=#<Hopsa::LetStatement:0x7ffddcf88ce8 ...>>,
+        @input=nil,
+        @line=nil,
+        @mainChain=
+         #<Hopsa::HopChain:0x7ffddcf889c8
+          @chain=[],
+          @executor=#<Hopsa::LetStatement:0x7ffddcf88ce8 ...>>,
+        @parent=#<Hopsa::EachHopstance:0x7ffddcfbc8e0 ...>,
+        @started=false>,
+       #<Hopsa::LetStatement:0x7ffddf348db8
+        @expression=
+         #<Hopsa::AssExpr:0x7ffddcf8a4d0
+          @code_line=0,
+          @expr1=
+           #<Hopsa::RefExpr:0x7ffddcf8a7c8 @code_line=0, @rname="__agg_var_0">,
+          @expr2=
+           #<Hopsa::BinaryExpr:0x7ffddcf8a660
+            @code_line=0,
+            @expr1=
+             #<Hopsa::RefExpr:0x7ffddcf8a7c8
+              @code_line=0,
+              @rname="__agg_var_0">,
+            @expr2=
+             #<Hopsa::DotExpr:0x7ffddcf8a598
+              @code_line=0,
+              @field_name="np",
+              @obj=#<Hopsa::RefExpr:0x7ffddcf900b0 @code_line=0, @rname="x">>,
+            @op="+",
+            @post_conv=true,
+            @pre_conv=true,
+            @short=false>>,
+        @finalChain=
+         #<Hopsa::HopChain:0x7ffddf33dad0
+          @chain=[],
+          @executor=#<Hopsa::LetStatement:0x7ffddf348db8 ...>>,
+        @finished=false,
+        @hopid=7,
+        @initChain=
+         #<Hopsa::HopChain:0x7ffddf33dbe8
+          @chain=[],
+          @executor=#<Hopsa::LetStatement:0x7ffddf348db8 ...>>,
+        @input=nil,
+        @line=nil,
+        @mainChain=
+         #<Hopsa::HopChain:0x7ffddf33c4c8
+          @chain=[],
+          @executor=#<Hopsa::LetStatement:0x7ffddf348db8 ...>>,
+        @parent=#<Hopsa::EachHopstance:0x7ffddcfbc8e0 ...>,
+        @started=false>,
+       #<Hopsa::LetStatement:0x7ffddcfa7dc8
+        @expression=
+         #<Hopsa::AssExpr:0x7ffddcf89eb8
+          @code_line=0,
+          @expr1=
+           #<Hopsa::RefExpr:0x7ffddcf8a2f0 @code_line=0, @rname="__agg_var_1">,
+          @expr2=
+           #<Hopsa::CallExpr:0x7ffddcf89fd0
+            @args=
+             [#<Hopsa::RefExpr:0x7ffddcf8a2f0
+               @code_line=0,
+               @rname="__agg_var_1">,
+              #<Hopsa::RefExpr:0x7ffddcf8bab0 @code_line=0, @rname="x">],
+            @fun=
+             #<Hopsa::DirectFunction:0x7ffddcfc77b8
+              @arg_num=2,
+              @code=#<Proc:0x00007ffddda54ff0@./hop_fun.rb:62>,
+              @name="incr",
+              @post_conv=true,
+              @pre_conv=false>,
+            @fun_name="incr">>,
+        @finalChain=
+         #<Hopsa::HopChain:0x7ffddcfa7b20
+          @chain=[],
+          @executor=#<Hopsa::LetStatement:0x7ffddcfa7dc8 ...>>,
+        @finished=false,
+        @hopid=9,
+        @initChain=
+         #<Hopsa::HopChain:0x7ffddcfa7b48
+          @chain=[],
+          @executor=#<Hopsa::LetStatement:0x7ffddcfa7dc8 ...>>,
+        @input=nil,
+        @line=nil,
+        @mainChain=
+         #<Hopsa::HopChain:0x7ffddcfa7aa8
+          @chain=[],
+          @executor=#<Hopsa::LetStatement:0x7ffddcfa7dc8 ...>>,
+        @parent=#<Hopsa::EachHopstance:0x7ffddcfbc8e0 ...>,
+        @started=false>],
+     @executor=#<Hopsa::EachHopstance:0x7ffddcfbc8e0 ...>>,
+   @parent=
+    #<Hopsa::TopStatement:0x7ffddcfc6ea8
+     @finalChain=
+      #<Hopsa::HopChain:0x7ffddcfc6c78
+       @chain=[],
+       @executor=#<Hopsa::TopStatement:0x7ffddcfc6ea8 ...>>,
+     @finished=false,
+     @hopid=1,
+     @initChain=
+      #<Hopsa::HopChain:0x7ffddcfc6ca0
+       @chain=[],
+       @executor=#<Hopsa::TopStatement:0x7ffddcfc6ea8 ...>>,
+     @input=nil,
+     @mainChain=
+      #<Hopsa::HopChain:0x7ffddcfc6bd8
+       @chain=[],
+       @executor=#<Hopsa::TopStatement:0x7ffddcfc6ea8 ...>>,
+     @parent=nil,
+     @started=false,
+     @varStore=
+      #<Hopsa::VarStore:0x7ffddcfc6e08
+       @cortegeStore={},
+       @ex=#<Hopsa::TopStatement:0x7ffddcfc6ea8 ...>,
+       @scalarStore=
+        {"node"=>"node-00-00",
+         "start_time"=>"1",
+         "end_time"=>"5000000000000000"},
+       @streamStore=
+        {"out10"=>
+          #<Hopsa::HopPipe:0x7ffddcfbc430
+           @buffer=[],
+           @data="",
+           @read_io=#<File:0x7ffddcfbb238>,
+           @write_io=#<File:0x7ffddcfbb1e8>>}>>,
+   @source=
+    #<Hopsa::CSVDriver:0x7ffddcfc5940
+     @current_var="x",
+     @parent=
+      #<Hopsa::TopStatement:0x7ffddcfc6ea8
+       @finalChain=
+        #<Hopsa::HopChain:0x7ffddcfc6c78
+         @chain=[],
+         @executor=#<Hopsa::TopStatement:0x7ffddcfc6ea8 ...>>,
+       @finished=false,
+       @hopid=1,
+       @initChain=
+        #<Hopsa::HopChain:0x7ffddcfc6ca0
+         @chain=[],
+         @executor=#<Hopsa::TopStatement:0x7ffddcfc6ea8 ...>>,
+       @input=nil,
+       @mainChain=
+        #<Hopsa::HopChain:0x7ffddcfc6bd8
+         @chain=[],
+         @executor=#<Hopsa::TopStatement:0x7ffddcfc6ea8 ...>>,
+       @parent=nil,
+       @started=false,
+       @varStore=
+        #<Hopsa::VarStore:0x7ffddcfc6e08
+         @cortegeStore={},
+         @ex=#<Hopsa::TopStatement:0x7ffddcfc6ea8 ...>,
+         @scalarStore=
+          {"node"=>"node-00-00",
+           "start_time"=>"1",
+           "end_time"=>"5000000000000000"},
+         @streamStore=
+          {"out10"=>
+            #<Hopsa::HopPipe:0x7ffddcfbc430
+             @buffer=[],
+             @data="",
+             @read_io=#<File:0x7ffddcfbb238>,
+             @write_io=#<File:0x7ffddcfbb1e8>>}>>,
+     @source="ttt",
+     @where="x.np > 97",
+     @where_expression=
+      #<Hopsa::BinaryExpr:0x7ffddcfbcac0
+       @code_line=0,
+       @expr1=
+        #<Hopsa::DotExpr:0x7ffddcfbec58
+         @code_line=0,
+         @field_name="np",
+         @obj=#<Hopsa::RefExpr:0x7ffddcfbf428 @code_line=0, @rname="x">>,
+       @expr2=#<Hopsa::ValExpr:0x7ffddcfbce58 @code_line=0, @val="97">,
+       @op=">",
+       @post_conv=false,
+       @pre_conv=true,
+       @short=false>>,
+   @started=false,
+   @streamvar="out10",
+   @varStore=
+    #<Hopsa::VarStore:0x7ffddcfbc840
+     @cortegeStore={},
+     @ex=#<Hopsa::EachHopstance:0x7ffddcfbc8e0 ...>,
+     @scalarStore=
+      {"node"=>"node-00-00",
+       "start_time"=>"1",
+       "__agg_var_2"=>"",
+       "__agg_var_1"=>"",
+       "__agg_var_0"=>"",
+       "__agg_var_3"=>"",
+       "end_time"=>"5000000000000000",
+       "x"=>""},
+     @streamStore=
+      {"out10"=>
+        #<Hopsa::HopPipe:0x7ffddcfbc430
+         @buffer=[],
+         @data="",
+         @read_io=#<File:0x7ffddcfbb238>,
+         @write_io=#<File:0x7ffddcfbb1e8>>}>,
+   @where_expr=
+    #<Hopsa::BinaryExpr:0x7ffddcfb2c28
+     @code_line=0,
+     @expr1=
+      #<Hopsa::DotExpr:0x7ffddcfb47a8
+       @code_line=0,
+       @field_name="np",
+       @obj=#<Hopsa::RefExpr:0x7ffddcfb4a00 @code_line=0, @rname="x">>,
+     @expr2=#<Hopsa::ValExpr:0x7ffddcfb3100 @code_line=0, @val="97">,
+     @op=">",
+     @post_conv=false,
+     @pre_conv=true,
+     @short=false>>,
+ @started=false>
+
 >>Statement Hopsa::TopStatement => Hopsa::PrintEachHopstance
-Copy varstore PrintEachHopstance from #<Hopsa::TopStatement:0x1106d6080>.
+Copy varstore PrintEachHopstance from #<Hopsa::TopStatement:0x7ffddcfc6ea8>.
 STREAM "out10"
 
 
 ***********   START   *********************
 
-START main chain #EachHopstance(out10<-#<Hopsa::CSVDriver:0x1106d5658>) (#HopChain (4 statements))
-Merge varstore #EachHopstance(out10<-#<Hopsa::CSVDriver:0x1106d5658>) from #<Hopsa::TopStatement:0x1106d6080>.
-Thread #EachHopstance(out10<-#<Hopsa::CSVDriver:0x1106d5658>) started(#<Thread:0x1106a7e38>)
-Thread PrintEachHopstance started(#<Thread:0x110649090>)
-T: #<Thread:0x1106a7e38> sleep
-T: #<Thread:0x110649090> sleep
+START main chain #EachHopstance(out10<-#<Hopsa::CSVDriver:0x7ffddcfc5940>) (#HopChain (4 statements))
+Merge varstore #EachHopstance(out10<-#<Hopsa::CSVDriver:0x7ffddcfc5940>) from #<Hopsa::TopStatement:0x7ffddcfc6ea8>.
+Thread #EachHopstance(out10<-#<Hopsa::CSVDriver:0x7ffddcfc5940>) started(#<Thread:0x7ffddb7541e0>)
+Thread PrintEachHopstance started(#<Thread:0x7ffddb6f87a0>)
+T: #<Thread:0x7ffddb7541e0> sleep
 EOF.....
 
+T: #<Thread:0x7ffddb6f87a0> sleep
+START final chain #EachHopstance(out10<-#<Hopsa::CSVDriver:0x7ffddcfc5940>) (#HopChain (1 statements))
 THREADS:2
-START final chain #EachHopstance(out10<-#<Hopsa::CSVDriver:0x1106d5658>) (#HopChain (1 statements))
-FINISHED! #EachHopstance(out10<-#<Hopsa::CSVDriver:0x1106d5658>)
+FINISHED! #EachHopstance(out10<-#<Hopsa::CSVDriver:0x7ffddcfc5940>)
 -------------------------------
 TRUE NIL READED!
-T: #<Thread:0x1106a7e38> false
-T: #<Thread:0x110649090> false
+T: #<Thread:0x7ffddb7541e0> false
+T: #<Thread:0x7ffddb6f87a0> false
 THREADS:0
 
 ***********   END     *********************
 
-VAR: out10HopPipe: is 2285271860
-VAR: end_time5000000000000000
+VAR: out10HopPipe: is 70364155470360
 VAR: nodenode-00-00
 VAR: start_time1
-DB Driver load: ./hop_db_cassandra.rb
-OK! (cassandra)
-DB Driver load: ./hop_db_cassandra2d.rb
-OK! (cassandra2d)
+VAR: end_time5000000000000000
 DB Driver load: ./hop_db_dummy.rb
 OK! (dummy)
+DB Driver load: ./hop_db_cassandra.rb
+DB Driver load failed (but ignored): ./hop_db_cassandra.rb (no such file to load -- cassandra/0.8)
+DB Driver load: ./hop_db_cassandra2d.rb
+DB Driver init failed: ./hop_db_cassandra2d.rb (uninitialized constant Hopsa::CassandraHopstance)
 DB Driver load: ./hop_db_mongo.rb
-DB Driver load failed (but ignored): ./hop_db_mongo.rb (no such file to load -- bson)
+OK! (mongo)
 DB Driver load: ./hop_db_split.rb
 OK! (split)
 DB Driver load: ./hop_db_stream.rb
 OK! (stream)
-CONFIG YAML: {"local"=>{"out_format"=>"csv"}, "varmap"=>{"cheb_cpu_user"=>{"keyname"=>"time", "colname"=>"node", "cf"=>"cheb_cpu_user", "type"=>"cassandra2d", "keyspace"=>"zhopsa"}, "testbase"=>{"type"=>"csv"}, "cpu_user"=>{"address"=>"localhost", "push_index"=>true, "type"=>"mongo", "database"=>"test", "collection"=>"mycoll"}, "tasks"=>{"keyname"=>"taskid", "cf"=>"tasks_gra", "push_index"=>true, "type"=>"cassandra", "max_items"=>-1, "keyspace"=>"hopsa"}}, "parmap"=>{"end_time"=>"5000000000000000", "node"=>"node-00-00", "start_time"=>"1"}}
+CONFIG YAML: {"varmap"=>{"cheb_cpu_user"=>{"keyname"=>"time", "colname"=>"node", "keyspace"=>"zhopsa", "cf"=>"cheb_cpu_user", "type"=>"cassandra2d"}, "testbase"=>{"type"=>"csv"}, "cpu_user"=>{"collection"=>"mycoll", "address"=>"localhost", "database"=>"test", "type"=>"mongo", "push_index"=>true}, "tasks"=>{"keyname"=>"taskid", "keyspace"=>"hopsa", "max_items"=>-1, "cf"=>"tasks_gra", "type"=>"cassandra", "push_index"=>true}}, "local"=>{"out_format"=>"csv"}, "parmap"=>{"node"=>"node-00-00", "end_time"=>"5000000000000000", "start_time"=>"1"}}
 >>Statement NilClass => Hopsa::TopStatement
 NEW EMPTY VARSTORE
 >>Statement Hopsa::TopStatement => Hopsa::EachHopstance
-Copy varstore #EachHopstance(<-) from #<Hopsa::TopStatement:0x1056d11a8>.
-ADDED STREAM: 2193000520 out10
+Copy varstore #EachHopstance(<-) from #<Hopsa::TopStatement:0x7f1d922faf60>.
+ADDED STREAM: 69882491688780 out10
 :: final
 
-EACH: out10,x,#<Hopsa::CSVDriver:0x1056d0780>,x.np > 97
+EACH: out10,x,#<Hopsa::CSVDriver:0x7f1d922f99f8>,x.np > 97
 >>final<<
 >>Statement Hopsa::EachHopstance => Hopsa::LetStatement
 >>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::TopStatement => Hopsa::PrintEachHopstance
-Copy varstore PrintEachHopstance from #<Hopsa::TopStatement:0x1056d11a8>.
-STREAM "out10"
-
-
-***********   START   *********************
-
-START main chain #EachHopstance(out10<-#<Hopsa::CSVDriver:0x1056d0780>) (#HopChain (4 statements))
-Merge varstore #EachHopstance(out10<-#<Hopsa::CSVDriver:0x1056d0780>) from #<Hopsa::TopStatement:0x1056d11a8>.
-Thread #EachHopstance(out10<-#<Hopsa::CSVDriver:0x1056d0780>) started(#<Thread:0x1056a2f60>)
-Thread PrintEachHopstance started(#<Thread:0x10563e920>)
-T: #<Thread:0x1056a2f60> run
-T: #<Thread:0x10563e920> sleep
-EOF.....
-
-THREADS:2
-START final chain #EachHopstance(out10<-#<Hopsa::CSVDriver:0x1056d0780>) (#HopChain (1 statements))
-FINISHED! #EachHopstance(out10<-#<Hopsa::CSVDriver:0x1056d0780>)
--------------------------------
-TRUE NIL READED!
-T: #<Thread:0x1056a2f60> false
-T: #<Thread:0x10563e920> false
-THREADS:0
-
-***********   END     *********************
-
-VAR: out10HopPipe: is 2192987080
-VAR: end_time5000000000000000
-VAR: nodenode-00-00
-VAR: start_time1
-DB Driver load: ./hop_db_cassandra.rb
-OK! (cassandra)
-DB Driver load: ./hop_db_cassandra2d.rb
-OK! (cassandra2d)
 DB Driver load: ./hop_db_dummy.rb
 OK! (dummy)
+DB Driver load: ./hop_db_cassandra.rb
+DB Driver load failed (but ignored): ./hop_db_cassandra.rb (no such file to load -- cassandra/0.8)
+DB Driver load: ./hop_db_cassandra2d.rb
+DB Driver init failed: ./hop_db_cassandra2d.rb (uninitialized constant Hopsa::CassandraHopstance)
 DB Driver load: ./hop_db_mongo.rb
-DB Driver load failed (but ignored): ./hop_db_mongo.rb (no such file to load -- bson)
+OK! (mongo)
 DB Driver load: ./hop_db_split.rb
 OK! (split)
 DB Driver load: ./hop_db_stream.rb
 OK! (stream)
-CONFIG YAML: {"local"=>{"out_format"=>"csv"}, "varmap"=>{"cheb_cpu_user"=>{"keyname"=>"time", "colname"=>"node", "cf"=>"cheb_cpu_user", "type"=>"cassandra2d", "keyspace"=>"zhopsa"}, "testbase"=>{"type"=>"csv"}, "cpu_user"=>{"address"=>"localhost", "push_index"=>true, "type"=>"mongo", "database"=>"test", "collection"=>"mycoll"}, "tasks"=>{"keyname"=>"taskid", "cf"=>"tasks_gra", "push_index"=>true, "type"=>"cassandra", "max_items"=>-1, "keyspace"=>"hopsa"}}, "parmap"=>{"end_time"=>"5000000000000000", "node"=>"node-00-00", "start_time"=>"1"}}
+CONFIG YAML: {"varmap"=>{"tasks"=>{"keyname"=>"taskid", "keyspace"=>"hopsa", "push_index"=>true, "max_items"=>-1, "cf"=>"tasks_gra", "type"=>"cassandra"}, "cpu_user"=>{"database"=>"test", "push_index"=>true, "collection"=>"mycoll", "type"=>"mongo", "address"=>"localhost"}, "testbase"=>{"type"=>"csv"}, "cheb_cpu_user"=>{"keyname"=>"time", "keyspace"=>"zhopsa", "colname"=>"node", "cf"=>"cheb_cpu_user", "type"=>"cassandra2d"}}, "local"=>{"out_format"=>"csv"}, "parmap"=>{"end_time"=>"5000000000000000", "node"=>"node-00-00", "start_time"=>"1"}}
 >>Statement NilClass => Hopsa::TopStatement
 NEW EMPTY VARSTORE
 >>Statement Hopsa::TopStatement => Hopsa::EachHopstance
-Copy varstore #EachHopstance(<-) from #<Hopsa::TopStatement:0x10f9140f0>.
-ADDED STREAM: 2278072300 out10
+Copy varstore #EachHopstance(<-) from #<Hopsa::TopStatement:0x7f01b115c818>.
+ADDED STREAM: 69822621344680 out10
 :: final
 
-EACH: out10,x,#<Hopsa::CSVDriver:0x10f9136c8>,x.np > 97
+EACH: out10,x,#<Hopsa::CSVDriver:0x7f01b115b5a8>,x.np > 97
 >>final<<
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::TopStatement => Hopsa::PrintEachHopstance
-Copy varstore PrintEachHopstance from #<Hopsa::TopStatement:0x10f9140f0>.
-STREAM "out10"
-
-
-***********   START   *********************
-
-START main chain #EachHopstance(out10<-#<Hopsa::CSVDriver:0x10f9136c8>) (#HopChain (4 statements))
-Merge varstore #EachHopstance(out10<-#<Hopsa::CSVDriver:0x10f9136c8>) from #<Hopsa::TopStatement:0x10f9140f0>.
-Thread #EachHopstance(out10<-#<Hopsa::CSVDriver:0x10f9136c8>) started(#<Thread:0x10f8e5ea8>)
-Thread PrintEachHopstance started(#<Thread:0x10f8781a0>)
-T: #<Thread:0x10f8e5ea8> run
-T: #<Thread:0x10f8781a0> sleep
-EOF.....
-
-THREADS:2
-START final chain #EachHopstance(out10<-#<Hopsa::CSVDriver:0x10f9136c8>) (#HopChain (1 statements))
-FINISHED! #EachHopstance(out10<-#<Hopsa::CSVDriver:0x10f9136c8>)
--------------------------------
-TRUE NIL READED!
-T: #<Thread:0x10f8e5ea8> false
-T: #<Thread:0x10f8781a0> false
-THREADS:0
-
-***********   END     *********************
-
-VAR: out10HopPipe: is 2278058860
-VAR: end_time5000000000000000
-VAR: nodenode-00-00
-VAR: start_time1
-DB Driver load: ./hop_db_cassandra.rb
-OK! (cassandra)
-DB Driver load: ./hop_db_cassandra2d.rb
-OK! (cassandra2d)
 DB Driver load: ./hop_db_dummy.rb
 OK! (dummy)
+DB Driver load: ./hop_db_cassandra.rb
+DB Driver load failed (but ignored): ./hop_db_cassandra.rb (no such file to load -- cassandra/0.8)
+DB Driver load: ./hop_db_cassandra2d.rb
+DB Driver init failed: ./hop_db_cassandra2d.rb (uninitialized constant Hopsa::CassandraHopstance)
 DB Driver load: ./hop_db_mongo.rb
-DB Driver load failed (but ignored): ./hop_db_mongo.rb (no such file to load -- bson)
+OK! (mongo)
 DB Driver load: ./hop_db_split.rb
 OK! (split)
 DB Driver load: ./hop_db_stream.rb
 OK! (stream)
-CONFIG YAML: {"local"=>{"out_format"=>"csv"}, "varmap"=>{"cheb_cpu_user"=>{"keyname"=>"time", "colname"=>"node", "cf"=>"cheb_cpu_user", "type"=>"cassandra2d", "keyspace"=>"zhopsa"}, "testbase"=>{"type"=>"csv"}, "cpu_user"=>{"address"=>"localhost", "push_index"=>true, "type"=>"mongo", "database"=>"test", "collection"=>"mycoll"}, "tasks"=>{"keyname"=>"taskid", "cf"=>"tasks_gra", "push_index"=>true, "type"=>"cassandra", "max_items"=>-1, "keyspace"=>"hopsa"}}, "parmap"=>{"end_time"=>"5000000000000000", "node"=>"node-00-00", "start_time"=>"1"}}
+CONFIG YAML: {"local"=>{"out_format"=>"csv"}, "varmap"=>{"cpu_user"=>{"type"=>"mongo", "push_index"=>true, "collection"=>"mycoll", "address"=>"localhost", "database"=>"test"}, "tasks"=>{"cf"=>"tasks_gra", "type"=>"cassandra", "keyname"=>"taskid", "keyspace"=>"hopsa", "push_index"=>true, "max_items"=>-1}, "testbase"=>{"type"=>"csv"}, "cheb_cpu_user"=>{"cf"=>"cheb_cpu_user", "type"=>"cassandra2d", "keyname"=>"time", "keyspace"=>"zhopsa", "colname"=>"node"}}, "parmap"=>{"end_time"=>"5000000000000000", "node"=>"node-00-00", "start_time"=>"1"}}
 >>Statement NilClass => Hopsa::TopStatement
 NEW EMPTY VARSTORE
 >>Statement Hopsa::TopStatement => Hopsa::EachHopstance
-Copy varstore #EachHopstance(<-) from #<Hopsa::TopStatement:0x102f7b0e0>.
-ADDED STREAM: 2172377060 out10
+Copy varstore #EachHopstance(<-) from #<Hopsa::TopStatement:0x7f6d73547648>.
+ADDED STREAM: 70054031538900 out10
 :: final
 
-EACH: out10,x,#<Hopsa::CSVDriver:0x102f7a6b8>,x.np > 97
+EACH: out10,x,#<Hopsa::CSVDriver:0x7f6d735461d0>,x.np > 97
 >>final<<
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::TopStatement => Hopsa::PrintEachHopstance
-Copy varstore PrintEachHopstance from #<Hopsa::TopStatement:0x102f7b0e0>.
-STREAM "out10"
-
-
-***********   START   *********************
-
-START main chain #EachHopstance(out10<-#<Hopsa::CSVDriver:0x102f7a6b8>) (#HopChain (4 statements))
-Merge varstore #EachHopstance(out10<-#<Hopsa::CSVDriver:0x102f7a6b8>) from #<Hopsa::TopStatement:0x102f7b0e0>.
-Thread #EachHopstance(out10<-#<Hopsa::CSVDriver:0x102f7a6b8>) started(#<Thread:0x102f4ce98>)
-Thread PrintEachHopstance started(#<Thread:0x102eda2f8>)
-T: #<Thread:0x102f4ce98> run
-T: #<Thread:0x102eda2f8> sleep
-EOF.....
-
-THREADS:2
-START final chain #EachHopstance(out10<-#<Hopsa::CSVDriver:0x102f7a6b8>) (#HopChain (1 statements))
-FINISHED! #EachHopstance(out10<-#<Hopsa::CSVDriver:0x102f7a6b8>)
--------------------------------
-TRUE NIL READED!
-T: #<Thread:0x102f4ce98> false
-T: #<Thread:0x102eda2f8> false
-THREADS:0
-
-***********   END     *********************
-
-VAR: out10HopPipe: is 2172363620
-VAR: end_time5000000000000000
-VAR: nodenode-00-00
-VAR: start_time1
-DB Driver load: ./hop_db_cassandra.rb
-OK! (cassandra)
-DB Driver load: ./hop_db_cassandra2d.rb
-OK! (cassandra2d)
 DB Driver load: ./hop_db_dummy.rb
 OK! (dummy)
+DB Driver load: ./hop_db_cassandra.rb
+DB Driver load failed (but ignored): ./hop_db_cassandra.rb (no such file to load -- cassandra/0.8)
+DB Driver load: ./hop_db_cassandra2d.rb
+DB Driver init failed: ./hop_db_cassandra2d.rb (uninitialized constant Hopsa::CassandraHopstance)
 DB Driver load: ./hop_db_mongo.rb
-DB Driver load failed (but ignored): ./hop_db_mongo.rb (no such file to load -- bson)
+OK! (mongo)
 DB Driver load: ./hop_db_split.rb
 OK! (split)
 DB Driver load: ./hop_db_stream.rb
 OK! (stream)
-CONFIG YAML: {"local"=>{"out_format"=>"csv"}, "varmap"=>{"cheb_cpu_user"=>{"keyname"=>"time", "colname"=>"node", "cf"=>"cheb_cpu_user", "type"=>"cassandra2d", "keyspace"=>"zhopsa"}, "testbase"=>{"type"=>"csv"}, "cpu_user"=>{"address"=>"localhost", "push_index"=>true, "type"=>"mongo", "database"=>"test", "collection"=>"mycoll"}, "tasks"=>{"keyname"=>"taskid", "cf"=>"tasks_gra", "push_index"=>true, "type"=>"cassandra", "max_items"=>-1, "keyspace"=>"hopsa"}}, "parmap"=>{"end_time"=>"5000000000000000", "node"=>"node-00-00", "start_time"=>"1"}}
+CONFIG YAML: {"varmap"=>{"cpu_user"=>{"push_index"=>true, "type"=>"mongo", "address"=>"localhost", "collection"=>"mycoll", "database"=>"test"}, "testbase"=>{"type"=>"csv"}, "tasks"=>{"push_index"=>true, "max_items"=>-1, "type"=>"cassandra", "keyspace"=>"hopsa", "cf"=>"tasks_gra", "keyname"=>"taskid"}, "cheb_cpu_user"=>{"colname"=>"node", "type"=>"cassandra2d", "keyspace"=>"zhopsa", "cf"=>"cheb_cpu_user", "keyname"=>"time"}}, "local"=>{"out_format"=>"csv"}, "parmap"=>{"node"=>"node-00-00", "end_time"=>"5000000000000000", "start_time"=>"1"}}
 >>Statement NilClass => Hopsa::TopStatement
 NEW EMPTY VARSTORE
-Comment 
-Comment 
 >>Statement Hopsa::TopStatement => Hopsa::EachHopstance
-Copy varstore #EachHopstance(<-) from #<Hopsa::TopStatement:0x10b43f380>.
-ADDED STREAM: 2241984820 out10
+Copy varstore #EachHopstance(<-) from #<Hopsa::TopStatement:0x7f1722563728>.
+ADDED STREAM: 69868668525380 out10
 :: final
-EACH: out10,x,#<Hopsa::CSVDriver:0x10b43e188>,x.np > 97
+
+EACH: out10,x,#<Hopsa::CSVDriver:0x7f1722562468>,x.np > 97
 >>final<<
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::TopStatement => Hopsa::PrintEachHopstance
-Copy varstore PrintEachHopstance from #<Hopsa::TopStatement:0x10b43f380>.
-STREAM "out10"
-Comment 
-Comment 
-Comment 
-Comment 
-Comment 
-Comment 
-Comment 
-Comment # print out6
-
-
-***********   START   *********************
-
-START main chain #EachHopstance(out10<-#<Hopsa::CSVDriver:0x10b43e188>) (#HopChain (4 statements))
-Merge varstore #EachHopstance(out10<-#<Hopsa::CSVDriver:0x10b43e188>) from #<Hopsa::TopStatement:0x10b43f380>.
-Thread #EachHopstance(out10<-#<Hopsa::CSVDriver:0x10b43e188>) started(#<Thread:0x10b40fa68>)
-Thread PrintEachHopstance started(#<Thread:0x10b39ba50>)
-T: #<Thread:0x10b40fa68> run
-T: #<Thread:0x10b39ba50> sleep
-EOF.....
-
-THREADS:2
-START final chain #EachHopstance(out10<-#<Hopsa::CSVDriver:0x10b43e188>) (#HopChain (1 statements))
-FINISHED! #EachHopstance(out10<-#<Hopsa::CSVDriver:0x10b43e188>)
--------------------------------
-TRUE NIL READED!
-T: #<Thread:0x10b40fa68> false
-T: #<Thread:0x10b39ba50> false
-THREADS:0
-
-***********   END     *********************
-
-VAR: out10HopPipe: is 2241970380
-VAR: end_time5000000000000000
-VAR: nodenode-00-00
-VAR: start_time1
-DB Driver load: ./hop_db_cassandra.rb
-OK! (cassandra)
-DB Driver load: ./hop_db_cassandra2d.rb
-OK! (cassandra2d)
 DB Driver load: ./hop_db_dummy.rb
 OK! (dummy)
+DB Driver load: ./hop_db_cassandra.rb
+DB Driver load failed (but ignored): ./hop_db_cassandra.rb (no such file to load -- cassandra/0.8)
+DB Driver load: ./hop_db_cassandra2d.rb
+DB Driver init failed: ./hop_db_cassandra2d.rb (uninitialized constant Hopsa::CassandraHopstance)
 DB Driver load: ./hop_db_mongo.rb
-DB Driver load failed (but ignored): ./hop_db_mongo.rb (no such file to load -- bson)
+OK! (mongo)
 DB Driver load: ./hop_db_split.rb
 OK! (split)
 DB Driver load: ./hop_db_stream.rb
 OK! (stream)
-CONFIG YAML: {"local"=>{"out_format"=>"csv"}, "varmap"=>{"cheb_cpu_user"=>{"keyname"=>"time", "colname"=>"node", "cf"=>"cheb_cpu_user", "type"=>"cassandra2d", "keyspace"=>"zhopsa"}, "testbase"=>{"type"=>"csv"}, "cpu_user"=>{"address"=>"localhost", "push_index"=>true, "type"=>"mongo", "database"=>"test", "collection"=>"mycoll"}, "tasks"=>{"keyname"=>"taskid", "cf"=>"tasks_gra", "push_index"=>true, "type"=>"cassandra", "max_items"=>-1, "keyspace"=>"hopsa"}}, "parmap"=>{"end_time"=>"5000000000000000", "node"=>"node-00-00", "start_time"=>"1"}}
+CONFIG YAML: {"local"=>{"out_format"=>"csv"}, "varmap"=>{"cpu_user"=>{"database"=>"test", "address"=>"localhost", "collection"=>"mycoll", "push_index"=>true, "type"=>"mongo"}, "tasks"=>{"keyspace"=>"hopsa", "keyname"=>"taskid", "cf"=>"tasks_gra", "push_index"=>true, "max_items"=>-1, "type"=>"cassandra"}, "testbase"=>{"type"=>"csv"}, "cheb_cpu_user"=>{"colname"=>"node", "keyspace"=>"zhopsa", "keyname"=>"time", "cf"=>"cheb_cpu_user", "type"=>"cassandra2d"}}, "parmap"=>{"end_time"=>"5000000000000000", "node"=>"node-00-00", "start_time"=>"1"}}
 >>Statement NilClass => Hopsa::TopStatement
 NEW EMPTY VARSTORE
 >>Statement Hopsa::TopStatement => Hopsa::EachHopstance
-Copy varstore #EachHopstance(<-) from #<Hopsa::TopStatement:0x10145ed20>.
-ADDED STREAM: 2158163460 out10
+Copy varstore #EachHopstance(<-) from #<Hopsa::TopStatement:0x7f27325e5550>.
+ADDED STREAM: 69903162747480 out10
 :: final
 
-EACH: out10,x,#<Hopsa::CSVDriver:0x10145e2f8>,x.np > 97
+EACH: out10,x,#<Hopsa::CSVDriver:0x7f27325e3e08>,x.np > 97
 >>final<<
 >>Statement Hopsa::EachHopstance => Hopsa::LetStatement
 >>Statement Hopsa::EachHopstance => Hopsa::LetStatement
@@ -1573,56 +1278,56 @@ EACH: out10,x,#<Hopsa::CSVDriver:0x10145e2f8>,x.np > 97
 >>Statement Hopsa::EachHopstance => Hopsa::LetStatement
 >>Statement Hopsa::EachHopstance => Hopsa::LetStatement
 >>Statement Hopsa::TopStatement => Hopsa::PrintEachHopstance
-Copy varstore PrintEachHopstance from #<Hopsa::TopStatement:0x10145ed20>.
+Copy varstore PrintEachHopstance from #<Hopsa::TopStatement:0x7f27325e5550>.
 STREAM "out10"
 
 
 ***********   START   *********************
 
-START main chain #EachHopstance(out10<-#<Hopsa::CSVDriver:0x10145e2f8>) (#HopChain (4 statements))
-Merge varstore #EachHopstance(out10<-#<Hopsa::CSVDriver:0x10145e2f8>) from #<Hopsa::TopStatement:0x10145ed20>.
-Thread #EachHopstance(out10<-#<Hopsa::CSVDriver:0x10145e2f8>) started(#<Thread:0x101430ad8>)
-Thread PrintEachHopstance started(#<Thread:0x10136e5a0>)
-T: #<Thread:0x101430ad8> sleep
+START main chain #EachHopstance(out10<-#<Hopsa::CSVDriver:0x7f27325e3e08>) (#HopChain (4 statements))
+Merge varstore #EachHopstance(out10<-#<Hopsa::CSVDriver:0x7f27325e3e08>) from #<Hopsa::TopStatement:0x7f27325e5550>.
+Thread #EachHopstance(out10<-#<Hopsa::CSVDriver:0x7f27325e3e08>) started(#<Thread:0x7f27325a2110>)
+Thread PrintEachHopstance started(#<Thread:0x7f2733079c28>)
+T: #<Thread:0x7f27325a2110> sleep
+T: #<Thread:0x7f2733079c28> sleep
+THREADS:2
 EOF.....
 
-T: #<Thread:0x10136e5a0> sleep
-START final chain #EachHopstance(out10<-#<Hopsa::CSVDriver:0x10145e2f8>) (#HopChain (1 statements))
-THREADS:2
-FINISHED! #EachHopstance(out10<-#<Hopsa::CSVDriver:0x10145e2f8>)
+START final chain #EachHopstance(out10<-#<Hopsa::CSVDriver:0x7f27325e3e08>) (#HopChain (1 statements))
+FINISHED! #EachHopstance(out10<-#<Hopsa::CSVDriver:0x7f27325e3e08>)
 -------------------------------
 TRUE NIL READED!
-T: #<Thread:0x101430ad8> false
-T: #<Thread:0x10136e5a0> false
+T: #<Thread:0x7f27325a2110> false
+T: #<Thread:0x7f2733079c28> false
 THREADS:0
 
 ***********   END     *********************
 
-VAR: out10HopPipe: is 2158150020
+VAR: out10HopPipe: is 69903162725700
 VAR: end_time5000000000000000
-VAR: nodenode-00-00
 VAR: start_time1
-DB Driver load: ./hop_db_cassandra.rb
-OK! (cassandra)
-DB Driver load: ./hop_db_cassandra2d.rb
-OK! (cassandra2d)
+VAR: nodenode-00-00
 DB Driver load: ./hop_db_dummy.rb
 OK! (dummy)
+DB Driver load: ./hop_db_cassandra.rb
+DB Driver load failed (but ignored): ./hop_db_cassandra.rb (no such file to load -- cassandra/0.8)
+DB Driver load: ./hop_db_cassandra2d.rb
+DB Driver init failed: ./hop_db_cassandra2d.rb (uninitialized constant Hopsa::CassandraHopstance)
 DB Driver load: ./hop_db_mongo.rb
-DB Driver load failed (but ignored): ./hop_db_mongo.rb (no such file to load -- bson)
+OK! (mongo)
 DB Driver load: ./hop_db_split.rb
 OK! (split)
 DB Driver load: ./hop_db_stream.rb
 OK! (stream)
-CONFIG YAML: {"local"=>{"out_format"=>"csv"}, "varmap"=>{"cheb_cpu_user"=>{"keyname"=>"time", "colname"=>"node", "cf"=>"cheb_cpu_user", "type"=>"cassandra2d", "keyspace"=>"zhopsa"}, "testbase"=>{"type"=>"csv"}, "cpu_user"=>{"address"=>"localhost", "push_index"=>true, "type"=>"mongo", "database"=>"test", "collection"=>"mycoll"}, "tasks"=>{"keyname"=>"taskid", "cf"=>"tasks_gra", "push_index"=>true, "type"=>"cassandra", "max_items"=>-1, "keyspace"=>"hopsa"}}, "parmap"=>{"end_time"=>"5000000000000000", "node"=>"node-00-00", "start_time"=>"1"}}
+CONFIG YAML: {"parmap"=>{"node"=>"node-00-00", "start_time"=>"1", "end_time"=>"5000000000000000"}, "varmap"=>{"testbase"=>{"type"=>"csv"}, "cheb_cpu_user"=>{"keyspace"=>"zhopsa", "type"=>"cassandra2d", "colname"=>"node", "keyname"=>"time", "cf"=>"cheb_cpu_user"}, "cpu_user"=>{"push_index"=>true, "type"=>"mongo", "address"=>"localhost", "database"=>"test", "collection"=>"mycoll"}, "tasks"=>{"keyspace"=>"hopsa", "max_items"=>-1, "push_index"=>true, "type"=>"cassandra", "keyname"=>"taskid", "cf"=>"tasks_gra"}}, "local"=>{"out_format"=>"csv"}}
 >>Statement NilClass => Hopsa::TopStatement
 NEW EMPTY VARSTORE
 >>Statement Hopsa::TopStatement => Hopsa::EachHopstance
-Copy varstore #EachHopstance(<-) from #<Hopsa::TopStatement:0x10900db60>.
-ADDED STREAM: 2223009060 out10
+Copy varstore #EachHopstance(<-) from #<Hopsa::TopStatement:0x7f39be5907c8>.
+ADDED STREAM: 69942991684520 out10
 :: final
 
-EACH: out10,x,#<Hopsa::CSVDriver:0x10900d138>,x.np > 97
+EACH: out10,x,#<Hopsa::CSVDriver:0x7f39be58f530>,x.np > 97
 >>final<<
 >>Statement Hopsa::EachHopstance => Hopsa::LetStatement
 >>Statement Hopsa::EachHopstance => Hopsa::LetStatement
@@ -1633,92 +1338,32 @@ EACH: out10,x,#<Hopsa::CSVDriver:0x10900d138>,x.np > 97
 >>Statement Hopsa::EachHopstance => Hopsa::LetStatement
 >>Statement Hopsa::EachHopstance => Hopsa::LetStatement
 >>Statement Hopsa::TopStatement => Hopsa::PrintEachHopstance
-Copy varstore PrintEachHopstance from #<Hopsa::TopStatement:0x10900db60>.
+Copy varstore PrintEachHopstance from #<Hopsa::TopStatement:0x7f39be5907c8>.
 STREAM "out10"
 
 
 ***********   START   *********************
 
-START main chain #EachHopstance(out10<-#<Hopsa::CSVDriver:0x10900d138>) (#HopChain (4 statements))
-Merge varstore #EachHopstance(out10<-#<Hopsa::CSVDriver:0x10900d138>) from #<Hopsa::TopStatement:0x10900db60>.
-Thread #EachHopstance(out10<-#<Hopsa::CSVDriver:0x10900d138>) started(#<Thread:0x108fdf918>)
-Thread PrintEachHopstance started(#<Thread:0x108f6e718>)
-T: #<Thread:0x108fdf918> run
-T: #<Thread:0x108f6e718> sleep
+START main chain #EachHopstance(out10<-#<Hopsa::CSVDriver:0x7f39be58f530>) (#HopChain (4 statements))
+Merge varstore #EachHopstance(out10<-#<Hopsa::CSVDriver:0x7f39be58f530>) from #<Hopsa::TopStatement:0x7f39be5907c8>.
+Thread #EachHopstance(out10<-#<Hopsa::CSVDriver:0x7f39be58f530>) started(#<Thread:0x7f39be54d360>)
+Thread PrintEachHopstance started(#<Thread:0x7f39c09a24e0>)
+T: #<Thread:0x7f39be54d360> sleep
 EOF.....
 
+T: #<Thread:0x7f39c09a24e0> sleep
+START final chain #EachHopstance(out10<-#<Hopsa::CSVDriver:0x7f39be58f530>) (#HopChain (1 statements))
 THREADS:2
-START final chain #EachHopstance(out10<-#<Hopsa::CSVDriver:0x10900d138>) (#HopChain (1 statements))
-FINISHED! #EachHopstance(out10<-#<Hopsa::CSVDriver:0x10900d138>)
+FINISHED! #EachHopstance(out10<-#<Hopsa::CSVDriver:0x7f39be58f530>)
 -------------------------------
 TRUE NIL READED!
-T: #<Thread:0x108fdf918> false
-T: #<Thread:0x108f6e718> false
+T: #<Thread:0x7f39be54d360> false
+T: #<Thread:0x7f39c09a24e0> false
 THREADS:0
 
 ***********   END     *********************
 
-VAR: out10HopPipe: is 2222995620
-VAR: end_time5000000000000000
-VAR: nodenode-00-00
+VAR: out10HopPipe: is 69942991662660
 VAR: start_time1
-DB Driver load: ./hop_db_cassandra.rb
-OK! (cassandra)
-DB Driver load: ./hop_db_cassandra2d.rb
-OK! (cassandra2d)
-DB Driver load: ./hop_db_dummy.rb
-OK! (dummy)
-DB Driver load: ./hop_db_mongo.rb
-DB Driver load failed (but ignored): ./hop_db_mongo.rb (no such file to load -- bson)
-DB Driver load: ./hop_db_split.rb
-OK! (split)
-DB Driver load: ./hop_db_stream.rb
-OK! (stream)
-CONFIG YAML: {"local"=>{"out_format"=>"csv"}, "varmap"=>{"cheb_cpu_user"=>{"keyname"=>"time", "colname"=>"node", "cf"=>"cheb_cpu_user", "type"=>"cassandra2d", "keyspace"=>"zhopsa"}, "testbase"=>{"type"=>"csv"}, "cpu_user"=>{"address"=>"localhost", "push_index"=>true, "type"=>"mongo", "database"=>"test", "collection"=>"mycoll"}, "tasks"=>{"keyname"=>"taskid", "cf"=>"tasks_gra", "push_index"=>true, "type"=>"cassandra", "max_items"=>-1, "keyspace"=>"hopsa"}}, "parmap"=>{"end_time"=>"5000000000000000", "node"=>"node-00-00", "start_time"=>"1"}}
->>Statement NilClass => Hopsa::TopStatement
-NEW EMPTY VARSTORE
->>Statement Hopsa::TopStatement => Hopsa::EachHopstance
-Copy varstore #EachHopstance(<-) from #<Hopsa::TopStatement:0x10a9bbbe8>.
-ADDED STREAM: 2236472680 out10
-:: final
-
-EACH: out10,x,#<Hopsa::CSVDriver:0x10a9bb1c0>,x.np > 97
->>final<<
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::EachHopstance => Hopsa::LetStatement
->>Statement Hopsa::TopStatement => Hopsa::PrintEachHopstance
-Copy varstore PrintEachHopstance from #<Hopsa::TopStatement:0x10a9bbbe8>.
-STREAM "out10"
-
-
-***********   START   *********************
-
-START main chain #EachHopstance(out10<-#<Hopsa::CSVDriver:0x10a9bb1c0>) (#HopChain (4 statements))
-Merge varstore #EachHopstance(out10<-#<Hopsa::CSVDriver:0x10a9bb1c0>) from #<Hopsa::TopStatement:0x10a9bbbe8>.
-Thread #EachHopstance(out10<-#<Hopsa::CSVDriver:0x10a9bb1c0>) started(#<Thread:0x10a98d9a0>)
-Thread PrintEachHopstance started(#<Thread:0x10a91c778>)
-T: #<Thread:0x10a98d9a0> run
-T: #<Thread:0x10a91c778> sleep
-EOF.....
-
-THREADS:2
-START final chain #EachHopstance(out10<-#<Hopsa::CSVDriver:0x10a9bb1c0>) (#HopChain (1 statements))
-FINISHED! #EachHopstance(out10<-#<Hopsa::CSVDriver:0x10a9bb1c0>)
--------------------------------
-TRUE NIL READED!
-T: #<Thread:0x10a98d9a0> false
-T: #<Thread:0x10a91c778> false
-THREADS:0
-
-***********   END     *********************
-
-VAR: out10HopPipe: is 2236459240
-VAR: end_time5000000000000000
 VAR: nodenode-00-00
-VAR: start_time1
+VAR: end_time5000000000000000

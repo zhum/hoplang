@@ -56,7 +56,7 @@ module Hopsa
     # initializes the list of functions
     def self.load
       # direct functions
-      direct "int", 1, false, true, lambda{|x| int(x)}
+      direct "int", 1, false, true, lambda{|x| x.to_i}
       direct "min", 2, true, true, lambda{|x,y| [x,y].min}
       direct "max", 2, true, true, lambda{|x,y| [x,y].max}
       direct "incr", 2, false, true, lambda{|x,y| x.to_f+1 }

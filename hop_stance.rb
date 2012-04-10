@@ -332,12 +332,16 @@ module Hopsa
       init_heads(value)
       # print header
       $hoplang_print_mutex.synchronize do
-        puts value['__hoplang_cols_order']
+        puts @@out_heads.join(',')
       end
     end
 
     def init_heads(value)
-      @@out_heads=value['__hoplang_cols_order'].split(/,/)
+      if @opts[:order].to_s != ''
+        @@out_heads=@opts[:order].split(/,/)
+      else
+        @@out_heads=value['__hoplang_cols_order'].split(/,/)
+      end
     end
 
     def print_csv(value)

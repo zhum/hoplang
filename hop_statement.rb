@@ -106,8 +106,11 @@ module Hopsa
         when /^((\S+)\s*=\s*)?bottom\s+(.+)\s+(\S+)\s+in\s+(\S+)\s+by\s+(.*)(\s+where\s+(.*))?/
           return BottomEachHopstance.createNewRetLineNum(parent, text, startLine)
 
-        when /^print(\(\s*\S*\s*\))?\s+(\S.+)/
+        when /^print(\(\s*\S*\s*\))?\s+(.+)/
           return PrintEachHopstance.createNewRetLineNum(parent, text, startLine)
+
+        when /^(\S+)\s*=\s*union\s+(.+)/
+          return UnionHopstance.createNewRetLineNum(parent, text, startLine)
 
         when /^debug\s+(\S+)/
           return DebugStatement.createNewRetLineNum(parent, text, startLine)

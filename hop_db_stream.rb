@@ -6,7 +6,7 @@ module Hopsa
     def self.test(context, source)
       begin
         context.varStore.test_stream(source)
-      rescue VarNotFoud
+      rescue VarNotFound
         return false
       end
       true

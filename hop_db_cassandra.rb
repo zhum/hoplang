@@ -68,6 +68,7 @@ module Hopsa
         @columns_to_long.each do |column_name|
           value[column_name] = to_long value[column_name]
         end
+        value['__hoplang_cols_order'] = @hoplang_cols_order
         value = nil if @max_items != -1 && @items_read > @max_items
       end
       #puts value.inspect
@@ -228,6 +229,8 @@ module Hopsa
 
     # lazy initialization, done on reading first element
     def lazy_init
+      # get columns order
+      @hoplang_cols_order = make_cols_order
       # keys and columns which need conversion to long
       hop_warn "COLUMN: #{@column_family}"
       cfinfo = @cassandra.column_families[@column_family.to_s]
@@ -280,6 +283,16 @@ module Hopsa
     # converts long as string stored in Cassandra into Hoplang string
     def to_long(s)
       Cassandra::Long.new(s).to_i.to_s
+    end
+
+    # makes column order
+    def make_cols_order
+      cfinfo = @cassandra.column_families[@column_family.to_s]
+      heads = [@keyname]
+      cfinfo.column_metadata.each do |column_info|
+        heads << column_info.name
+      end
+      heads.join ', '
     end
 
   end # class Cassandra

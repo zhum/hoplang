@@ -40,10 +40,18 @@ module Hopsa
           end
         end
       end
+      value['__hoplang_cols_order'] = @hoplang_cols_order unless value.nil?
       value = nil if @max_items != -1 && @items_read > @max_items
       hop_warn 'finished cassandra2d iteration' if !value
       return value
     end # readSource
+
+    # makes column order
+    def make_cols_order
+      heads = [@keyname, @colname, @valname]
+      heads.join ', '
+    end
+
   end # Cassandra2dHopstance
 
 end # module Hopsa

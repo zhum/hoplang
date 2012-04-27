@@ -8,6 +8,7 @@ module Hopsa
         # fields titles
         head=@source_in.readline.strip
         @heads=head.split(/\s*,\s*/)
+        @hoplang_cols_order = @heads.join ','
       end
 
       begin
@@ -20,6 +21,7 @@ module Hopsa
           value[h]=datas[i]
           i+=1
         }
+        value['__hoplang_cols_order'] = @hoplang_cols_order
         # now store variable!
         #varStore.set(@current_var, value)
         return value

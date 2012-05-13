@@ -4,21 +4,18 @@ require 'json'
 module Hopsa
   class HopPipe
 
-    attr_reader :pipe_mutex
-#    @pipe_mutex=Mutex.new
-
-    def initialize(copy=nil,old_mutex=nil)
+    def initialize(copy=nil)
       copy ||= File.pipe
       @read_io, @write_io = copy
-      @pipe_mutex= old_mutex.nil? ? Mutex.new : old_mutex
+#      @pipe_mutex= old_mutex.nil? ? Mutex.new : old_mutex
 #      hop_warn "MUTEX: #{@pipe_mutex} / #{old_mutex}"
       @data=''
       @buffer=[]
     end
 
     def hop_clone
-      hop_log "PIPE CLONE: #{@pipe_mutex}"
-      HopsaPipe.new([@read_io,@write_io],@pipe_mutex)
+      hop_log "PIPE CLONE: #{object_id}"
+      HopPipe.new([@read_io,@write_io])
     end
 
     def unpack_data(data)
@@ -34,7 +31,6 @@ module Hopsa
           hop_warn "NULL READED: #{data}"
           return nil
         end
-#        return nil if data == ""
         hop_warn "DATA READ ERROR: #{e.message} (#{data.inspect})\n"+e.backtrace.join("\t\n");
         return nil
       end
@@ -42,11 +38,6 @@ module Hopsa
     end
 
     def get
-
-#      if @read_io.eof?
-#        hop_warn "EOF!"
-#        return unpack_data @data
-#      end
 
       if @buffer.size >0
         return unpack_data @buffer.shift
@@ -56,12 +47,10 @@ module Hopsa
       while true do
         begin
           r=[]
-#          @pipe_mutex.synchronize do
-            r=select([@read_io],[],[],0.01)
-            unless r.nil?
-              new_data=@read_io.sysread(1024)
-            end
-#          end
+          r=select([@read_io],[],[],0.01)
+          unless r.nil?
+            new_data=@read_io.sysread(1024)
+          end
           if r.nil?
             sleep 0.1
             redo
@@ -70,9 +59,8 @@ module Hopsa
 
           ret=nil
 #          hop_warn "GOT DATA0: '#{@data}'"
-          @data.gsub!(/^(.*?)\n~END~RECORD~\n/) {|str|
-            str.gsub!(/\n~END~RECORD~\n/,'')
-#            hop_warn "SHIFT #{str}"
+          @data.gsub!(/^[^\n]+\n/) {|str|
+            str.gsub!(/\n/,'')
             @buffer << str
             ''
           }
@@ -88,8 +76,8 @@ module Hopsa
 
             ret=nil
 #            hop_warn "GOT DATA1: '#{new_data}'"
-            @data.gsub!(/^(.*?)\n~END~RECORD~\n/) {|str|
-              str.gsub!(/\n~END~RECORD~\n/,'')
+            @data.gsub!(/^[^\n]*\n/) {|str|
+              str.gsub!(/\n/,'')
               @buffer << str
               ''
             }
@@ -107,45 +95,19 @@ module Hopsa
       end
 
       return nil
-#      while true do
-#        begin
-#          Thread.critical=true
-##          hop_warn "PIPE: #{@buffer.size}"
-#          if @buffer.nil?
-#            hop_warn "EMTY PIPE"
-#            Thread.critical=false
-#            Thread.pass
-#          else
-#            ret = @buffer.shift
-#            Thread.critical=false
-#            return ret
-#          end
-#        rescue => e
-#          Thread.critical=false
-#          hop_warn "PIPE IS EMPTY. Wait for new values... #{e}"
-#          Thread.pass
-##          sleep 1
-#        end
-#      end
     end
 
     def put(value)
 
 #      hop_warn "PUT #{value.inspect}"
       begin
-#      @pipe_mutex.synchronize do
         @write_io.syswrite(value.to_json+"\n")
-        @write_io.syswrite("~END~RECORD~\n")
-#        @write_io.sync
-#      end
       rescue =>e
         hop_warn "WRITE Exception: #{e.message}"
       end
     end
 
     def empty?
-
-#      return @read_io.eof?
 
       return true if @buffer.nil?
       return @buffer.empty?

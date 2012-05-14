@@ -6,3 +6,4 @@ pkg/*
 *.bak
 *.out
 *.tgz
+*.log

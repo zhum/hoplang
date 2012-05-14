@@ -187,7 +187,7 @@ module Hopsa
     # supported in future
     #PUSH_OPS = ['<', '<=', '>', '>=', '==']
     def create_filter(filter)
-      cfinfo = @db.collection_names
+     # cfinfo = @db.collection_names
 
       db_conv=MongoDBConv.new(@current_var)
 

@@ -1,0 +1,5 @@
+x=each n in plain_test where n.time > 123225
+  yield time=>n.time, node=>n.node, val=>n.value
+end
+
+print x

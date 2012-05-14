@@ -109,7 +109,8 @@ module Hopsa
     end
   end
 
-  class PlainHopstance < EachHopstance
+  class PlainDBDriver < HopsaDBDriver
+
 
     # provides 'each' functionality 
     class IndexedIterator
@@ -173,7 +174,7 @@ module Hopsa
     end # IndexedIterator
 
     def initialize(parent, source, current_var, where)
-      super(parent)
+      super(parent, source, current_var, where)
       cfg = Config['varmap'][source]
       @split_field=cfg['split']
       @root_dir=cfg['dir']
@@ -197,7 +198,7 @@ module Hopsa
       rescue StopIteration
         hop_warn "finished iteration"
       end
-      varStore.set(@current_var, val)
+      return val
     end
 
     private

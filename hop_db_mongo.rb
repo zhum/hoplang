@@ -150,8 +150,6 @@ module Hopsa
     def create_filter(filter)
       return nil,nil if filter.nil?
 
-      cfinfo = @db.collection_names
-
       db_adapter=MongoDBConv.new(@current_var)
 
       db_expr,hop_expr=filter.db_conv(self,db_adapter)

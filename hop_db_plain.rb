@@ -120,27 +120,31 @@ module Hopsa
         @fields=fields
       end
 
-      def get_files(root,ranges)
+      def self.get_files(root,ranges)
         selected=Set.new
         ret=[]
 
         files = Dir.entries(root).map{|f| f =~ /^(?<r>\d+)\.csv$/ ? $~[:r] : nil}.reject{|f| f.nil?}.sort
 
-        return files.map {|f| File.join(root,"#{f}.csv")} if ranges.nil? || ranges.empty?
+        return files.map {|f| File.join(root,"#{f}.csv")} if ranges.nil?
+# || ranges.empty?
 
         ranges.each do |r|
           files.each_with_index do |f,i|
-            selected << i << i-1 if r.include? f.to_f
+            if r.include? f.to_f
+              selected << i
+              selected << i-1 if i-1>=0
+            end
           end
         end
-        
+
         selected.each do |i|
           ret << File.join(root,"#{files[i]}.csv")
         end
+
         hop_warn "Files: #{ret.inspect}"
         ret.sort
       end
-          
 
       def each
         begin

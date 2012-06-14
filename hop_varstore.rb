@@ -164,7 +164,7 @@ module Hopsa
       elsif @cortegeStore.has_key? name
         return @cortegeStore[name]=val
       end
-      raise VarNotFound, "Var not found: #{name} in #{object_id} (#{@ex})\n[#{print_store}]\n"
+      raise VarNotFound, "Var not found(set): #{name} in #{object_id} (#{@ex})\n[#{print_store}]\n"
     end
 
     def get(name)
@@ -176,7 +176,7 @@ module Hopsa
       elsif @streamStore.has_key? name
         return @streamStore[name].get
       end
-      raise VarNotFound, "Var not found: #{name} (#{@ex})\n[#{print_store}]\n"
+      raise VarNotFound, "Var not found(get): #{name} (#{@ex})\n[#{print_store}]\n"
 
     end
 

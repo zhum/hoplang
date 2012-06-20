@@ -1,5 +1,9 @@
 #!/usr/bin/ruby
+# coding: UTF-8
 require 'thread'
+
+Encoding.default_internal = Encoding.default_external = Encoding::UTF_8
+
 Thread.abort_on_exception = true
 
 begin
@@ -29,6 +33,6 @@ begin
 rescue => e
   puts "--"
   puts "Error: #{e.message}"
-  puts 'Trace: '+e.backtrace.join("\t\n");
+  puts 'Trace: '+(e.backtrace.map {|m| m.force_encoding('utf-8')}).join("\t\n");
   exit 100
 end

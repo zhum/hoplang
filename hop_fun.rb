@@ -1,3 +1,4 @@
+# coding: utf-8
 # Hoplang function calls are defined here
 
 module Hopsa

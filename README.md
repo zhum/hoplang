@@ -1,3 +1,5 @@
+[![Checking Status](http://webmail.parallel.ru:8080/job/HopLang/badge/icon)](http://webmail.parallel.ru:8080/job/HopLang/)
+
 # HOPLANG
 
 Revolutional data processing language. World domination toolset component...

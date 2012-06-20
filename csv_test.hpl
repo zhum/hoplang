@@ -1,0 +1,4 @@
+out = each x in m_plain_test where x.time > 120 and x.time <250
+  yield time => x.time, value => x.value
+end
+print out

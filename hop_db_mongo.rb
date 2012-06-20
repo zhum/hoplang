@@ -1,3 +1,4 @@
+# coding: utf-8
 require 'rubygems'
 require 'bson'
 require 'mongo'
@@ -5,9 +6,18 @@ require 'mongo'
 module Hopsa
 
   class MongoDBConv
+    @@do_or_pushing=true
 
-    def initialize(db_var)
+    def initialize(db_var,do_or_push=nil)
       @db_var=db_var
+      do_or_push ||=@@do_or_pushing
+      @do_or_pushing=do_or_push
+    end
+
+    def do_or_pushing(flag=nil)
+      last=@@do_or_pushing
+      @@do_or_pushing=flag unless flag.nil?
+      last
     end
 
     def dv_var
@@ -73,7 +83,8 @@ module Hopsa
     end
 
     def or(ex1,ex2)
-      return {'$or' => [ex1,ex2]}
+      return {'$or' => [ex1,ex2]} if @do_or_pushing
+      return nil
     end
 
     def and(ex1,ex2)
@@ -150,7 +161,7 @@ module Hopsa
     def create_filter(filter)
       return nil,nil if filter.nil?
 
-      db_adapter=MongoDBConv.new(@current_var)
+      db_adapter=MongoDBConv.new(@current_var,false) #do not push 'or'
 
       db_expr,hop_expr=filter.db_conv(self,db_adapter)
     end

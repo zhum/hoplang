@@ -1,3 +1,4 @@
+# coding: utf-8
 require 'citrus'
 
 module Hopsa
@@ -157,9 +158,11 @@ module Hopsa
     end
 
     def db_conv(ex,db)
-      ret_db, ret_hop= self.to_db(ex,db)
-      return db.wrapper(ret_db) unless ret_db.nil?
-      return ret_hop
+      hop_warn "DB_CONV: #{db.inspect} / #{self.class}"
+      ret_db,ret_hop = self.to_db(ex,db)
+      hop_warn "DB_CONV2: #{ret_db.inspect} / #{ret_hop}"
+      return db.wrapper(ret_db),ret_hop unless ret_db.nil?
+      return nil,ret_hop
     end
 
   end # HopExpr
@@ -229,11 +232,11 @@ module Hopsa
       hop_warn "REF=#{@rname}"
       if @rname == db.db_var
         # special case of iterator variable
-        db.value @rname
+        db.value @rname, self
       else
         # just an outer variable, get the value
         begin
-          ex.varStore.get @rname
+          ex.varStore.get @rname, self
         rescue => e
           raise #e.message.chomp+' at line '+@code_line.to_s
         end
@@ -317,7 +320,7 @@ module Hopsa
     def to_db(ex,db)
       #val=@obj.eval(ex)
       begin
-        return db.value(@field_name), ex
+        return db.value(@field_name), self
       rescue => e
         raise #e.message.chomp+' at line '+@code_line.to_s
       end
@@ -367,7 +370,7 @@ module Hopsa
     def to_db(ex,db)
       #val=@expr.eval(ex)
       begin
-        return db.unary(val,@op), ex
+        return db.unary(val,@op), self
       rescue => e
         raise #e.message.chomp+' at line '+@code_line.to_s
       end
@@ -410,7 +413,7 @@ module Hopsa
     def to_db(ex,db)
       #val=eval(ex)
       begin
-        return db.value(@name), ex
+        return db.value(@name), self
       rescue => e
         raise #e.message.chomp+' at line '+@code_line.to_s
       end
@@ -564,22 +567,22 @@ module Hopsa
 
           case op
             when 'and'
-              return db.and(db_val1, db_val2), ex
+              return db.and(db_val1, db_val2), self
             when 'or'
-              return db.or(db_val1, db_val2), ex
+              return db.or(db_val1, db_val2), self
             else
               hop_warn "#{op}: unsupported short-cirtuit binary operator"
-              return nil, ex
+              return nil, self
           end
         else
           # sometnig cannot be calculated
           case op
             when 'or'
               # 8( all DB must be searched...
-              return nil, ex
+              return nil, self
             when 'and'
-              return db_val2, ex if(db_val1.nil?)
-              return db_val1, ex
+              return db_val2, self if(db_val1.nil?)
+              return db_val1, self
             else
               hop_warn "#{op}: unsupported short-cirtuit binary operator"
               return nil, nil
@@ -596,7 +599,7 @@ module Hopsa
 
         #res = res.to_s if @post_conv
 
-        return db_res, res
+        return db_res, self
       end
       rescue => e
         raise #e.message+' at line '+@code_line.to_s

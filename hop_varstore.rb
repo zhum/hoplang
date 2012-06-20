@@ -1,3 +1,4 @@
+# coding: utf-8
 # TODO: deprecate all 'Cortege' things and remove them in future versions
 #require 'pp'
 

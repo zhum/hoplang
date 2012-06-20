@@ -1,3 +1,4 @@
+# coding: utf-8
 require 'pp'
 
 class String
@@ -218,7 +219,7 @@ module Hopsa
           # write EOF to out stream
           do_yield(nil)
         rescue => e
-          hop_warn "Exception in #{self.to_s} (#{@mainChain}: #{e}. "+e.backtrace.join("\t\n")
+          hop_warn "Exception in #{self.to_s} (#{@mainChain}: #{e}. "+e.backtrace.to_s #.join("\r\n")
           raise
         end
       end #~Thread

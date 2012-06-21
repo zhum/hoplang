@@ -31,7 +31,7 @@ end
 
 module Hopsa  # :nodoc:
 
-  class CSVDirDBConv
+  class CsvdirDBConv
 
     def initialize(db_var,split_f)
       @db_var=db_var
@@ -143,7 +143,7 @@ module Hopsa  # :nodoc:
   #   [fields] list of fileds in right order (files are without headers!)
   #
   #
-  class CSVDirDBDriver < EachHopstance
+  class CsvdirDBDriver < EachHopstance
 
     MIN_DELTA=0.000000001
 
@@ -273,7 +273,7 @@ module Hopsa  # :nodoc:
 
     def create_filter(filter)
       hop_warn "FILTER: #{filter.inspect}/#{filter.class}"
-      db_expr,hop_expr = filter.db_conv(self,PlainDBConv.new(@current_var,@split_field))
+      db_expr,hop_expr = filter.db_conv(self,CsvdirDBConv.new(@current_var,@split_field))
       hop_warn "Create_filter: #{db_expr.inspect} / #{hop_expr.inspect}"
       return db_expr,hop_expr
     end

@@ -19,13 +19,13 @@ describe 'CSV driver' do
     ranges=[Range.new(100,200), Range.new(150,250)]
     #h=Hopsa::PlainHopstance.new('.', ranges,'f',nil,nil)
 
-    files=Hopsa::PlainDBDriver::IndexedIterator.get_files(ROOT,ranges)
+    files=Hopsa::CsvdirDBDriver::IndexedIterator.get_files(ROOT,ranges)
     files.should == ["#{ROOT}/100.csv","#{ROOT}/200.csv"]
   end
 
   it 'should load no files if ranges not cover them' do
-    ranges=[Range.new(400,500), Range.new(500,1500)]
-    files=Hopsa::PlainDBDriver::IndexedIterator.get_files(ROOT,ranges)
+    ranges=[Range.new(10,50), Range.new(30,99)]
+    files=Hopsa::CsvdirDBDriver::IndexedIterator.get_files(ROOT,ranges)
     files.should == []
   end
 

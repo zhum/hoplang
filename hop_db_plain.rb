@@ -31,7 +31,7 @@ end
 
 module Hopsa  # :nodoc:
 
-  class PlainDBConv
+  class CSVDirDBConv
 
     def initialize(db_var,split_f)
       @db_var=db_var
@@ -143,7 +143,7 @@ module Hopsa  # :nodoc:
   #   [fields] list of fileds in right order (files are without headers!)
   #
   #
-  class PlainDBDriver < EachHopstance
+  class CSVDirDBDriver < EachHopstance
 
     MIN_DELTA=0.000000001
 

@@ -36,6 +36,7 @@ begin
   require 'yard'
   YARD::Rake::YardocTask.new(:yard) do |t|
     t.options = ['--title', 'Hoplang Documentation']
+    t.files = ['./*.rb']
     if ENV['PRIVATE']
       t.options.concat ['--protected', '--private']
     else

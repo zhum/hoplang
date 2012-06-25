@@ -1,8 +1,8 @@
-# coding: utf-8
+# coding: UTF-8
 require 'rubygems'
 require 'set'
-require 'ccsv'
-gem 'ccsv', '>= 0.2.0'
+require 'hopcsv'
+#gem 'ccsv', '>= 0.2.0'
 
 #
 # Range class extension for implementation of 'range logic'
@@ -155,6 +155,7 @@ module Hopsa  # :nodoc:
         @context=context
         @fields=fields
         @variable=variable
+        @ranges=csv_ranges
       end
 
       #
@@ -171,7 +172,7 @@ module Hopsa  # :nodoc:
 
         files = Dir.entries(root).map{|f| /^(?<r>\d+)\.csv$/.match(f) ? $~[:r] : nil}.reject{|f| f.nil?}.sort
 
-        return files.map {|f| File.join(root,"#{f}.csv")} if ranges.nil?
+        return files.map {|f| File.join(root,"#{f}.csv")} if ranges.nil? || ranges[0].nil?
 
         # do files-ranges mapping
         prev_file=Float::MIN
@@ -179,6 +180,7 @@ module Hopsa  # :nodoc:
           files_range[prev_file]=Range.new(prev_file.to_f,f.to_f-MIN_DELTA)
           prev_file=f
         }
+        p
         files_range[prev_file]=Range.new(prev_file.to_f,Float::MAX)
 
         hop_warn "GET_FILES: #{ranges.inspect}"
@@ -203,7 +205,7 @@ module Hopsa  # :nodoc:
         begin
           @files.each do |file|
             hop_warn "DO FILE: #{file}"
-            ::Ccsv.foreach(file) do |row|
+            ::Hopcsv.foreach(file,';',0,@ranges) do |row|
 #!inline            var=row2var(row)
               var={}
               @fields.each_with_index do |f,i|
@@ -224,7 +226,7 @@ module Hopsa  # :nodoc:
             end
           end
         rescue => e
-          hop_warn "PLAIN_CSV Exception: #{e.message}\n"+e.backtrace.join("\t\n")
+          hop_warn "CSVDir Exception: #{e.message}\n"+e.backtrace.join("\t\n")
         end
         raise StopIteration
 

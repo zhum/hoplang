@@ -23,6 +23,19 @@ class Hash
 end
 
 module Hopsa
+  class HopContext
+    attr :varStore
+
+    def initialize(parent=nil)
+      @varStore=VarStore.new(nil)
+      @varStore.merge(parent.varStore) if parent
+    end
+    
+    def copy(parent)
+      @varStore.merge(parent.varStore) if parent
+    end
+  end
+
   class VarStore
 
     protected

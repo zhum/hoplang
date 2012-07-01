@@ -143,24 +143,26 @@ module Hopsa  # :nodoc:
   #   [fields] list of fileds in right order (files are without headers!)
   #
   #
-  class CsvdirDBDriver < EachHopstance
+  class CsvdirDBDriver < HopsaDBDriver
 
     MIN_DELTA=0.000000001
 
     # provides 'each' functionality 
     class IndexedIterator
-      def initialize(root_dir, csv_ranges, fields, where_clause, context, variable )
+      def initialize(root_dir, csv_ranges, fields, where_clause, context, variable, sep )
         @files=get_files(root_dir,csv_ranges)
         @where_clause = where_clause
         @context=context
         @fields=fields
         @variable=variable
         @ranges=csv_ranges
+        @index=@fields.index(@variable) || 0
+        @csv_separator = sep
       end
 
       #
       # get csv filenames for given list of ranges
-      # 
+      #
       def get_files(root,ranges)
         IndexedIterator.get_files(root,ranges)
       end
@@ -180,7 +182,7 @@ module Hopsa  # :nodoc:
           files_range[prev_file]=Range.new(prev_file.to_f,f.to_f-MIN_DELTA)
           prev_file=f
         }
-        p
+        #p
         files_range[prev_file]=Range.new(prev_file.to_f,Float::MAX)
 
         hop_warn "GET_FILES: #{ranges.inspect}"
@@ -205,7 +207,7 @@ module Hopsa  # :nodoc:
         begin
           @files.each do |file|
             hop_warn "DO FILE: #{file}"
-            ::Hopcsv.foreach(file,';',0,@ranges) do |row|
+            ::Hopcsv.foreach(file,@csv_separator,@index,@ranges) do |row|
 #!inline            var=row2var(row)
               var={}
               @fields.each_with_index do |f,i|
@@ -240,16 +242,18 @@ module Hopsa  # :nodoc:
     # [where]       'where' expression
     #
     def initialize(parent, source, current_var, where)
-      super(parent)
+      super  #(parent)
 
       #hop_warn "------------------------------ #{current_var}"
-      self.varStore.addScalar(current_var)
+      @context=HopContext.new(parent)
+      @context.varStore.addScalar(current_var)
 
       cfg = Config['varmap'][source]
       @split_field=cfg['split']
       @root_dir=cfg['dir']
       @source=source
       @fields=cfg['fields']
+      @separator=cfg['separator'] || ';'
 
       @current_var = current_var
       @where_expr = where.nil? ? nil : HopExpr.parse(where)
@@ -268,14 +272,16 @@ module Hopsa  # :nodoc:
       rescue StopIteration
         hop_warn "finished iteration"
       end
-      varStore.set(@current_var, val)
+      #parent.varStore.set(@current_var, val)
+      return val
     end
 
     private
 
     def create_filter(filter)
       hop_warn "FILTER: #{filter.inspect}/#{filter.class}"
-      db_expr,hop_expr = filter.db_conv(self,CsvdirDBConv.new(@current_var,@split_field))
+      @context.copy(@parent)
+      db_expr,hop_expr = filter.db_conv(@context,CsvdirDBConv.new(@current_var,@split_field))
       hop_warn "Create_filter: #{db_expr.inspect} / #{hop_expr.inspect}"
       return db_expr,hop_expr
     end
@@ -286,7 +292,7 @@ module Hopsa  # :nodoc:
       @csv_ranges,@where_clause = create_filter @where_expr
       @csv_ranges=[@csv_ranges].flatten
       hop_warn "RANGES: #{@csv_ranges.inspect} / #{@where_clause.inspect}"
-      ind_iter = IndexedIterator.new @root_dir, @csv_ranges, @fields, @where_clause, self, @current_var
+      ind_iter = IndexedIterator.new @root_dir, @csv_ranges, @fields, @where_clause, @context, @current_var, @separator
       @enumerator = ind_iter.to_enum(:each)
     end # lazy_init
   end # MongoHopstance

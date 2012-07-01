@@ -236,7 +236,7 @@ module Hopsa
       else
         # just an outer variable, get the value
         begin
-          ex.varStore.get @rname, self
+          ex.varStore.get @rname
         rescue => e
           raise #e.message.chomp+' at line '+@code_line.to_s
         end

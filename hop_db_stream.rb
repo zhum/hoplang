@@ -1,3 +1,4 @@
+# coding: utf-8
 module Hopsa
   # Read several sources...
   class StreamDBDriver <HopsaDBDriver

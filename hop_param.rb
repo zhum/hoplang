@@ -1,3 +1,4 @@
+# coding: utf-8
 module Hopsa
 
   # gets command-line arguments

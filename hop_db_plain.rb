@@ -1,3 +1,4 @@
+# coding utf-8
 require 'rubygems'
 require 'ccsv'
 
@@ -111,8 +112,7 @@ module Hopsa
 
   class PlainDBDriver < HopsaDBDriver
 
-
-    # provides 'each' functionality 
+    # provides 'each' functionality
     class IndexedIterator
       def initialize(root_dir, csv_ranges, fields, where_clause, context )
         @files=get_files(root_dir,csv_ranges)
@@ -148,21 +148,21 @@ module Hopsa
           @files.each do |file|
             hop_warn "DO FILE: #{file}"
             Ccsv.foreach(file) do |row|
-#!inline            var=row2var(row)
+#!inline var=row2var(row)
               var={}
               @fields.each_with_index do |f,i|
                 var[f]=row[i]
               end
               hop_warn "VAR=#{var.inspect}"
 
-#              if @where_clause
-#                hop_warn "WHERE=#{@where_clause.inspect}"
-#                if @where_clause.eval(@context)
-#                  yield var
-#                end
-#              else
+# if @where_clause
+# hop_warn "WHERE=#{@where_clause.inspect}"
+# if @where_clause.eval(@context)
+# yield var
+# end
+# else
                 yield var
-#              end
+# end
             end
           end
         rescue => e

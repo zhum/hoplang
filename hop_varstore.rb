@@ -1,3 +1,4 @@
+# coding: utf-8
 # TODO: deprecate all 'Cortege' things and remove them in future versions
 #require 'pp'
 
@@ -22,6 +23,19 @@ class Hash
 end
 
 module Hopsa
+  class HopContext
+    attr :varStore
+
+    def initialize(parent=nil)
+      @varStore=VarStore.new(nil)
+      @varStore.merge(parent.varStore) if parent
+    end
+    
+    def copy(parent)
+      @varStore.merge(parent.varStore) if parent
+    end
+  end
+
   class VarStore
 
     protected
@@ -164,7 +178,7 @@ module Hopsa
       elsif @cortegeStore.has_key? name
         return @cortegeStore[name]=val
       end
-      raise VarNotFound, "Var not found: #{name} in #{object_id} (#{@ex})\n[#{print_store}]\n"
+      raise VarNotFound, "Var not found(set): #{name} in #{object_id} (#{@ex})\n[#{print_store}]\n"
     end
 
     def get(name)
@@ -176,7 +190,7 @@ module Hopsa
       elsif @streamStore.has_key? name
         return @streamStore[name].get
       end
-      raise VarNotFound, "Var not found: #{name} (#{@ex})\n[#{print_store}]\n"
+      raise VarNotFound, "Var not found(get): #{name} (#{@ex})\n[#{print_store}]\n"
 
     end
 

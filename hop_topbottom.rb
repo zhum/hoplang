@@ -1,3 +1,4 @@
+# coding: utf-8
 module Hopsa
   def insert_up_sorted_pair(sort_value, value, sort_array, array)
     index=-1

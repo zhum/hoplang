@@ -10,7 +10,7 @@ module Hopsa
 
     def initialize(db_var,do_or_push=nil)
       @db_var=db_var
-      do_or_push ||=@@do_or_pushing
+      do_or_push = @@do_or_pushing if do_or_push.nil?
       @do_or_pushing=do_or_push
     end
 
@@ -83,12 +83,27 @@ module Hopsa
     end
 
     def or(ex1,ex2)
-      return {'$or' => [ex1,ex2]} if @do_or_pushing
+      return [ex1,ex2].flatten if @do_or_pushing
       return nil
     end
 
     def and(ex1,ex2)
-      return {'$and' => [ex1,ex2]}
+      [ex1].flatten.each { |e1|
+        begin
+          ret1=e1['$and']
+        rescue 
+          ret1=e1
+        end
+        [ex2].flatten.each { |e2|
+          begin
+            ret2=e2['$and']
+          rescue 
+            ret2=e2
+          end
+          ret << {'$and' => [ret1,ret2]}
+        }
+      }
+      return ret
     end
 
     def value(ex)
@@ -162,6 +177,7 @@ module Hopsa
       return nil,nil if filter.nil?
 
       db_adapter=MongoDBConv.new(@current_var,false) #do not push 'or'
+
       db_expr,hop_expr=filter.db_conv(self,db_adapter)
     end
 
@@ -206,16 +222,18 @@ module Hopsa
           coll = @db[@collection]
 
 #          iter = coll.find(@index_clause)
-          hop_warn "SEARCH: #{@index_clause}"
-          coll.find(@index_clause).each { |row|
-            if @where_clause
-              hop_warn "WHERE=#{@where_clause.inspect}"
-              if @where_clause.eval(@context)
+          hop_warn "SEARCH: #{@index_clause.inspect}"
+          [@index_clause].flatten.each { |index|
+            coll.find(index).each { |row|
+              if @where_clause
+                hop_warn "WHERE=#{@where_clause.inspect}"
+                if @where_clause.eval(@context)
+                  yield to_hash row
+                end
+              else
                 yield to_hash row
               end
-            else
-              yield to_hash row
-            end
+            }
           }
         rescue => e
           hop_warn "MONGO_DB Exception: #{e.message}\n"+e.backtrace.join("\t\n")

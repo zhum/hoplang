@@ -155,7 +155,7 @@ module Hopsa
       @streamvar,@current_var,@source=streamvar,current_var,source
 
       # parse predicate expression, if any
-      @where_expr = where.nil? ? nil : HopExpr.parse_cond where
+      @where_expr = where.nil? ? nil : HopExpr.parse_cond(where)
 
       pos+=1
       hop_warn ":: #{text[pos]}"
@@ -244,7 +244,7 @@ module Hopsa
       line,pos=Statement.nextLine(text,pos)
 
       raise UnexpectedEOF if line.nil?
-      unless(line =~ /print(\(\s*(\S*)\s*\))?\s+(\S.+)/)
+      unless(line =~ /print(\(\s*(\S*)\s*\))?\s*(.*)/)
         raise SyntaxError.new(line)
       end
       opts,src=$1,$3

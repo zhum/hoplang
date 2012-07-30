@@ -572,7 +572,7 @@ module Hopsa
               return db.or(db_val1, db_val2), self
             else
               hop_warn "#{op}: unsupported short-cirtuit binary operator"
-              return nil, ex
+              return nil, self
           end
         else
           # sometnig cannot be calculated

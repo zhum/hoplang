@@ -1,4 +1,4 @@
-# coding: utf-8
+# coding: urf-8
 module Hopsa
   class Config
     CONFIG_FILE='./hopsa.conf'
@@ -6,7 +6,7 @@ module Hopsa
     class << self
       def load
         @data=YAML.load(File.open(CONFIG_FILE, "r"))
-        hop_warn "CONFIG YAML: #{@data.inspect}"
+#        hop_warn "CONFIG YAML: #{@data.inspect}"
       end
 
       def [](key)

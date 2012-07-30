@@ -10,7 +10,7 @@ module Hopsa
 
     def initialize(db_var,do_or_push=nil)
       @db_var=db_var
-      do_or_push ||=@@do_or_pushing
+      do_or_push = @@do_or_pushing if do_or_push.nil?
       @do_or_pushing=do_or_push
     end
 
@@ -162,6 +162,7 @@ module Hopsa
       return nil,nil if filter.nil?
 
       db_adapter=MongoDBConv.new(@current_var,false) #do not push 'or'
+
       db_expr,hop_expr=filter.db_conv(self,db_adapter)
     end
 

@@ -24,5 +24,5 @@ Revolutional data processing language. World domination toolset component...
 hoprun.rb = hoplang executor. e.g.
 
 ```bash
- hoprun.rb vartest.hpl
+ ruby ./hpl vartest.hpl
 ```

@@ -1,4 +1,3 @@
-# coding: utf-8
 require 'cassandra/0.8'
 
 module Hopsa
@@ -230,9 +229,8 @@ module Hopsa
 
     # lazy initialization, done on reading first element
     def lazy_init
-      # get columns order
-      @hoplang_cols_order = make_cols_order
       # keys and columns which need conversion to long
+      @hoplang_cols_order = make_cols_order
       hop_warn "COLUMN: #{@column_family}"
       cfinfo = @cassandra.column_families[@column_family.to_s]
       @columns_to_long = []
@@ -295,6 +293,7 @@ module Hopsa
       end
       heads.join ', '
     end
+
 
   end # class Cassandra
 end # module Hopsa

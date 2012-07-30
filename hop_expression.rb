@@ -158,11 +158,9 @@ module Hopsa
     end
 
     def db_conv(ex,db)
-      hop_warn "DB_CONV: #{db.inspect} / #{self.class}"
-      ret_db,ret_hop = self.to_db(ex,db)
-      hop_warn "DB_CONV2: #{ret_db.inspect} / #{ret_hop}"
+      ret_db, ret_hop= self.to_db(ex,db)
       return db.wrapper(ret_db),ret_hop unless ret_db.nil?
-      return nil,ret_hop
+      return ret_db,ret_hop
     end
 
   end # HopExpr
@@ -567,12 +565,14 @@ module Hopsa
 
           case op
             when 'and'
-              return db.and(db_val1, db_val2), self
+              db_cond=db.and(db_val1, db_val2)
+              db_cond=db_val1 if db_cond.nil?
+              return db_cond, self
             when 'or'
               return db.or(db_val1, db_val2), self
             else
               hop_warn "#{op}: unsupported short-cirtuit binary operator"
-              return nil, self
+              return nil, ex
           end
         else
           # sometnig cannot be calculated

@@ -159,7 +159,7 @@ class CleoInserter
       rescue #Exception 
         print 'line ' + line_num.inspect + ': ' + $!
       end
-#    end
+    end
   end
 end # CleoInserter
 

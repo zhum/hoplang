@@ -52,7 +52,6 @@ module Hopsa
       heads = [@keyname, @colname, @valname]
       heads.join ', '
     end
-
   end # Cassandra2dHopstance
 
 end # module Hopsa

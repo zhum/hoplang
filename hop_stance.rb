@@ -1,4 +1,3 @@
-# coding: utf-8
 require 'pp'
 
 class String
@@ -156,8 +155,7 @@ module Hopsa
       @streamvar,@current_var,@source=streamvar,current_var,source
 
       # parse predicate expression, if any
-      @where_expr = nil
-      @where_expr = HopExpr.parse_cond where if where
+      @where_expr = where.nil? ? nil : HopExpr.parse_cond where
 
       pos+=1
       hop_warn ":: #{text[pos]}"
@@ -210,9 +208,7 @@ module Hopsa
 
             # process body
             varStore.set(@current_var, value)
-            if @where_expr.nil? || @where_expr.eval(self)
-              @mainChain.hop
-            end
+            @mainChain.hop if @where_expr.nil? || @where_expr.eval(self)
           end
           # process final section
           hop_warn "START final chain #{self.to_s} (#{@finalChain})"
@@ -222,7 +218,7 @@ module Hopsa
           # write EOF to out stream
           do_yield(nil)
         rescue => e
-          hop_warn "Exception in #{self.to_s} (#{@mainChain}: #{e}. "+e.backtrace.to_s #.join("\r\n")
+          hop_warn "Exception in #{self.to_s} (#{@mainChain}: #{e}. "+e.backtrace.join("\t\n")
           raise
         end
       end #~Thread
@@ -248,7 +244,7 @@ module Hopsa
       line,pos=Statement.nextLine(text,pos)
 
       raise UnexpectedEOF if line.nil?
-      unless(line =~ /print(\(\s*(\S*)\s*\))?\s+(.+)/)
+      unless(line =~ /print(\(\s*(\S*)\s*\))?\s+(\S.+)/)
         raise SyntaxError.new(line)
       end
       opts,src=$1,$3
@@ -357,70 +353,70 @@ module Hopsa
     end
   end
 
-  # a union of several streams
-  # syntax: union s1, ..., sN
-  # the result is in any order
-  class UnionHopstance < EachHopstance
+# a union of several streams
+# syntax: union s1, ..., sN
+# the result is in any order
+class UnionHopstance < EachHopstance
 
-    # read next source line and write it into @source_var
-    def self.createNewRetLineNum(parent,text,pos)
-      line,pos=Statement.nextLine(text,pos)
+  # read next source line and write it into @source_var
+  def self.createNewRetLineNum(parent,text,pos)
+    line,pos=Statement.nextLine(text,pos)
 
-      raise UnexpectedEOF if line.nil?
-      unless(line =~  /^(\S+)\s*=\s*union\s+(.+)/)
-        raise SyntaxError.new(line)
+    raise UnexpectedEOF if line.nil?
+    unless(line =~  /^(\S+)\s*=\s*union\s+(.+)/)
+      raise SyntaxError.new(line)
+    end
+    streamvar, src = $1, $2
+
+    sources = src.split(/\s*,\s*/)
+    hopstance=UnionHopstance.new(parent)
+    source_drivers=[]
+    sources.each do |s|
+      source_drivers << initSourceDriver(parent, s, 'none', nil)
+    end
+    parent.varStore.addStream(streamvar)
+    hopstance.varStore.copyStreamFromParent(streamvar,parent.varStore)
+    return hopstance.init(streamvar, source_drivers), pos + 1
+  end
+
+  def init(streamvar, sources)
+    @streamvar = streamvar
+    @sources = sources
+    @index = 0
+    self
+  end
+
+  def to_s
+    'UnionHopstance'
+  end
+
+  def hop
+    new_thread  "#{self.to_s}" do
+      while not (self.readSource).nil?
       end
-      streamvar, src = $1, $2
+    end
+  end
 
-      sources = src.split(/\s*,\s*/)
-      hopstance=UnionHopstance.new(parent)
-      source_drivers=[]
-      sources.each do |s|
-        source_drivers << initSourceDriver(parent, s, 'none', nil)
+  def readSource
+    # read current source. switch to next if closed
+    while (value=@sources[@index].readSource).nil?
+      @sources.delete_at(@index)
+      #return nil if @sources.size==0
+      if @sources.size == 0
+        value = nil
+        break
       end
-      parent.varStore.addStream(streamvar)
-      hopstance.varStore.copyStreamFromParent(streamvar,parent.varStore)
-      return hopstance.init(streamvar, source_drivers), pos + 1
+      next_index
     end
+    do_yield value
+    return value
+  end
 
-    def init(streamvar, sources)
-      @streamvar = streamvar
-      @sources = sources
-      @index = 0
-      self
-    end
-
-    def to_s
-      'UnionHopstance'
-    end
-
-    def hop
-      new_thread  "#{self.to_s}" do
-        while not (self.readSource).nil?
-        end
-      end
-    end
-
-    def readSource
-      # read current source. switch to next if closed
-      while (value=@sources[@index].readSource).nil?
-        @sources.delete_at(@index)
-        #return nil if @sources.size==0
-        if @sources.size == 0
-          value = nil
-          break
-        end
-        next_index
-      end
-      do_yield value
-      return value
-    end
-
-    def next_index
-      @index += 1
-      @index= 0 if @index >= @sources.size
-    end
-  end # UnionHopstance
+  def next_index
+    @index += 1
+    @index= 0 if @index >= @sources.size
+  end
+end # UnionHopstance
 
   # a special hopstance which processes elements in strict sequential order
   # can be used, for instance, for easy implementation of accumulators

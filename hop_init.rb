@@ -10,6 +10,8 @@ module Hopsa
   def self.db_load
     # load database drivers
     Dir['./hop_db_*.rb'].each do |db|
+		# temporary disable cassandra
+		#	next if db =~ /cassandra/
       hop_warn "DB Driver load: #{db.to_s}"
       begin
         require db.to_s

@@ -88,22 +88,27 @@ module Hopsa
     end
 
     def and(ex1,ex2)
-      [ex1].flatten.each { |e1|
-        begin
-          ret1=e1['$and']
-        rescue 
-          ret1=e1
-        end
-        [ex2].flatten.each { |e2|
+      ret=[]
+      begin
+        [ex1].flatten.each { |e1|
           begin
-            ret2=e2['$and']
-          rescue 
-            ret2=e2
+            ret1=e1['$and'] || e1
+          rescue
+            ret1=e1
           end
-          ret << {'$and' => [ret1,ret2]}
+          [ex2].flatten.each { |e2|
+            begin
+              ret2=e2['$and'] || e2
+            rescue 
+              ret2=e2
+            end
+            ret << {'$and' => [ret1,ret2].flatten}
+          }
         }
-      }
-      return ret
+      rescue
+        ret=nil
+      end
+      return ret.flatten
     end
 
     def value(ex)

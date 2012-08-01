@@ -34,5 +34,5 @@ gem install bundler
 rbenv rehash
 
 git clone http://github.com/zhum/hoplang
-bundle install
+(cd hoplang; bundle install)
 

@@ -151,6 +151,11 @@ module Hopsa
         when /^param\s+(\w+)\s*(?:=\s*(\S+))/
           name=$~[1]
           val=$~[2]
+          if val[0] == "'"
+            val.gsub!(/^\'|\'$/, '')
+          elsif  val[0] == '"'
+            val.gsub!(/^\"|\"$/, '')
+          end
           if Config.varmap.has_key? name
             # just update value, if any
             parent.varStore.set(name, val) if val && !Param.cmd_arg_val(name)

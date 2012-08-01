@@ -77,7 +77,7 @@ module Hopsa
       if(parent.varStore.test_stream(source)) then
         source_stream=StreamDBDriver.new(parent, source, current_var, where)
       elsif(type=='csv') then
-        source_stream=MyDatabaseEachHopstance.new(parent,source)
+        source_stream=CSVDriver.new(parent,source, current_var, where)
       elsif(@@hoplang_databases.include? type)
         typename=(type.capitalize+'DBDriver').to_class
         source_stream = typename.new parent, source, current_var, where

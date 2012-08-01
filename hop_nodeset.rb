@@ -68,9 +68,14 @@ module Hopsa
     end
 
     # matches a node against a nodeset
-    def match(node)
+    def match(node_str)
       # TODO: match against a regexp
-      @root.match node
+      @root.match node_str
+    end
+
+    # matches a node against a nodeset regexp
+    def match_regexp(node_str)
+      regexp.match node_str
     end
 
     # ranges/match values for the set of nodes

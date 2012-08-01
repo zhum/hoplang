@@ -533,7 +533,7 @@ module Hopsa
           when 'xor'
           res = val1 ^ val2
           when 'ins'
-          res = inset val1, val2
+          res = NodeSet.inset val1, val2
           else
           hop_warn "#{@op}: unsupported binary operator"
           return nil

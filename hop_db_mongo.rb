@@ -20,7 +20,7 @@ module Hopsa
       last
     end
 
-    def dv_var
+    def db_var
       @db_var
     end
 
@@ -30,9 +30,11 @@ module Hopsa
     end
 
     OPS={'>' => '$gt', '<' => '$lt', '<=' => '$lte', '>=' => '$gte',
-         '!=' => '$ne'}
+         '!=' => '$ne', '.<' => '$lt', '.>' => '$gt', '.<=' => '$lte', 
+        '.>' => '$gte'}
     REV_OPS={'>' => '$lt', '<' => '$gt', '<=' => '$gte', '>=' => '$lte',
-         '!=' => '$ne'}
+         '!=' => '$ne', '.<' => '$gt', '.>' => '$lt', '.<=' => '$gte', 
+      '.>=' => '$lte'}
 
     def binary(ex1,ex2,op)
 
@@ -58,7 +60,7 @@ module Hopsa
           # not field name...
           return nil
         end
-      when /^<|>|(>=)|(<=)|(!=)$/
+      when /^\.?[<>]=?|!=$/
         if ex1 =~ /^\w+$/
           # first argument = 'dbname.field'
           left=ex1
@@ -75,20 +77,43 @@ module Hopsa
 
         #hop_warn "RET: (this.#{left} #{op2} #{ex2})"
         return {left => {op2 => ex2}}
-      when '&' # string catenation
+      when '&' # string concatenation
         return nil
+
+      #when 'ins' # nodeset membership
+      #  return inset ex1, ex2
 
       end
       return nil
     end
 
-    def or(ex1,ex2)
-      return {'$or' => [ex1,ex2]} if @do_or_pushing
+    # nodeset conversion, ex1 is variable name, ex2 is nodeset
+    def inset(ex1, ex2)
+      return nil unless ex1 =~ /^\w+$/
+      # puts 'nodeset pushed into MongoDB'
+      ranges = (NodeSet.by_str ex2).ranges
+      and_exprs = ranges.map do |r|
+        case r 
+        when String
+          {ex1 => {'$eq' => r}}
+        when Range
+          {'$and' => [{ex1 => {'$gte' => r}}, {ex1 => {'$lte' => r}}]}
+        end
+      end
+      if and_exprs.count == 1
+        and_exprs[0]
+      else
+        {'$or' => and_exprs}
+      end
+    end
+
+    def or(ex1, ex2)
+      return {'$or' => [ex1, ex2]} if @do_or_pushing
       return nil
     end
 
-    def and(ex1,ex2)
-      return {'$and' => [ex1,ex2]}
+    def and(ex1, ex2)
+      return {'$and' => [ex1, ex2]}
     end
 
     def value(ex)
@@ -161,9 +186,9 @@ module Hopsa
     def create_filter(filter)
       return nil,nil if filter.nil?
 
-      db_adapter=MongoDBConv.new(@current_var,false) #do not push 'or'
+      db_adapter = MongoDBConv.new @current_var, false #do not push 'or'
 
-      db_expr,hop_expr=filter.db_conv(self,db_adapter)
+      db_expr,hop_expr = filter.db_conv @parent, db_adapter 
     end
 
     # lazy initialization, done on reading first element

@@ -69,13 +69,12 @@ module Hopsa
 
     # matches a node against a nodeset
     def match(node_str)
-      # TODO: match against a regexp
       @root.match node_str
     end
 
-    # matches a node against a nodeset regexp
-    def match_regexp(node_str)
-      regexp.match node_str
+    # count of nodes inside a nodeset
+    def count
+      @root.count
     end
 
     # ranges/match values for the set of nodes
@@ -87,6 +86,11 @@ module Hopsa
           r[0] .. r[1]
         end
       end
+    end
+
+    # nodes which belong to the nodeset
+    def nodes
+      @root.node_list.map{|n| n[0]}
     end
   end # class NodeSet
 
@@ -108,9 +112,10 @@ module Hopsa
   # match the node
   # to_s - a string equivalent of the nodeset, usually a string from which it
   # was parsed
-  # length - the length which the set node matches; in choice operators, all
+  # str_length - the length which the set node matches; in choice operators, all
   # lengths for choice subnodes must be the same, so that the length is
   # well-defined
+  # count - number of nodes in the set
   # node_list - a list of nodes, such that comparing the test node against each
   # node in the list, and then OR-ing the result of comparison is the same as
   # matching against a nodeset; 
@@ -124,11 +129,11 @@ module Hopsa
   # base class for nodeset nodes
   class NodeSetNode
     # length of the string portion to match
-    attr_reader :length
+    attr_reader :str_length
     # start of the substring to match; for use by parent expression only
     attr_accessor :str_start
-    def initialize(length) 
-      @length = length
+    def initialize(str_length) 
+      @str_length = str_length
     end
     def match(node_str)
       throw Error
@@ -136,11 +141,14 @@ module Hopsa
     def regexp 
       throw Error
     end
+    def count
+      throw Error
+    end
     def to_s 
       throw Error
     end
-    def length 
-      @length
+    def str_length 
+      @str_length
     end
     def node_list
       throw Error
@@ -159,6 +167,9 @@ module Hopsa
     end
     def match(node_str)
       node_str == @str
+    end
+    def count
+      1
     end
     def regexp 
       @str
@@ -188,8 +199,11 @@ module Hopsa
       @finish_num = @finish.to_i
     end
     def match(node_str)
-      node_str.length == @length && node_str =~ /^\d+$/ && 
+      node_str.length == @str_length && node_str =~ /^\d+$/ && 
         node_str.to_i >= @start_num && node_str.to_i <= @finish_num
+    end
+    def count
+      @finish_num - @start_num + 1
     end
     # 2-8 => [2-8]
     # 02-08 => 0[2-8]
@@ -265,8 +279,8 @@ module Hopsa
   # intermediate class for inner set nodes
   class InnerSetNode < NodeSetNode
     attr_reader :children
-    def initialize(children,length)
-      super length
+    def initialize(children,str_length)
+      super str_length
       @children = children
     end
   end
@@ -275,22 +289,25 @@ module Hopsa
   class CatSetNode < InnerSetNode
     # start of the string portion to match against a child
     def initialize(children)
-      super children, children.map{|n| n.length}.reduce(:+)
+      super children, children.map{|n| n.str_length}.reduce(:+)
       str_start = 0
       @children.each do |n|
         n.str_start = str_start
-        str_start += n.length
+        str_start += n.str_length
       end
     end
     def match(node_str)
-      return false unless node_str.length == @length
-      @children.map{|n| n.match node_str[n.str_start, n.length]}.reduce(:&)
+      return false unless node_str.length == @str_length
+      @children.map{|n| n.match node_str[n.str_start, n.str_length]}.reduce :&
+    end
+    def count
+      @children.map{|n| n.count}.reduce :*
     end
     def regexp
-      @children.map{|n| n.regexp}.reduce(:+)
+      @children.map{|n| n.regexp}.reduce :+
     end
     def to_s
-      @children.map{|n| n.to_s}.reduce(:+)
+      @children.map{|n| n.to_s}.reduce :+
     end
     def node_list
       list = []
@@ -333,11 +350,14 @@ module Hopsa
   # a node at which choice is performed
   class ChoiceSetNode < InnerSetNode
     def initialize(children) 
-      super children, children[0].length
-      throw Error unless children.map{|n| n.length == @length}.reduce(:&)
+      super children, children[0].str_length
+      throw Error unless children.map{|n| n.str_length == @str_length}.reduce :&
     end
     def match(node_str)
-      children.map {|n| n.match node_str}.reduce(:|)
+      children.map {|n| n.match node_str}.reduce :|
+    end
+    def count
+      @children.map{|n| n.count}.reduce :+
     end
     def regexp
       crs = children.map{|n| n.regexp}

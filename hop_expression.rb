@@ -234,7 +234,8 @@ module Hopsa
       else
         # just an outer variable, get the value
         begin
-          ex.varStore.get @rname
+          val = ex.varStore.get @rname
+          val
         rescue => e
           raise #e.message.chomp+' at line '+@code_line.to_s
         end
@@ -590,6 +591,11 @@ module Hopsa
               return nil, nil
           end
         end #if calculated
+      elsif op == 'ins'
+        # nodeset
+        res = nil
+        db_res = db.inset db_val1, db_val2
+        return db_res, self
       else
         #full evaluation
         #if @pre_conv

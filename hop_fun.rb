@@ -2,7 +2,31 @@
 
 module Hopsa
 
-  # implementation of specific hopsa functions
+  # implementation of specific hopsa functions - for functions whose
+  # implementation takes more than 1 line
+  class HopsaFuns 
+    # converts a string into a date which is the number of microseconds since
+    # epoch for the specific local date (Time.local is used in ruby code)
+    def self.date(str)
+      case str.strip
+      when /(?<y>(?:\d\d)?\d\d)[-\.\/](?<m>\d?\d)[-\.\/](?<d>\d?\d)\s+
+            (?:(?<ho>\d\d):(?<mi>\d\d))?/x
+        t = nil
+        y = $~[:y].to_i
+        y += 2000 if y < 100
+        if $~[:ho]
+          t = Time.local y, $~[:m], $~[:d], $~[:ho], $~[:mi]
+        else
+          t = Time.local y, $~[:m], $~[:d]
+        end
+        t.tv_sec * 1000000 + t.tv_usec
+      else
+        hop_warn "#{str}: not a valid date; format is [yy]yy-mm-dd HH:MM" + 
+          " .-/ separators allowed in date part"
+        throw Error
+      end
+    end
+  end
 #  class HopsaFuns
 #    def self.int x
 #      x.to_i
@@ -60,6 +84,7 @@ module Hopsa
       direct "min", 2, true, true, lambda{|x,y| [x,y].min}
       direct "max", 2, true, true, lambda{|x,y| [x,y].max}
       direct "incr", 2, false, true, lambda{|x,y| x.to_f+1 }
+      direct "date", 1, false, true, lambda{|s| HopsaFuns.date s}
       # aggregate functions
       agg "min", "min", "1e300"
       agg "max", "max", "-1e300"

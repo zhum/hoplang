@@ -1,3 +1,4 @@
+# encoding: utf-8
 # nodesets, compact representation of the sets of nodes
 
 # nodeset syntax (no spaces allowed in between):

@@ -1,16 +1,16 @@
 # -*- encoding: utf-8 -*-
 $:.push File.expand_path("../lib", __FILE__)
-require "HOPSA/version"
+require "./hop_version.rb"
 
 Gem::Specification.new do |s|
   s.name        = "HOPSA"
   s.version     = Hopsa::VERSION
   s.platform    = Gem::Platform::RUBY
-  s.authors     = ["TODO: Write your name"]
-  s.email       = ["TODO: Write your email address"]
-  s.homepage    = ""
-  s.summary     = %q{TODO: Write a gem summary}
-  s.description = %q{TODO: Write a gem description}
+  s.authors     = ["Andrey Adinetz, Sergey Zhumatiy"]
+  s.email       = ["adinetz@gmail.com,serg@parallle.ru"]
+  s.homepage    = "http://hopsa.parallel.ru/"
+  s.summary     = %q{Language for data streams processing}
+  s.description = %q{Use "./hpl" to run interpreter. See http://github.com/zhum/hoplang wiki for syntax.}
 
   s.rubyforge_project = "HOPSA"
 

@@ -16,12 +16,13 @@ class CsvDirWriter
     @root_dir=cfg['dir']
     @fields=cfg['fields']
     @saved_count=0
+    @file=nil
 
     $logger.warn cfg.inspect
 	end
 
   def put(data)
-    @filed_value = data[@split_field]
+    @field_value = data[@split_field.to_sym].to_i.to_s
 
     if @saved_count>MAX_SAVE_COUNT
       @file.close
@@ -29,7 +30,7 @@ class CsvDirWriter
     end
 
     if @file.nil?
-      @file=File::open("#{@root_dir}/#{@filed_value}.csv",'a')
+      @file=File::open("#{@root_dir}/#{@field_value}.csv",'a')
     end
 
     @file.puts @fields.map{ |index| data[index] }.join ';'

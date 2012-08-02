@@ -168,6 +168,8 @@ module Hopsa
       @push_index = true
       @push_index = false if cfg['push_index'] && cfg['push_index'] == 'false'
       @enumerator = nil
+      @context=HopContext.new(parent)
+      @context.varStore.addScalar(current_var)
     end
 
     def readSource
@@ -201,9 +203,9 @@ module Hopsa
     def create_filter(filter)
       return nil,nil if filter.nil?
 
-      db_adapter = MongoDBConv.new @current_var, false #do not push 'or'
+      db_adapter = MongoDBConv.new(@current_var, true) #do push 'or'
 
-      db_expr,hop_expr = filter.db_conv @parent, db_adapter 
+      db_expr,hop_expr = filter.db_conv(@parent, db_adapter) 
     end
 
     # lazy initialization, done on reading first element
@@ -212,11 +214,11 @@ module Hopsa
       @index_clause,@where_clause = create_filter @where_expression
       hop_warn "INDEX: #{@index_clause.inspect}"
       if @index_clause and @push_index
-        ind_iter = IndexedIterator.new @db, @collection, @index_clause, @where_clause ,self
+        ind_iter = IndexedIterator.new(@db, @collection, @index_clause, @where_clause, @context, @current_var)
         @enumerator = ind_iter.to_enum(:each)
         hop_warn "index pushed to Mongo #{@where_expression.to_s}"
       else
-        ind_iter = IndexedIterator.new @db, @collection, nil, @where_clause ,self
+        ind_iter = IndexedIterator.new(@db, @collection, nil, @where_clause, @context, @current_var)
         @enumerator = ind_iter.to_enum(:each)
         hop_warn 'index not pushed to Mongo' if @where_expression
       end
@@ -226,12 +228,13 @@ module Hopsa
 
     # provides 'each' functionality for Database request with indices
     class IndexedIterator
-      def initialize(db, cf, index_clause, where_clause, context)
+      def initialize(db, cf, index_clause, where_clause, context, current_var)
         @db = db
         @collection = cf
         @index_clause = index_clause
         @where_clause = where_clause
         @context=context
+        @current_var=current_var
       end
 
       def to_hash(h)

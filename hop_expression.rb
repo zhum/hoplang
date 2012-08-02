@@ -615,7 +615,7 @@ module Hopsa
     end # to_db
 
     def to_s
-      '('+@expr1.to_s+@op.to_s+@expr2.to_s+')'
+      "(#{@expr1} #{@op} #{@expr2})"
     end
   end # BinaryExpr
 

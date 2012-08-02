@@ -6,19 +6,19 @@ require 'mongo'
 module Hopsa
 
   class MongoDBConv
-    @@do_or_pushing=true
+    #@@do_or_pushing=true
 
     def initialize(db_var,do_or_push=nil)
       @db_var=db_var
-      do_or_push = @@do_or_pushing if do_or_push.nil?
-      @do_or_pushing=do_or_push
+      #do_or_push = @@do_or_pushing if do_or_push.nil?
+      #@do_or_pushing=do_or_push
     end
 
-    def do_or_pushing(flag=nil)
-      last=@@do_or_pushing
-      @@do_or_pushing=flag unless flag.nil?
-      last
-    end
+#    def do_or_pushing(flag=nil)
+#      last=@@do_or_pushing
+#      @@do_or_pushing=flag unless flag.nil?
+#      last
+#    end
 
     def db_var
       @db_var
@@ -97,23 +97,39 @@ module Hopsa
         when String
           {ex1 => {'$eq' => r}}
         when Range
-          {'$and' => [{ex1 => {'$gte' => r}}, {ex1 => {'$lte' => r}}]}
+          {ex1 => [{'$gte' => r.min}, {'$lte' => r.max}]}
         end
       end
-      if and_exprs.count == 1
-        and_exprs[0]
-      else
-        {'$or' => and_exprs}
-      end
+      [and_exprs].flatten
     end
 
-    def or(ex1, ex2)
-      return {'$or' => [ex1, ex2]} if @do_or_pushing
+    def or(ex1,ex2)
+      return [ex1,ex2].flatten
       return nil
     end
 
-    def and(ex1, ex2)
-      return {'$and' => [ex1, ex2]}
+    def and(ex1,ex2)
+      ret=[]
+      begin
+        [ex1].flatten.each { |e1|
+          begin
+            ret1=e1['$and'] || e1
+          rescue
+            ret1=e1
+          end
+          [ex2].flatten.each { |e2|
+            begin
+              ret2=e2['$and'] || e2
+            rescue 
+              ret2=e2
+            end
+            ret << {'$and' => [ret1,ret2].flatten}
+          }
+        }
+      rescue
+        ret=nil
+      end
+      return ret.flatten
     end
 
     def value(ex)
@@ -232,16 +248,19 @@ module Hopsa
           coll = @db[@collection]
 
 #          iter = coll.find(@index_clause)
-          hop_warn "SEARCH: #{@index_clause}"
-          coll.find(@index_clause).each { |row|
-            if @where_clause
-              hop_warn "WHERE=#{@where_clause.inspect}"
-              if @where_clause.eval(@context)
+          hop_warn "SEARCH: #{@index_clause.inspect}"
+          [@index_clause].flatten.each { |index|
+            hop_warn "Search iteration=#{@index.inspect}"
+            coll.find(index).each { |row|
+              if @where_clause
+                hop_warn "WHERE #{@where_clause.inspect}"
+                if @where_clause.eval(@context)
+                  yield to_hash row
+                end
+              else
                 yield to_hash row
               end
-            else
-              yield to_hash row
-            end
+            }
           }
         rescue => e
           hop_warn "MONGO_DB Exception: #{e.message}\n"+e.backtrace.join("\t\n")

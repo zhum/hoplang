@@ -35,4 +35,3 @@ rbenv rehash
 
 git clone http://github.com/zhum/hoplang
 (cd hoplang; bundle install)
-

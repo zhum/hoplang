@@ -90,14 +90,13 @@ module Hopsa
     # nodeset conversion, ex1 is variable name, ex2 is nodeset
     def inset(ex1, ex2)
       return nil unless ex1 =~ /^\w+$/
-      # puts 'nodeset pushed into MongoDB'
       ranges = (NodeSet.by_str ex2).ranges
       and_exprs = ranges.map do |r|
         case r 
         when String
           {ex1 => {'$eq' => r}}
         when Range
-          {'$and' => [{ex1 => {'$gte' => r}}, {ex1 => {'$lte' => r}}]}
+          {'$and' => [{ex1 => {'$gte' => r.begin}}, {ex1 => {'$lte' => r.end}}]}
         end
       end
       if and_exprs.count == 1
@@ -230,10 +229,10 @@ module Hopsa
       def each
         begin
           coll = @db[@collection]
-
-#          iter = coll.find(@index_clause)
+#         iter = coll.find(@index_clause)
           hop_warn "SEARCH: #{@index_clause}"
           coll.find(@index_clause).each { |row|
+            puts 'mongodb row'
             if @where_clause
               hop_warn "WHERE=#{@where_clause.inspect}"
               if @where_clause.eval(@context)

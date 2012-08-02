@@ -90,7 +90,6 @@ module Hopsa
     # nodeset conversion, ex1 is variable name, ex2 is nodeset
     def inset(ex1, ex2)
       return nil unless ex1 =~ /^\w+$/
-      # puts 'nodeset pushed into MongoDB'
       ranges = (NodeSet.by_str ex2).ranges
       and_exprs = ranges.map do |r|
         case r 
@@ -246,7 +245,6 @@ module Hopsa
       def each
         begin
           coll = @db[@collection]
-
 #          iter = coll.find(@index_clause)
           hop_warn "SEARCH: #{@index_clause.inspect}"
           [@index_clause].flatten.each { |index|

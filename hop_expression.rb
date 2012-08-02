@@ -40,17 +40,17 @@ module Hopsa
     # parses expression, returns HopExpr for top expression
     # in case of error, returns nil and prints error type and location
     def self.parse(line)
-      HopExprGram.parse(line.to_s, :root => :expr).value
+      (HopExprGram.parse line.to_s, :root => :expr).value
     end
 
     # parses a conditional expression, such as allowed in while, if and where
     def self.parse_cond(line)
-      HopExprGram.parse(line.to_s, :root => :condexpr).value
+      (HopExprGram.parse line.to_s, :root => :condexpr).value
     end
 
     # parses a list of expressions
     def self.parse_list(line)
-      HopExprGram.parse(line, :root => :topexprlist).value
+      (HopExprGram.parse line, :root => :topexprlist).value
     end
 
     # number of aggregation variables created
@@ -131,7 +131,7 @@ module Hopsa
     end
 
     def initialize(*args)
-      @code_line=Statement.current_line || 0
+      @code_line = Statement.current_line || 0
     end
 
     # returns the name associated with the expression, default is empty
@@ -234,7 +234,8 @@ module Hopsa
       else
         # just an outer variable, get the value
         begin
-          ex.varStore.get @rname
+          val = ex.varStore.get @rname
+          val
         rescue => e
           raise #e.message.chomp+' at line '+@code_line.to_s
         end
@@ -532,6 +533,8 @@ module Hopsa
           res = val1 != val2
           when 'xor'
           res = val1 ^ val2
+          when 'ins'
+          res = NodeSet.inset val1, val2
           else
           hop_warn "#{@op}: unsupported binary operator"
           return nil
@@ -588,6 +591,11 @@ module Hopsa
               return nil, nil
           end
         end #if calculated
+      elsif op == 'ins'
+        # nodeset
+        res = nil
+        db_res = db.inset db_val1, db_val2
+        return db_res, self
       else
         #full evaluation
         #if @pre_conv

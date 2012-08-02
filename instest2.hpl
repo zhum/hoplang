@@ -1,0 +1,9 @@
+var tstart, tend, nst
+tstart = date('12-7-30 12:00')
+tend = date('12-7-30 13:00')
+nst = 'node-06-[01-16]'
+out = each v in cpu_user where v.node ins nst and v.time < tend and v.time >= tstart
+		yield node => v.node, cpu => v.value
+end
+
+print out

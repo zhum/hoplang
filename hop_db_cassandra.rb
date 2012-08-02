@@ -2,7 +2,7 @@ require 'cassandra/0.8'
 
 module Hopsa
 
-  class CassandraHopstance < EachHopstance
+  class CassandraDBDriver < EachHopstance
 
     # provides 'each' functionality for Cassandra request with indices
     class IndexedIterator
@@ -29,7 +29,7 @@ module Hopsa
     end # IndexedIterator
 
     def initialize(parent, source, current_var, where)
-      super(parent)
+      super(parent, source, current_var, where)
       cfg = Config['varmap'][source]
       address = cfg['address'] || 'localhost'
       port = cfg['port'] || '9160'
@@ -45,8 +45,7 @@ module Hopsa
       @push_index = false if cfg['push_index'] && cfg['push_index'] == 'false'
       @items_read = 0
       conn_addr = "#{address}:#{port}"
-      @current_var = current_var
-      @where_expr = HopExpr.parse where
+      # @current_var = current_var
       @cassandra = Cassandra.new @keyspace, conn_addr
       @enumerator = nil
     end
@@ -250,7 +249,7 @@ module Hopsa
       end
       # build index clause if possible
       key_start,key_end,col_start,col_end,@index_clause =
-        filter_exprs?(@where_expr)
+        filter_exprs?(@where_expression)
       opts = {}
       if @index_clause && @push_index
         opts[:key_start] = key_start if key_start
@@ -264,7 +263,7 @@ module Hopsa
         opts[:start] = col_start if col_start
         opts[:finish] = col_end if col_end
         @enumerator = @cassandra.to_enum :each, @column_family, opts
-        if @where_expr
+        if @where_expression
           if key_start || key_end || col_start || col_end
             if key_start || key_end
               hop_warn 'key filter pushed to Cassandra'

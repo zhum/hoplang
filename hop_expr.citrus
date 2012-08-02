@@ -122,7 +122,7 @@ grammar HopExprGram
         end
         rule relop
              (('<.' | '<=.' | '<=' | '<' | '>.' | '>=.' | '>=' | '>' | '==' |
-             '!=') spacecom) { to_s.strip }
+             '!=' | 'ins') spacecom) { to_s.strip }
         end
         rule addlop
              ([-+&] spacecom) { to_s.strip }

@@ -5,7 +5,7 @@ module Hopsa
 
   # a class which handles 2D cassandra tables, and returns data as a list of
   # tuples of the form (keyname, colname, value)
-  class Cassandra2dHopstance < CassandraHopstance
+  class Cassandra2dDBDriver < CassandraHopstance
     def readSource
       if @enumerator.nil?
         lazy_init

@@ -1,6 +1,7 @@
 # coding: utf-8
 require 'thread'
 require 'json'
+require 'logger'
 
 module Hopsa
   class HopPipe
@@ -132,7 +133,22 @@ module Hopsa
     end
   end
 
+
+  LOGGER_ID={Logger::DEBUG => 'D', Logger::INFO => 'I', Logger::WARN => 'W', 
+             Logger::ERROR => 'E', Logger::FATAL => 'F', Logger::UNKNOWN => 'U'}
+
   def self.hop_warn(str)
+    if $logger.nil?
+      $logger = Logger.new("hoplang.log-"+Process.pid.to_s)
+      $logger.datetime_format = "%Y-%m-%d %H:%M:%S"
+      $logger.formatter = proc do |severity, datetime, progname, msg|
+        "#{LOGGER_ID[severity]} #{datetime.strftime('%Y-%m-%d %H:%M:%S')}: #{msg}\n"
+      end
+    end
+    $logger.warn str
+  end
+
+  def self.hop_warn_old(str)
     $hoplang_warn_mutex ||= Mutex.new
 
     if $hoplang_logger.nil?

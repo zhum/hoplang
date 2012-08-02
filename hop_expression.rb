@@ -289,7 +289,7 @@ module Hopsa
       begin
         o = @obj.eval(ex)
         unless o.is_a? Hash
-          hop_warn "applying . to not a tuple (#{o.class} = #{o.inspect}) at #{@code_line}#{ex.varStore.print_store}"
+          hop_warn "applying . to not a tuple (#{o.class} = #{o.inspect}) at #{@code_line}\n#{ex.varStore.print_store}"
           return nil
         end
         r = o[@field_name]

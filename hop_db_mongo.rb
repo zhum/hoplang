@@ -76,6 +76,7 @@ module Hopsa
         end
 
         #hop_warn "RET: (this.#{left} #{op2} #{ex2})"
+        ex2=ex2.to_i unless op.start_with? '.'
         return {left => {op2 => ex2}}
       when '&' # string concatenation
         return nil
@@ -94,9 +95,9 @@ module Hopsa
       and_exprs = ranges.map do |r|
         case r 
         when String
-          {ex1 => {'$eq' => r}}
+          {ex1 => r}
         when Range
-          {ex1 => [{'$gte' => r.min}, {'$lte' => r.max}]}
+          {ex1 => {'$gte' => r.min, '$lte' => r.max}}
         end
       end
       [and_exprs].flatten
@@ -214,11 +215,11 @@ module Hopsa
       @index_clause,@where_clause = create_filter @where_expression
       hop_warn "INDEX: #{@index_clause.inspect}"
       if @index_clause and @push_index
-        ind_iter = IndexedIterator.new(@db, @collection, @index_clause, @where_clause, @context, @current_var)
+        ind_iter = IndexedIterator.new(@db, @collection, @index_clause, @where_clause, @parent, @current_var)
         @enumerator = ind_iter.to_enum(:each)
         hop_warn "index pushed to Mongo #{@where_expression.to_s}"
       else
-        ind_iter = IndexedIterator.new(@db, @collection, nil, @where_clause, @context, @current_var)
+        ind_iter = IndexedIterator.new(@db, @collection, nil, @where_clause, @parent, @current_var)
         @enumerator = ind_iter.to_enum(:each)
         hop_warn 'index not pushed to Mongo' if @where_expression
       end
@@ -228,12 +229,12 @@ module Hopsa
 
     # provides 'each' functionality for Database request with indices
     class IndexedIterator
-      def initialize(db, cf, index_clause, where_clause, context, current_var)
+      def initialize(db, cf, index_clause, where_clause, context_source, current_var)
         @db = db
         @collection = cf
         @index_clause = index_clause
         @where_clause = where_clause
-        @context=context
+        @context_source=context_source
         @current_var=current_var
       end
 
@@ -248,13 +249,17 @@ module Hopsa
       def each
         begin
           coll = @db[@collection]
+          @context=HopContext.new(@context_source)
+          @context.varStore.addScalar(@current_var)
+
 #          iter = coll.find(@index_clause)
           hop_warn "SEARCH: #{@index_clause.inspect}"
           [@index_clause].flatten.each { |index|
-            hop_warn "Search iteration=#{@index.inspect}"
+            hop_warn "Search iteration #{index.inspect}"
             coll.find(index).each { |row|
               if @where_clause
-                hop_warn "WHERE #{@where_clause.inspect}"
+                @context.varStore.set(@current_var,row)
+                #hop_warn "WHERE #{@where_clause.inspect}"
                 if @where_clause.eval(@context)
                   yield to_hash row
                 end

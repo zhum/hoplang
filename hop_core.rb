@@ -134,15 +134,12 @@ module Hopsa
   end
 
 
-  LOGGER_ID={Logger::DEBUG => 'D', Logger::INFO => 'I', Logger::WARN => 'W', 
-             Logger::ERROR => 'E', Logger::FATAL => 'F', Logger::UNKNOWN => 'U'}
-
   def self.hop_warn(str)
     if $logger.nil?
       $logger = Logger.new("hoplang.log-"+Process.pid.to_s)
       $logger.datetime_format = "%Y-%m-%d %H:%M:%S"
       $logger.formatter = proc do |severity, datetime, progname, msg|
-        "#{LOGGER_ID[severity]} #{datetime.strftime('%Y-%m-%d %H:%M:%S')}: #{msg}\n"
+        "#{severity[0]} #{datetime.strftime('%Y-%m-%d %H:%M:%S')}: #{msg}\n"
       end
     end
     $logger.warn str

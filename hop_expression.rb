@@ -528,9 +528,9 @@ module Hopsa
           when '>=.'
           res = val1 >= val2
           when '=='
-          res = val1 == val2
+          res = val1.to_s == val2.to_s
           when '!='
-          res = val1 != val2
+          res = val1.to_s != val2.to_s
           when 'xor'
           res = val1 ^ val2
           when 'ins'

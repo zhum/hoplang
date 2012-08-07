@@ -15,6 +15,74 @@ module Hopsa
     return sort_array, array
   end
 
+  class SortEachHopstance < EachHopstance
+    # read next source line and write it into @source_var
+    def self.createNewRetLineNum(parent,text,pos)
+      line,pos=Statement.nextLine(text,pos)
+
+      raise UnexpectedEOF if line.nil?
+      unless(line =~
+        /^\s*(\S+)\s*=\s*sort\s+(\S+)\s+in\s+(\S+)\s+by\s+(.*)(\s+(\S+)\s+where\s+(.*))?/)
+#             OUT,               cur_var, source,     cond,  where
+#              1                  2       3           4       6
+        raise SyntaxError.new(line)
+      end
+
+      hopstance=SortEachHopstance.new(parent)
+
+      hopstance.varStore.addScalar($2)
+      parent.varStore.addStream($1)
+      hopstance.varStore.copyStreamFromParent($1,parent.varStore)
+
+      return hopstance.init($1,$3,$4,$2,$6),pos+1
+    end
+
+    def init(out,source,cond,cur_var,where)
+      @source=source
+      @streamvar=out
+#      hop_warn "SORT Condition: #{cond}"
+      @cond_expr  = HopExpr.parse_cond cond
+      @where_expr = HopExpr.parse_cond where if where
+      @sorted=[]
+      @sorted_values=[]
+      @current_var=cur_var
+
+      self
+    end
+
+    def to_s
+      "#SortHopstance(#{@stream}<(#{@source})"
+    end
+
+    def hop
+      varStore.merge(@parent.varStore)
+      new_thread 'sort' do
+        hop_warn varStore.print_store
+        while not (self.readSource).nil?
+        end
+
+        # now output top!
+        @sorted.each do |var|
+          varStore.set(@streamvar,var)
+        end
+        varStore.set(@streamvar,nil)
+      end
+    end
+
+    def readSource
+      value=varStore.get(@source)
+      return nil if value.nil?
+
+      # check top condition
+      varStore.set(@current_var,value)
+      sortval=@cond_expr.eval(self)
+
+      # insert in top
+      @sorted_values,@sorted=insert_up_sorted_pair(sortval.to_f,value,@sorted_values,@sorted)
+      value
+    end
+  end
+
   class TopEachHopstance < EachHopstance
     # read next source line and write it into @source_var
     def self.createNewRetLineNum(parent,text,pos)

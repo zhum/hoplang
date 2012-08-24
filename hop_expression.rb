@@ -289,11 +289,11 @@ module Hopsa
       begin
         o = @obj.eval(ex)
         unless o.is_a? Hash
-          hop_warn "applying . to not a tuple (#{o.class} = #{o.inspect}) at #{@code_line}#{ex.varStore.print_store}"
+          hop_warn "applying . to not a tuple (#{o.class} = #{o.inspect}) at #{@code_line} #{ex.varStore.print_store}"
           return nil
         end
         r = o[@field_name]
-        hop_warn "no field #{@field_name} in object (#{o.inspect})" if !r
+        hop_warn "no field #{@field_name} in object (#{o.inspect}); Varstore: #{ex.varStore.print_store}" if !r
       rescue => e
         raise #e.message.chomp+' at line '+@code_line.to_s
       end
@@ -483,8 +483,10 @@ module Hopsa
         val1 = @expr1.eval(ex)
         case op
           when 'and'
+            #hop_warn "EXP #{@expr1} && #{@expr2} = #{val1 && @expr2.eval(ex)}"
             return val1 && @expr2.eval(ex)
           when 'or'
+            #hop_warn "EXP #{@expr1} || #{@expr2} = #{val1 || @expr2.eval(ex)}"
             return val1 || @expr2.eval(ex)
           else
             hop_warn "#{op}: unsupported short-cirtuit binary operator"
@@ -501,13 +503,13 @@ module Hopsa
         res = nil
         case @op
           when '*'
-          res = val1 * val2
+          res = val1.to_f * val2.to_f
           when '/'
-          res = val1 / val2
+          res = val1.to_f / val2.to_f
           when '+'
-          res = val1 + val2
+          res = val1.to_f + val2.to_f
           when '-'
-          res = val1 - val2
+          res = val1.to_f - val2.to_f
           when '&'
           # string concatenation
           res = val1 + val2
@@ -528,9 +530,9 @@ module Hopsa
           when '>=.'
           res = val1 >= val2
           when '=='
-          res = val1 == val2
+          res = val1.to_s == val2.to_s
           when '!='
-          res = val1 != val2
+          res = val1.to_s != val2.to_s
           when 'xor'
           res = val1 ^ val2
           when 'ins'

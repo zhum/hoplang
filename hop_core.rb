@@ -133,6 +133,7 @@ module Hopsa
     end
   end
 
+
   def self.hop_warn(str)
     if $logger.nil?
       $logger = Logger.new("hoplang.log-"+Process.pid.to_s)

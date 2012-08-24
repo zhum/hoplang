@@ -1,9 +1,10 @@
 var tstart, tend, nst
-tstart = date('12-8-2 06:00')
-tend = date('12-8-2 06:30')
-nst = 'node-06-[01-16]'
-out = each v in cpu_user 
-# where v.node ins nst and v.time < tend and v.time >= tstart
+#tstart = date('12-8-2 06:00')
+#tend = date('12-8-2 06:30')
+tstart = date('Fri, 24 Aug 2012 07:06:28')
+tend = date('Fri, 24 Aug 2012 12:17:15')
+nst = 'node-06-01,node-10-08,node-22-07,node-39-05,node-42-02,node-45-07,node-46-05,node-47-02'
+out = each v in cpu_user where v.node ins nst and v.time >= tstart and v.time < tend
 		yield node => v.node, cpu => v.value
 end
 

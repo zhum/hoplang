@@ -7,3 +7,4 @@ pkg/*
 *.out
 *.tgz
 *.log
+hoplang.log*

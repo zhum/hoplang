@@ -249,6 +249,9 @@ module Hopsa
       def each
         begin
           coll = @db[@collection]
+          @context=HopContext.new(@context_source)
+          @context.varStore.addScalar(@current_var)
+
 #          iter = coll.find(@index_clause)
           hop_warn "SEARCH: #{@index_clause.inspect}"
           @context=HopContext.new(@context_source)

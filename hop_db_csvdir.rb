@@ -12,7 +12,8 @@ class Range
   #
   # intersects one range with another
   #
-  # :returns: intersected range or nil, if intersection is empty
+  # @param other range to intersect
+  # @return intersected range or nil, if intersection is empty
   #
   def intersection(other)
     raise ArgumentError, 'Not a Range' unless other.kind_of?(Range)
@@ -31,8 +32,17 @@ end
 
 module Hopsa  # :nodoc:
 
+  #
+  # Condition converter for Csvdir
+  #
   class CsvdirDBConv
 
+    #
+    # constructor
+    #
+    # @param db_var  variable, used in condition for stream
+    # @param split_f field name, used for splitting data into files (usually, time)
+    #
     def initialize(db_var,split_f)
       @db_var=db_var
       @split_f=split_f
@@ -42,15 +52,30 @@ module Hopsa  # :nodoc:
       @db_var
     end
 
+    #
+    # called for final procesing
+    # @param val current condition in internal format (range set)
+    # @return range set (+Array+)
+    #
     def wrapper(val)
       hop_warn "WRAPPER: #{val.inspect}"
       val
     end
 
+    #
+    # called on unary operations (-, etc)
+    # always returns +nil+
+    #
     def unary(ex,op)
       nil
     end
 
+    #
+    # called on binary operations (+,-,*,/,==,!=,>,<,>=,<=.,&,...)
+    # @param ex1,ex2 left and right arguments
+    # @param op      operations
+    # @return        range set (+Array+)
+    #
     def binary(ex1,ex2,op)
       hop_warn "BINARY #{ex1},#{ex2},#{op}"
       case op
@@ -94,6 +119,12 @@ module Hopsa  # :nodoc:
       return nil
     end
 
+    #
+    # called on logical OR
+    # @param ex1,ex2 left and right arguments
+    # @param op      operations
+    # @return        range set (+Array+)
+    #
     def or(ex1,ex2)
       return nil if @no_split
       ret=[]
@@ -111,6 +142,12 @@ module Hopsa  # :nodoc:
       return ret
     end
 
+    #
+    # called on logical AND
+    # @param ex1,ex2 left and right arguments
+    # @param op      operations
+    # @return        range set (+Array+)
+    #
     def and(ex1,ex2)
       return nil if @no_split
       ret=[]
@@ -128,19 +165,29 @@ module Hopsa  # :nodoc:
       return ret
     end
 
+    #
+    # Called on value substitution
+    #
+    # Just deletes db_var name
+    #
+    # @param ex  variable expression
+    # @return    new expression (reference to variable field)
+    #            or nil if it refers no db_var
+    #
     def value(ex)
       ret = ex.gsub(Regexp.new('\W'+@db_var+'\.'),'')
-      return ret.to_s
+      return ret.to_s if ret != ex
+      nil
     end
   end
 
   #
-  # CSV-tree driver for HOPLANG
+  # CSVDir driver for HOPLANG
   #
   # config *should* contain definitions of:
-  #   [split]  fieldname, which defines splitting
-  #   [dir]    path to files catalog
-  #   [fields] list of fileds in right order (files are without headers!)
+  # [split]  fieldname, which defines splitting
+  # [dir]   path to files catalog
+  # [fields] list of fileds in right order (files are without headers!)
   #
   #
   class CsvdirDBDriver < HopsaDBDriver
@@ -149,7 +196,17 @@ module Hopsa  # :nodoc:
 
     # provides 'each' functionality 
     class IndexedIterator
-      def initialize(root_dir, csv_ranges, fields, where_clause, context, variable, sep )
+
+      #
+      # @param root_dir    data directory
+      # @param csv_ranges  array of ranges, which must be satisfied by split field
+      # @param fields      array of fields names (order is significant!)
+      # @param where_clause  where clause (HopExpression)
+      # @param context   hoplang context
+      # @param variable stream variable name
+      # @param sep      separator to use (',' by default)
+      #
+      def initialize(root_dir, csv_ranges, fields, where_clause, context, variable, sep)
         @files=get_files(root_dir,csv_ranges)
         @where_clause = where_clause
         @context=context
@@ -163,10 +220,15 @@ module Hopsa  # :nodoc:
       #
       # get csv filenames for given list of ranges
       #
+      # @param [root] -> data directory
+      # @param [ranges] -> array of ranges
+      # @return [Array] -> sorted list of files
+      #
       def get_files(root,ranges)
         IndexedIterator.get_files(root,ranges)
       end
 
+      # see #get_files
       def self.get_files(root,ranges)
         selected=Set.new
         ret=[]
@@ -203,6 +265,7 @@ module Hopsa  # :nodoc:
         ret.sort
       end
 
+      # iterator method
       def each
         begin
           @files.each do |file|
@@ -236,10 +299,10 @@ module Hopsa  # :nodoc:
     end # IndexedIterator
 
     #
-    # [parent]      parent hopstance
-    # [source]      source stream name
-    # [current_var] variable name
-    # [where]       'where' expression
+    # @param parent      parent hopstance
+    # @param source      source stream name
+    # @param current_var  variable name
+    # @param where       'where' expression
     #
     def initialize(parent, source, current_var, where)
       super  #(parent)
@@ -262,6 +325,8 @@ module Hopsa  # :nodoc:
       @enumerator = nil
     end
 
+    # get next value from stream
+    #
     def readSource
       if @enumerator.nil?
         lazy_init
@@ -278,6 +343,12 @@ module Hopsa  # :nodoc:
 
     private
 
+    #
+    # create new converter by filer expression
+    #
+    # @param filter filter expression (+HopExpression+)
+    # @return array of: expression in database format, expression in hoplang format
+    #
     def create_filter(filter)
       hop_warn "FILTER: #{filter.inspect}/#{filter.class}"
       @context.copy(@parent)

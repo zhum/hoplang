@@ -254,13 +254,17 @@ module Hopsa
 
 #          iter = coll.find(@index_clause)
           hop_warn "SEARCH: #{@index_clause.inspect}"
+          @context=HopContext.new(@context_source)
+          @context.varStore.addScalar(@current_var)
+
           [@index_clause].flatten.each { |index|
-            hop_warn "Search iteration #{index.inspect}"
+            hop_warn "Search iteration=#{index.inspect}"
             coll.find(index).each { |row|
               if @where_clause
                 @context.varStore.set(@current_var,row)
-                #hop_warn "WHERE #{@where_clause.inspect}"
-                if @where_clause.eval(@context)
+                result=@where_clause.eval(@context)
+                #hop_warn "WHERE [#{result}] #{@where_clause.inspect} read: #{row.inspect} \nContext: #{@context.inspect}"
+                if result
                   yield to_hash row
                 end
               else

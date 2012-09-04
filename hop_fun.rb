@@ -1,5 +1,8 @@
 # Hoplang function calls are defined here
 
+require 'rubygems'
+require 'date'
+
 module Hopsa
 
   # implementation of specific hopsa functions - for functions whose
@@ -21,9 +24,17 @@ module Hopsa
         end
         t.tv_sec * 1000000 + t.tv_usec
       else
-        hop_warn "#{str}: not a valid date; format is [yy]yy-mm-dd HH:MM" + 
-          " .-/ separators allowed in date part"
-        throw Error
+        # try parse as cdate
+        begin
+          t = (DateTime.parse str).to_time
+          # HACK, can cause problems if dates are far from now
+          ts = (t.tv_sec - Time.now.utc_offset) * 1000000 + t.tv_usec
+          ts
+        rescue
+          hop_warn "#{str}: not a valid date; format is [yy]yy-mm-dd HH:MM" + 
+            " .-/ separators, or cdate are allowed in date part"
+          throw
+        end
       end
     end
   end

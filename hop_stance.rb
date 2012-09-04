@@ -460,6 +460,7 @@ end # UnionHopstance
       Config.parmap.each do |par, val|
         varStore.addScalar par
         varStore.set par, (Param.cmd_arg_val(par) || val)
+        hop_warn "PARAM_SET: #{par} = #{Param.cmd_arg_val(par)} (#{val})"
       end
 
       begin

@@ -94,6 +94,25 @@ module Hopsa  # :nodoc:
       return nil
     end
 
+    # nodeset conversion, ex1 is variable name, ex2 is nodeset
+    def inset(ex1, ex2)
+      return nil unless ex1 =~ /^\w+$/
+      stripped_ex2 = ex2.match(/^'(.*)'$/) ? $1 : ex2
+      stripped_ex2 = stripped_ex2.match(/^"(.*)"$/) ? $1 : stripped_ex2
+      ranges = (NodeSet.by_str stripped_ex2).ranges
+      hop_warn "INS0: #{ranges.inspect}"
+      and_exprs = ranges.map do |r|
+        case r
+        when String
+          {ex1 => r}
+        when Range
+          {ex1 => {'$gte' => r.min, '$lte' => r.max}}
+        end
+      end
+      hop_warn "INS: #{[and_exprs].flatten.inspect}"
+      [and_exprs].flatten
+    end
+
     def or(ex1,ex2)
       return nil if @no_split
       ret=[]
@@ -114,16 +133,28 @@ module Hopsa  # :nodoc:
     def and(ex1,ex2)
       return nil if @no_split
       ret=[]
+      extra={}
       ex1=[ex1].flatten
       ex2=[ex2].flatten
       hop_warn "AND: #{ex1.inspect}, #{ex2.inspect}"
       ex1.each do |i1|
+        unless i1.is_a? Range
+          extra[i1]=1
+          ret << i2
+          next
+        end
         ex2.each do |i2|
+          unless i2.is_a? Range
+            extra[i2]=1
+            ret << i1
+            next
+          end
           r = i1&i2
           ret << r unless r.nil?
           hop_warn "AND: #{i1.inspect}, #{i2.inspect} #{r.inspect}"
         end
       end
+      ret << extra.keys
       hop_warn "AND: #{ret.inspect}"
       return ret
     end
@@ -188,6 +219,7 @@ module Hopsa  # :nodoc:
         hop_warn "GET_FILES: #{ranges.inspect}"
         ranges.each do |r|
           files.each_with_index do |f,i|
+            next if r.is_a? Hash
             if r.&(files_range[f])
               selected << i
               selected << i-1 if i-1>=0

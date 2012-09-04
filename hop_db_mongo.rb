@@ -109,6 +109,7 @@ module Hopsa
     end
 
     def and(ex1,ex2)
+      hop_warn "AND: #{ex1.inspect} && #{ex2.inspect}"
       ret=[]
       begin
         [ex1].flatten.each { |e1|

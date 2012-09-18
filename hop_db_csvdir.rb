@@ -77,7 +77,7 @@ module Hopsa  # :nodoc:
     # @return        range set (+Array+)
     #
     def binary(ex1,ex2,op)
-      hop_warn "BINARY #{ex1},#{ex2},#{op}"
+      hop_warn "BINARY #{ex1.inspect},#{ex2.inspect},#{op}"
       case op
       when '+'
         return nil
@@ -101,16 +101,16 @@ module Hopsa  # :nodoc:
         return [eq_val .. eq_val]
       when '>'
         if ex1 == @split_f
-          return [ex2.to_f .. Float::MAX]
+          return [ex2.to_i .. Hopcsv::MAX.to_i]
         elsif ex2 == @split_f
-          return [Float::MIN .. ex1.to_f]
+          return [Hopcsv::MIN.to_i .. ex1.to_i]
         end
         return nil
       when '<'
         if ex1 == @split_f
-          return [Float::MIN .. ex2.to_f]
+          return [Hopcsv::MIN.to_i .. ex2.to_i]
         elsif ex2 == @split_f
-          return [ex1.to_f .. Float::MAX]
+          return [ex1.to_i .. Hopcsv::MAX.to_i]
         end
         return nil
       when '&' # string catenation
@@ -175,9 +175,11 @@ module Hopsa  # :nodoc:
     #            or nil if it refers no db_var
     #
     def value(ex)
-      ret = ex.gsub(Regexp.new('\W'+@db_var+'\.'),'')
+      # delete db_var name...
+      ret = ex.gsub(Regexp.new('^'+@db_var+'\.'),'')
+      # return only reference
       return ret.to_s if ret != ex
-      nil
+      ex
     end
   end
 
@@ -239,13 +241,13 @@ module Hopsa  # :nodoc:
         return files.map {|f| File.join(root,"#{f}.csv")} if ranges.nil? || ranges[0].nil?
 
         # do files-ranges mapping
-        prev_file=Float::MIN
+        prev_file=Hopcsv::MIN.to_i
         files.sort.each{|f|
-          files_range[prev_file]=Range.new(prev_file.to_f,f.to_f-MIN_DELTA)
+          files_range[prev_file]=Range.new(prev_file.to_i,(f.to_f-MIN_DELTA).to_i)
           prev_file=f
         }
         #p
-        files_range[prev_file]=Range.new(prev_file.to_f,Float::MAX)
+        files_range[prev_file]=Range.new(prev_file.to_i,Hopcsv::MAX.to_i)
 
         hop_warn "GET_FILES: #{ranges.inspect}"
         ranges.each do |r|
@@ -276,16 +278,16 @@ module Hopsa  # :nodoc:
               @fields.each_with_index do |f,i|
                 var[f]=row[i]
               end
-              hop_warn "VAR=#{var.inspect}"
+#!D              hop_warn "VAR=#{var.inspect}"
 
               if @where_clause
-                hop_warn "WHERE=#{@where_clause.inspect}"
+#!D                hop_warn "WHERE=#{@where_clause.inspect}"
                 @context.varStore.set(@variable,var)
                 if @where_clause.eval(@context)
                   yield var
                 end
               else
-                hop_warn "WHERE2=#{@where_clause.inspect}"
+#!D                hop_warn "WHERE2=#{@where_clause.inspect}"
                 yield var
               end
             end
@@ -351,8 +353,9 @@ module Hopsa  # :nodoc:
     #
     def create_filter(filter)
       hop_warn "FILTER: #{filter.inspect}/#{filter.class}"
-      @context.copy(@parent)
-      db_expr,hop_expr = filter.db_conv(@context,CsvdirDBConv.new(@current_var,@split_field))
+      #!@context.copy(@parent)
+      #!db_expr,hop_expr = filter.db_conv(@context,CsvdirDBConv.new(@current_var,@split_field))
+      db_expr,hop_expr = filter.db_conv(@parent,CsvdirDBConv.new(@current_var,@split_field))
       hop_warn "Create_filter: #{db_expr.inspect} / #{hop_expr.inspect}"
       return db_expr,hop_expr
     end

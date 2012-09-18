@@ -134,14 +134,13 @@ module Hopsa
             selected << i << i-1 if r.include? f.to_f
           end
         end
-        
+
         selected.each do |i|
           ret << File.join(root,"#{files[i]}.csv")
         end
         hop_warn "Files: #{ret.inspect}"
         ret.sort
       end
-          
 
       def each
         begin
@@ -153,7 +152,7 @@ module Hopsa
               @fields.each_with_index do |f,i|
                 var[f]=row[i]
               end
-              hop_warn "VAR=#{var.inspect}"
+#D              hop_warn "VAR=#{var.inspect}"
 
 # if @where_clause
 # hop_warn "WHERE=#{@where_clause.inspect}"

@@ -6,4 +6,6 @@ Echoe.new("hopcsv") do |p|
   p.summary = "A pure-C CSV parser for HOPSA. Based on Ccsv project."
   p.url = "http://github.com/zhum/hopcsv"
   p.docs_host = "http://github.com/zhum/"
+  p.email = "serg@parallel.ru"
+  p.description = "A pure-C CSV parser for HOPSA. Based on Ccsv project. Works fast and efficient."
 end

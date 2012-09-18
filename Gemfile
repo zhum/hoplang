@@ -7,5 +7,6 @@ gem 'rspec'
 gem 'jeweler'
 gem 'mongo'
 gem 'bson_ext'
-gem 'cactus'
+gem 'citrus'
+gem 'home_run', :require=>'date'
 

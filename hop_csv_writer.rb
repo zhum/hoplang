@@ -19,7 +19,7 @@ class CsvDirWriter
     @file=nil
 
     $logger.warn cfg.inspect
-	end
+  end
 
   def put(data)
     @field_value = data[@split_field.to_sym].to_i.to_s

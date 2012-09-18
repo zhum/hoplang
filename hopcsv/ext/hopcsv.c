@@ -1,3 +1,4 @@
+#include <limits.h>
 #include "hopcsv.h"
 
 static VALUE rb_cC;
@@ -162,4 +163,6 @@ Init_hopcsv()
 {
   rb_cC = rb_define_class("Hopcsv", rb_cObject);
   rb_define_singleton_method(rb_cC, "foreach", foreach, -1);
+  rb_define_const(rb_cC, "MAX", LONG2NUM(LONG_MAX));
+  rb_define_const(rb_cC, "MIN", LONG2NUM(LONG_MIN));
 }

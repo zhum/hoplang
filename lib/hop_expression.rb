@@ -4,7 +4,7 @@ require 'citrus'
 module Hopsa
 
   # load HopExpr grammar
-  Citrus.load 'hop_expr'
+  Citrus.load (Pathname.new(File.expand_path('..', __FILE__))+'hop_expr').to_s
 
   # base class for hoplang expression
   class HopExpr

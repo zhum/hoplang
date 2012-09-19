@@ -8,7 +8,7 @@ Thread.abort_on_exception = true
 
 begin
 
-  require './hoplang.rb'
+  require 'hoplang'
   include Hopsa
 
   file_found = nil

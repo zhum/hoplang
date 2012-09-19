@@ -7,7 +7,7 @@ module Hopsa
 
   # implementation of specific hopsa functions - for functions whose
   # implementation takes more than 1 line
-  class HopsaFuns 
+  class HopsaFuns
     # converts a string into a date which is the number of microseconds since
     # epoch for the specific local date (Time.local is used in ruby code)
     def self.date(str)

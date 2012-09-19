@@ -18,7 +18,7 @@ require 'citrus'
 
 module Hopsa
 
-  Citrus.load 'hop_ns'
+  Citrus.load (Pathname.new(File.expand_path('..', __FILE__))+'hop_ns').to_s
 
   # interface to node sets
   class NodeSet

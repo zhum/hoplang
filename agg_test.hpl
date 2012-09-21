@@ -1,6 +1,0 @@
-out10 = each x in ttt where x.np > 97
-final
-  yield min => min(x.np), max => max(x.np), avg => sum(x.np) / count(x)
-#  yield min => int(x.np)
-end
-print out10

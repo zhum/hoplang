@@ -2,10 +2,20 @@
 module Hopsa
   # DUMMY DATABASE ACCESS CLASS
   class CSVDriver <HopsaDBDriver
+
+    def initialize(parent, source, current_var, where)
+      super
+      dir='.'
+      begin
+        dir = Config['dbmap']['dummy']['dir']
+      rescue
+      end
+      @dir=Pathname.new(dir)
+    end
     # read next source line
     def readSource
       if @source_in.nil?
-        @source_in = open @source
+        @source_in = open @dir+Pathname.new(@source)
         # fields titles
         head=@source_in.readline.strip
         @heads=head.split(/\s*,\s*/)

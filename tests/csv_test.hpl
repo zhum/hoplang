@@ -1,0 +1,6 @@
+var left
+left=909000
+out = each x in m_plain_test where x.time > left and x.time <1000250 and x.node == 'tst2'
+  yield time => x.time, value => x.value
+end
+print out

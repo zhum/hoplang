@@ -1,4 +1,0 @@
-out = each v in ttt4 where v.node ins 'node1-128-[02,04-12,14],node2-015-[02,04,06]'
-		yield node => v.node, cpu => v.value
-end
-print out

@@ -46,3 +46,10 @@ begin
 rescue LoadError
   puts 'Yard not available. Install it with: sudo gem install yard'
 end
+
+desc 'Fast local build/install gem. For debugging purporses.'
+task :local do
+  sh 'rm -rf pkg'
+  Rake::Task[:build].invoke
+  sh 'gem install --no-ri --no-rdoc pkg/*.gem'
+end

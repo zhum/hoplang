@@ -1,0 +1,9 @@
+# testing union function
+a = each t in ttt where t.np < 20
+	yield t
+end
+b = each t in ttt2 where t.np >= 20 and t.np < 40
+	yield t
+end
+c = union a, b
+print c

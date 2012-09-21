@@ -1,0 +1,5 @@
+m = each x in mongo_test where x.node ins 'cn[01-02],cn04'
+  yield node => x.node, time => x.time, value => x.value
+end
+
+print m

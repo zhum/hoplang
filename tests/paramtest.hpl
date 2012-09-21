@@ -1,0 +1,5 @@
+param node = 'node-1'
+out5 = each v in cpu_user_test where v.node == node
+  yield time => v.time, node => v.node, cpu => v.value
+end
+print out5

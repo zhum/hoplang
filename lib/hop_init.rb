@@ -1,5 +1,9 @@
 module Hopsa
 
+  #
+  # Load and execute Hoplang program text,
+  # text is Array (sic!) of text lines.
+  #
   def load_program(text)
     Hopsa::Config.load
     Hopsa::Param.load
@@ -7,11 +11,24 @@ module Hopsa
     return TopStatement.createNewRetLineNum(nil,text,0)
   end
 
+  #
+  #  Loads and executes Hoplang program from file
+  #
+  def load_file(name)
+    text=[]
+    File.open(name).each do |line|
+      text.push line
+    end
+    ex=load_program(text)
+    ex.hop
+  end
+
+  # Load all available database drivers
+  #
   def self.db_load
-    # load database drivers
     Dir[(Pathname.new(File.expand_path('..', __FILE__))+'hop_db_*.rb').to_s].each do |db|
-		# temporary disable cassandra
-		#	next if db =~ /cassandra/
+      # temporary disable cassandra
+      # next if db =~ /cassandra/
       hop_warn "DB Driver load: #{db.to_s}"
       begin
         require db.to_s

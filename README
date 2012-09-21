@@ -1,6 +1,11 @@
 =HOPLANG=
 Revolutional data processing language. World domination toolset component...
 
+==How to start hacking==
+lib catalog contains all needed files. If you had change something and want to check,
+please run 'rake local' - it will rebuild gem-file and reinstall gem.
+
+
 *Notes*
 
 1. Syntax will be described later in wiki

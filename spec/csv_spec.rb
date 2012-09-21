@@ -1,9 +1,9 @@
 require 'rspec'
-require './hoplang.rb'
+require 'hoplang'
 
 include Hopsa
 
-ROOT='./tests'
+ROOT='tests/db'
 
 describe 'Ranges extension' do
   it 'should intersect two ranges' do
@@ -15,6 +15,15 @@ end
 
 # BAD tests - internal testing. replace by IndexedIterator tests
 describe 'CSV driver' do
+
+  after :all do
+    system "rm hoplang.log* hopsa.conf"
+  end
+
+  before :all do
+    system 'ln -s tests/hopsa_test.conf hopsa.conf'
+  end
+
   it 'should load two csv in, belongs to range 100..250' do
     ranges=[Range.new(100,200), Range.new(150,250)]
     #h=Hopsa::PlainHopstance.new('.', ranges,'f',nil,nil)
@@ -29,5 +38,8 @@ describe 'CSV driver' do
     files.should == []
   end
 
-
+  it 'should read proper test data' do
+    ex=load_file('tests/csv_test.hpl')
+    ex.hop
+  end
 end

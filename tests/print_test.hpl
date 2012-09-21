@@ -1,0 +1,12 @@
+out1 = each x in ttt
+  if x.np > 3
+    yield user => x.user, start=> x.start, s=> 'out1'
+  end
+end
+
+out2 = each x in ttt2
+  yield user => x.user, start=> x.start, s=> 'out2'
+end
+
+# possible options: csv (=default), raw (no header), zip (read sources roubrobin)
+print() out1,out2

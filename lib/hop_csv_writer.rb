@@ -30,7 +30,12 @@ class CsvDirWriter
     end
 
     if @file.nil?
-      @file=File::open("#{@root_dir}/#{@field_value}.csv",'a')
+      begin
+        @file=File::open("#{@root_dir}/#{@field_value}.csv",'a')
+      rescue Errno::ENOENT
+        puts ">>>> #{e.class} #{e.message}"
+        File::mkdir @root_dir
+      end
     end
 
     @file.puts @fields.map{ |index| data[index] }.join ';'

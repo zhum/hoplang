@@ -1,5 +1,0 @@
-x=each n in plain_test where n.value >0
-  yield time=>n.time, node=>n.node, val=>n.value
-end
-
-print x

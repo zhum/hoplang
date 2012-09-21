@@ -1,0 +1,13 @@
+out = each x in cpu_user_test where x.node == 'node-1' or x.node=='node-2'
+  out2 = each y in ttt where y.start>100
+    if x.value+10 > y.np
+      yield node => x.node, value => x.value, time => x.time, np => y.np, user => y.user
+    end
+  final
+    yield node => 'node-55', value => -10, time => 1, np => 222, user => 'yyy'
+  end
+  yield node => x.node, value => x.value, time => x.time, np => 11111, user => 'nnnnnnnnn'
+  yield out2
+end
+
+print out

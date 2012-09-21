@@ -1,8 +1,0 @@
-out = each x in ttt_sort where x.n > 15
-  yield name => x.name, i => x.value
-end
-
-out2 = sort x in out by -x.i*2+3
-
-print out2
-

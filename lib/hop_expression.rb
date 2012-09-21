@@ -5,7 +5,8 @@ require 'pathname'
 module Hopsa
 
   # load HopExpr grammar
-  Citrus.load (Pathname.new(File.expand_path('..', __FILE__))+'hop_expr').to_s
+  #Citrus.load (Pathname.new(File.expand_path('..', __FILE__))+'hop_expr').to_s
+  Citrus.eval(Hopsa::CITRUS_GRAMAR)
 
   # base class for hoplang expression
   class HopExpr

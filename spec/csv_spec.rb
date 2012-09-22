@@ -39,7 +39,8 @@ describe 'CSV driver' do
   end
 
   it 'should read proper test data' do
-    ex=load_file('tests/csv_test.hpl')
+    ex=load_file('tests/csv_test.hpl',:stdout => false)
     ex.hop
+    Hopsa::OUT.grep(/999997,999998/).size.should > 0
   end
 end

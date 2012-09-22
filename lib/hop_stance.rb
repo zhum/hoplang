@@ -21,6 +21,11 @@ class ConfigError <StandardError
 end
 
 module Hopsa
+
+  # Output buffer. To get print-ed data via OUT, 
+  # invoke load_program/load_file with ":stdout => false".
+  OUT=[]
+
   # Statement, which process stream.
   # So, it has inPipe, which is connected to previous Hopstance output.
   class Hopstance < Statement
@@ -267,6 +272,9 @@ module Hopsa
     def init(sources,opts)
       @sources=sources
       @opts={}
+      unless Config['local'.nil?] and Config['local']['stdout'].nil?
+        @opts[:stdout]=Config['local']['stdout']
+      end
       opts.each{|o|
         @opts[o.to_sym]=true
       }
@@ -332,7 +340,7 @@ module Hopsa
       init_heads(value)
       # print header
       $hoplang_print_mutex.synchronize do
-        puts @@out_heads.join(',')
+        print @@out_heads.join(',')
       end
     end
 
@@ -348,7 +356,15 @@ module Hopsa
       $hoplang_print_mutex ||= Mutex.new
       $hoplang_print_mutex.synchronize do
         out= @@out_heads.map {|key| value[key].to_s.csv_escape}.join(',')
-        puts out unless out =~ /NaN/ #!!!!!!!!!!!!!!!!!!!!!   HACK   !!!!!!!!!!!!!!!!!!!!!!!
+        print out #! unless out =~ /NaN/ #!!!!!!!!!!!!!!!!!!!!!   HACK   !!!!!!!!!!!!!!!!!!!!!!!
+      end
+    end
+    
+    def print(str)
+      if @opts[:stdout]
+        puts str
+      else
+        Hopsa::OUT << str
       end
     end
   end

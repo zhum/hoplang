@@ -173,12 +173,12 @@ module Hopsa
 
     def initialize(val)
       super
-      hop_warn "INIT Value=#{val} "+(caller[-5..5].inspect)
+#      hop_warn "INIT Value=#{val} "+(caller[-5..5].inspect)
       @val = val
     end
 
     def eval(ex)
-      hop_warn "!!! Value=#{@val}"
+      hop_warn "!!! Value='#{@val}'"
       return @val
     end
 

@@ -1,4 +1,4 @@
-Hopsa::CITRUS_GRAMAR= <<END
+Hopsa::CITRUS_GRAMAR= <<-'END'
 grammar HopExprGram
         # target non-terminal for expressions, including assignments
         rule expr
@@ -63,7 +63,7 @@ grammar HopExprGram
              (parenexpr | valexpr | callexpr | refexpr)
         end
         rule valexpr
-             (val empty) { hop_warn "VALEXPR: #{val.value.inspect}"; Hopsa::ValExpr.new val.value }
+             (val empty) { Hopsa::ValExpr.new val.value }
         end
         rule refexpr
              (name empty) { Hopsa::RefExpr.new name.value }
@@ -90,8 +90,8 @@ grammar HopExprGram
              ([0-9]+ spacecom) { to_s.strip }
         end
         rule string
-             ("\'" str:([^"\'"]*) "\'" spacecom) { str.to_s }
-             | ("\"" str:([^"\""]*) "\"" spacecom) { str.to_s }
+             ("'" str:([^\']*) "'" spacecom) { to_s.strip[1..-2] }
+             | ('"' str:([^\"]*) '"' spacecom) { to_s.strip[1..-2] }
         end
         rule name
              ([a-zA-Z_][a-zA-Z0-9_]* spacecom) { to_s.strip }

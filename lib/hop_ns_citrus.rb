@@ -1,4 +1,4 @@
-Hopsa::CITRUS_NODESET_GRAMAR=<<END
+Hopsa::CITRUS_NODESET_GRAMAR=<<-'END'
 # citrus grammar for nodesets
 grammar NodeSetGram
 	# main target

@@ -322,7 +322,7 @@ module Hopsa  # :nodoc:
 
       @current_var = current_var
       @where_expr = where.nil? ? nil : HopExpr.parse(where)
-      hop_warn "FF: #{@fields}, W: #{where} => #{@where_expr}"
+      hop_warn "CSV Db driver.new Fields: #{@fields}, Where: #{where} => #{@where_expr}"
 
       @enumerator = nil
     end

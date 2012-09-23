@@ -187,9 +187,9 @@ module Hopsa  # :nodoc:
   # CSVDir driver for HOPLANG
   #
   # config *should* contain definitions of:
-  # [split]  fieldname, which defines splitting
-  # [dir]   path to files catalog
-  # [fields] list of fileds in right order (files are without headers!)
+  #   [split]  fieldname, which defines splitting
+  #   [dir]   path to files catalog
+  #   [fields] list of fileds in right order (files are without headers!)
   #
   #
   class CsvdirDBDriver < HopsaDBDriver
@@ -207,15 +207,17 @@ module Hopsa  # :nodoc:
       # @param context   hoplang context
       # @param variable stream variable name
       # @param sep      separator to use (',' by default)
+      # @param split_field  split filed name
       #
-      def initialize(root_dir, csv_ranges, fields, where_clause, context, variable, sep)
+      def initialize(root_dir, csv_ranges, fields, where_clause, context, variable, sep, split_field)
         @files=get_files(root_dir,csv_ranges)
         @where_clause = where_clause
         @context=context
         @fields=fields
         @variable=variable
         @ranges=csv_ranges
-        @index=@fields.index(@variable) || 0
+        @index=@fields.index(split_field) || 0
+        hop_warn "CSV_INIT: #{@index} (#{@fields.inspect} / #{split_field})"
         @csv_separator = sep
       end
 
@@ -271,14 +273,18 @@ module Hopsa  # :nodoc:
       def each
         begin
           @files.each do |file|
-            hop_warn "DO FILE: #{file}"
+            hop_warn "DO FILE: #{file} (index=#{@index})"
+#            File.open(file) do |f| 
+#              f.each_line do |l|
+#              hop_warn "TST READ: #{l}"
+#end;end
             ::Hopcsv.foreach(file,@csv_separator,@index,@ranges) do |row|
 #!inline            var=row2var(row)
               var={}
               @fields.each_with_index do |f,i|
                 var[f]=row[i]
               end
-#!D              hop_warn "VAR=#{var.inspect}"
+#              hop_warn "VAR=#{var.inspect}"
 
               if @where_clause
 #!D                hop_warn "WHERE=#{@where_clause.inspect}"
@@ -340,6 +346,7 @@ module Hopsa  # :nodoc:
         hop_warn "finished iteration"
       end
       #parent.varStore.set(@current_var, val)
+#      hop_warn "CSV read: #{val}"
       return val
     end
 
@@ -366,7 +373,7 @@ module Hopsa  # :nodoc:
       @csv_ranges,@where_clause = create_filter @where_expr
       @csv_ranges=[@csv_ranges].flatten
       hop_warn "RANGES: #{@csv_ranges.inspect} / #{@where_clause.inspect}"
-      ind_iter = IndexedIterator.new @root_dir, @csv_ranges, @fields, @where_clause, @context, @current_var, @separator
+      ind_iter = IndexedIterator.new @root_dir, @csv_ranges, @fields, @where_clause, @context, @current_var, @separator, @split_field
       @enumerator = ind_iter.to_enum(:each)
     end # lazy_init
   end # MongoHopstance

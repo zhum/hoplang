@@ -178,7 +178,7 @@ module Hopsa
     end
 
     def eval(ex)
-      hop_warn "!!! Value='#{@val}'"
+#      hop_warn "!!! Value='#{@val}'"
       return @val
     end
 

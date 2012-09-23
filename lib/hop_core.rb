@@ -115,9 +115,6 @@ module Hopsa
 
   end
 
-  class BadDriver <StandardError
-  end
-
   class HopsaDBDriver
     def initialize(parent,source,current_var,where)
       @parent,@source,@current_var,@where=parent,source,current_var,where

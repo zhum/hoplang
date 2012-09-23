@@ -1,4 +1,5 @@
-out10 = each x in ttt where x.np > 97
+out10 = each x in ttt where x.np > 97 and x.start>0
+  yield min => x.np, max => x.start, avg => x.end
 final
   yield min => min(x.np), max => max(x.np), avg => sum(x.np) / count(x)
 #  yield min => int(x.np)

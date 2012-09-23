@@ -17,7 +17,7 @@ end
 describe 'CSV driver' do
 
   after :all do
-    system "rm hoplang.log* hopsa.conf"
+ #   system "rm hoplang.log* hopsa.conf"
   end
 
   before :all do
@@ -39,8 +39,15 @@ describe 'CSV driver' do
   end
 
   it 'should read proper test data' do
+#    pending
     ex=load_file('tests/csv_test.hpl',:stdout => false)
     ex.hop
     Hopsa::OUT.grep(/999997,999998/).size.should > 0
+  end
+
+  it 'should pass aggregation test' do
+    ex=load_file('tests/agg_test.hpl',:stdout => false)
+    ex.hop
+    Hopsa::OUT.grep(/98.0,200.0,149.0/).size.should == 1
   end
 end

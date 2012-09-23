@@ -8,9 +8,13 @@ module Hopsa
   #   :stdout - true(default) -> print to stdout, false -> put output into Hopsa::OUT array
   #
   def load_program(text,opts={})
+    unless Hopsa.init_done?
+      Hopsa::Function.load
+      Hopsa::OUT.clear
+      Hopsa.init_done
+    end
     Hopsa::Config.load
     Hopsa::Param.load
-    Hopsa::Function.load
     Config['local']['stdout']=opts[:stdout] unless opts[:stdout].nil?
     return TopStatement.createNewRetLineNum(nil,text,0)
   end
@@ -24,6 +28,14 @@ module Hopsa
       text.push line
     end
     load_program(text,opts)
+  end
+
+  def init_done?
+    @@init_done
+  end
+  
+  def init_done
+    @@init_done=true
   end
 
   # Load all available database drivers
@@ -49,5 +61,8 @@ module Hopsa
 
   @@hoplang_databases=[]
   db_load
+
+  private
+    @@init_done=false
 
 end

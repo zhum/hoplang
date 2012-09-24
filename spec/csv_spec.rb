@@ -42,12 +42,64 @@ describe 'CSV driver' do
 #    pending
     ex=load_file('tests/csv_test.hpl',:stdout => false)
     ex.hop
-    Hopsa::OUT.grep(/999997,999998/).size.should > 0
+    Hopsa::OUT.grep(/999997,999998/).size.should == 1
+    Hopsa::OUT.grep(/998000/).size.should == 0
   end
 
   it 'should pass aggregation test' do
     ex=load_file('tests/agg_test.hpl',:stdout => false)
     ex.hop
     Hopsa::OUT.grep(/98.0,200.0,149.0/).size.should == 1
+  end
+
+  it 'should pass group test' do
+    ex=load_file('tests/group_test.hpl',:stdout => false)
+    ex.hop
+    Hopsa::OUT.grep(/vasya6,111.0/).size.should == 1
+  end
+
+  it 'must properly include ins' do
+    ex=load_file('tests/ins_test.hpl',:stdout => false)
+    ex.hop
+    Hopsa::OUT.size.should == 15
+    Hopsa::OUT.grep(/node1-128-11,11/).size.should == 1
+  end
+
+  it 'must work with nested hopstances' do
+    ex=load_file('tests/nested_test.hpl',:stdout => false)
+    ex.hop
+    Hopsa::OUT.size.should == 1132
+    Hopsa::OUT.grep(/node-55,-10.0,1,222,yyy/).size.should == 26
+    Hopsa::OUT.grep(/node-2,45,1234612,11111,nnnnnnnnn/).size.should == 1
+    Hopsa::OUT.grep(/node-2,45,1234612,1,vasya1/).size.should == 1
+  end
+
+  it 'must work with parameters' do
+    ex=load_file('tests/param_test.hpl',:stdout => false)
+    ex.hop
+    Hopsa::OUT.size.should == 21
+    Hopsa::OUT.grep(/1234605,node-1,38/).size.should == 1
+  end
+
+  it 'must print two streams' do
+    ex=load_file('tests/print_test.hpl',:stdout => false)
+    ex.hop
+    Hopsa::OUT.size.should == 398
+    Hopsa::OUT.grep(/vasya99,299,out2/).size.should == 1
+  end
+
+  it 'must sort streams' do
+    ex=load_file('tests/sort_test.hpl',:stdout => false)
+    ex.hop
+    Hopsa::OUT[1].should == "vasya_16,84"
+    Hopsa::OUT[85].should == "vasya_100,0"
+  end
+
+  it 'must compute top' do
+    ex=load_file('tests/top_test.hpl',:stdout => false)
+    ex.hop
+    Hopsa::OUT.size.should == 6
+    Hopsa::OUT[1].should == "vasya25,125.0"
+    Hopsa::OUT[5].should == "vasya21,121.0"
   end
 end

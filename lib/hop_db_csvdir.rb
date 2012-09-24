@@ -359,6 +359,7 @@ module Hopsa  # :nodoc:
     # @return array of: expression in database format, expression in hoplang format
     #
     def create_filter(filter)
+      return [[nil],nil] if filter.nil?
       hop_warn "FILTER: #{filter.inspect}/#{filter.class}"
       #!@context.copy(@parent)
       #!db_expr,hop_expr = filter.db_conv(@context,CsvdirDBConv.new(@current_var,@split_field))

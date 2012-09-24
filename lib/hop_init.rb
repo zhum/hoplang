@@ -10,9 +10,9 @@ module Hopsa
   def load_program(text,opts={})
     unless Hopsa.init_done?
       Hopsa::Function.load
-      Hopsa::OUT.clear
       Hopsa.init_done
     end
+    Hopsa::OUT.clear
     Hopsa::Config.load
     Hopsa::Param.load
     Config['local']['stdout']=opts[:stdout] unless opts[:stdout].nil?

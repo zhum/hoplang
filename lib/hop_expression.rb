@@ -5,7 +5,8 @@ require 'pathname'
 module Hopsa
 
   # load HopExpr grammar
-  Citrus.load (Pathname.new(File.expand_path('..', __FILE__))+'hop_expr').to_s
+  #Citrus.load (Pathname.new(File.expand_path('..', __FILE__))+'hop_expr').to_s
+  Citrus.eval(Hopsa::CITRUS_GRAMAR)
 
   # base class for hoplang expression
   class HopExpr
@@ -172,12 +173,12 @@ module Hopsa
 
     def initialize(val)
       super
-      hop_warn "INIT Value=#{val} "+(caller[-5..5].inspect)
+#      hop_warn "INIT Value=#{val} "+(caller[-5..5].inspect)
       @val = val
     end
 
     def eval(ex)
-      hop_warn "!!! Value=#{@val}"
+#      hop_warn "!!! Value='#{@val}'"
       return @val
     end
 

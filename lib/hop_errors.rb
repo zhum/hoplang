@@ -11,5 +11,9 @@ module Hopsa
 
   class VarNotFound < StandardError
   end
+
+  class BadDriver <StandardError
+  end
+
 end
 

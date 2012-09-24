@@ -21,6 +21,11 @@ class ConfigError <StandardError
 end
 
 module Hopsa
+
+  # Output buffer. To get print-ed data via OUT, 
+  # invoke load_program/load_file with ":stdout => false".
+  OUT=[]
+
   # Statement, which process stream.
   # So, it has inPipe, which is connected to previous Hopstance output.
   class Hopstance < Statement
@@ -267,13 +272,18 @@ module Hopsa
     def init(sources,opts)
       @sources=sources
       @opts={}
+      if Config['local'.nil?] or Config['local']['stdout'].nil?
+        @opts[:stdout]=true
+      else
+        @opts[:stdout]=Config['local']['stdout']
+      end
       opts.each{|o|
         @opts[o.to_sym]=true
       }
       @index=0
 
       @out_format = :csv if @opts[:csv] || @opts[:raw]
-      @@out_heads ||= @opts[:raw] ? false : nil
+      @out_heads ||= @opts[:raw] ? false : nil
 
       @out_format ||= :csv if(not Config['local'].nil? and
                                Config['local']['out_format'] == 'csv')
@@ -290,8 +300,6 @@ module Hopsa
         end
       end
     end
-
-    @@out_heads = nil
 
     def readSource
 
@@ -310,8 +318,8 @@ module Hopsa
       end
 
       if @out_format == :csv
-         print_heads(value) if @@out_heads.nil?
-         init_heads(value)  if @@out_heads == false
+         print_heads(value) if @out_heads.nil?
+         init_heads(value)  if @out_heads == false
          print_csv(value)
       else
         puts "OUT>>#{value.inspect}"
@@ -332,23 +340,33 @@ module Hopsa
       init_heads(value)
       # print header
       $hoplang_print_mutex.synchronize do
-        puts @@out_heads.join(',')
+        print @out_heads.join(',')
       end
     end
 
     def init_heads(value)
       if @opts[:order].to_s != ''
-        @@out_heads=@opts[:order].split(/,/)
+        @out_heads=@opts[:order].split(/,/)
       else
-        @@out_heads=value['__hoplang_cols_order'].split(/,/)
+        @out_heads=value['__hoplang_cols_order'].split(/,/)
       end
     end
 
     def print_csv(value)
       $hoplang_print_mutex ||= Mutex.new
       $hoplang_print_mutex.synchronize do
-        out= @@out_heads.map {|key| value[key].to_s.csv_escape}.join(',')
-        puts out unless out =~ /NaN/ #!!!!!!!!!!!!!!!!!!!!!   HACK   !!!!!!!!!!!!!!!!!!!!!!!
+        out= @out_heads.map {|key| value[key].to_s.csv_escape}.join(',')
+        print out #! unless out =~ /NaN/ #!!!!!!!!!!!!!!!!!!!!!   HACK   !!!!!!!!!!!!!!!!!!!!!!!
+      end
+    end
+
+    def print(str)
+      #hop_warn "OPTS_STDUT=#{@opts[:stdout]}"
+      hop_warn "OUT: #{str}"
+      if @opts[:stdout]
+        puts str
+      else
+        Hopsa::OUT << str
       end
     end
   end

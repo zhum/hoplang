@@ -51,5 +51,5 @@ desc 'Fast local build/install gem. For debugging purporses.'
 task :local do
   sh 'rm -rf pkg'
   Rake::Task[:build].invoke
-  sh 'gem install --no-ri --no-rdoc pkg/*.gem'
+  sh 'yes | gem uninstall hoplang; gem install --local --no-ri --no-rdoc pkg/hoplang*.gem'
 end

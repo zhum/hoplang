@@ -4,23 +4,38 @@ module Hopsa
   # Load and execute Hoplang program text,
   # text is Array (sic!) of text lines.
   #
-  def load_program(text)
+  #  Options:
+  #   :stdout - true(default) -> print to stdout, false -> put output into Hopsa::OUT array
+  #
+  def load_program(text,opts={})
+    unless Hopsa.init_done?
+      Hopsa::Function.load
+      Hopsa.init_done
+    end
+    Hopsa::OUT.clear
     Hopsa::Config.load
     Hopsa::Param.load
-    Hopsa::Function.load
+    Config['local']['stdout']=opts[:stdout] unless opts[:stdout].nil?
     return TopStatement.createNewRetLineNum(nil,text,0)
   end
 
   #
   #  Loads and executes Hoplang program from file
-  #
-  def load_file(name)
+  #  See load_program
+  def load_file(name,opts={})
     text=[]
     File.open(name).each do |line|
       text.push line
     end
-    ex=load_program(text)
-    ex.hop
+    load_program(text,opts)
+  end
+
+  def init_done?
+    @@init_done
+  end
+  
+  def init_done
+    @@init_done=true
   end
 
   # Load all available database drivers
@@ -46,5 +61,8 @@ module Hopsa
 
   @@hoplang_databases=[]
   db_load
+
+  private
+    @@init_done=false
 
 end

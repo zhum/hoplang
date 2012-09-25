@@ -45,7 +45,9 @@ describe 'CSV driver' do
     Hopsa::OUT.grep(/999997,999998/).size.should == 1
     Hopsa::OUT.grep(/998000/).size.should == 0
   end
+end
 
+describe 'HopLang sytax contructions' do
   it 'should pass aggregation test' do
     ex=load_file('tests/agg_test.hpl',:stdout => false)
     ex.hop
@@ -89,6 +91,12 @@ describe 'CSV driver' do
   end
 
   it 'must sort streams' do
+    ex=load_file('tests/union_test.hpl',:stdout => false)
+    ex.hop
+    Hopsa::OUT.size.should == 40
+  end
+
+  it 'must join streams' do
     ex=load_file('tests/sort_test.hpl',:stdout => false)
     ex.hop
     Hopsa::OUT[1].should == "vasya_16,84"

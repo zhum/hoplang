@@ -313,8 +313,9 @@ module Hopsa
       next_index if @opts[:zip]
 
       if value['__hoplang_cols_order'].nil?
-        hop_warn "BAD YIELD: #{value.inspect}"
-        return value
+        hop_warn "No cols order specified (use sorted output): #{value.inspect}"
+        #return value
+        value['__hoplang_cols_order']=value.keys.sort.join ','
       end
 
       if @out_format == :csv

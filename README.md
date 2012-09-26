@@ -6,7 +6,7 @@ Revolutional data processing language. World domination toolset component...
 
 ## Notes
 
-  - Syntax will be described later in wiki
+  - Syntax is described in wiki
   - Hopstance - class for stream processing
   - hop method = do it!
   - createNewRetLineNum method = get current text and position, then process it,
@@ -16,13 +16,25 @@ Revolutional data processing language. World domination toolset component...
 
 ## Required modules (rubygems)
 
-  - cassandra - used to interact with Cassandra DB
+  - cassandra (opt) - used to interact with Cassandra DB
+  - mongodb, bson_ext (opt) - used to interact with NongoDB
   - citrus - used for expression grammar
+  - 
+
+## Installing
+
+  - copy repository
+  - run gem install hopcsv*gem
+  - run bundle install
+  - All DONE! You can run hpl, or specify "require 'hoplang'" in your programs
 
 ## Testing
 
-hoprun.rb = hoplang executor. e.g.
+  rake - run all rspec tests
+
+  To tun selected tests use something like this:
 
 ```bash
- ruby ./hpl vartest.hpl
+  hpl tests/var_test.hpl
+  bin/hpl tests/top_test.hpl
 ```

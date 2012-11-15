@@ -1,5 +1,5 @@
 require 'logger'
-require './hoplang.rb'
+require 'hoplang'
 include Hopsa
 
 $logger = Logger.new(STDERR)
@@ -11,10 +11,16 @@ class CsvDirWriter
   def initialize(source)
     cfg = Hopsa::Config['varmap'][source]
     raise "Not found config for #{source}" if cfg.nil?
+    defcfg = Hopsa::Config['dbmap']['csvdir'] || Hash.new
 
-    @split_field=cfg['split']
-    @root_dir=cfg['dir']
-    @fields=cfg['fields']
+    @split_field=cfg['split'] || defcfg['split']
+    @root_dir=cfg['base_dir'] || defcfg['base_dir']
+    if @root_dir.nil?
+      @root_dir=cfg['dir']
+    else
+      @root_dir += '/'+source
+    end
+    @fields=cfg['fields'] || defcfg['fields']
     @saved_count=0
     @file=nil
 
@@ -33,8 +39,8 @@ class CsvDirWriter
       begin
         @file=File::open("#{@root_dir}/#{@field_value}.csv",'a')
       rescue Errno::ENOENT
-        puts ">>>> #{e.class} #{e.message}"
-        File::mkdir @root_dir
+#        puts ">>>> #{e.class} #{e.message}"
+        Dir::mkdir @root_dir
       end
     end
 

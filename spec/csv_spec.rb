@@ -24,7 +24,7 @@ describe 'CSV driver' do
     system 'ln -s tests/hopsa_test.conf hopsa.conf'
   end
 
-  it 'should load two csv in, belongs to range 100..250' do
+  it 'do load two csv in, belongs to range 100..250' do
     ranges=[Range.new(100,200), Range.new(150,250)]
     #h=Hopsa::PlainHopstance.new('.', ranges,'f',nil,nil)
 
@@ -32,13 +32,13 @@ describe 'CSV driver' do
     files.should == ["#{ROOT}/100.csv","#{ROOT}/200.csv"]
   end
 
-  it 'should load no files if ranges not cover them' do
+  it 'do load no files if ranges not cover them' do
     ranges=[Range.new(10,50), Range.new(30,99)]
     files=Hopsa::CsvdirDBDriver::IndexedIterator.get_files(ROOT,ranges)
     files.should == []
   end
 
-  it 'should read proper test data' do
+  it 'do read proper test data' do
 #    pending
     ex=load_file('tests/csv_test.hpl',:stdout => false)
     ex.hop
@@ -48,26 +48,26 @@ describe 'CSV driver' do
 end
 
 describe 'HopLang sytax contructions' do
-  it 'should pass aggregation test' do
+  it 'does aggregation' do
     ex=load_file('tests/agg_test.hpl',:stdout => false)
     ex.hop
     Hopsa::OUT.grep(/98.0,200.0,149.0/).size.should == 1
   end
 
-  it 'should pass group test' do
+  it 'does grouping' do
     ex=load_file('tests/group_test.hpl',:stdout => false)
     ex.hop
     Hopsa::OUT.grep(/vasya6,111.0/).size.should == 1
   end
 
-  it 'must properly include ins' do
+  it 'properly includes ins' do
     ex=load_file('tests/ins_test.hpl',:stdout => false)
     ex.hop
     Hopsa::OUT.size.should == 15
     Hopsa::OUT.grep(/node1-128-11,11/).size.should == 1
   end
 
-  it 'must work with nested hopstances' do
+  it 'works with nested hopstances' do
     ex=load_file('tests/nested_test.hpl',:stdout => false)
     ex.hop
     Hopsa::OUT.size.should == 1132
@@ -76,34 +76,34 @@ describe 'HopLang sytax contructions' do
     Hopsa::OUT.grep(/node-2,45,1234612,1,vasya1/).size.should == 1
   end
 
-  it 'must work with parameters' do
+  it 'works with parameters' do
     ex=load_file('tests/param_test.hpl',:stdout => false)
     ex.hop
     Hopsa::OUT.size.should == 21
     Hopsa::OUT.grep(/1234605,node-1,38/).size.should == 1
   end
 
-  it 'must print two streams' do
+  it 'prints two streams' do
     ex=load_file('tests/print_test.hpl',:stdout => false)
     ex.hop
     Hopsa::OUT.size.should == 398
     Hopsa::OUT.grep(/vasya99,299,out2/).size.should == 1
   end
 
-  it 'must sort streams' do
+  it 'sorts streams' do
     ex=load_file('tests/union_test.hpl',:stdout => false)
     ex.hop
     Hopsa::OUT.size.should == 40
   end
 
-  it 'must join streams' do
+  it 'joins streams' do
     ex=load_file('tests/sort_test.hpl',:stdout => false)
     ex.hop
     Hopsa::OUT[1].should == "vasya_16,84"
     Hopsa::OUT[85].should == "vasya_100,0"
   end
 
-  it 'must compute top' do
+  it 'computes top' do
     ex=load_file('tests/top_test.hpl',:stdout => false)
     ex.hop
     Hopsa::OUT.size.should == 6

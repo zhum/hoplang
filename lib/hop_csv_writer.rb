@@ -11,16 +11,10 @@ class CsvDirWriter
   def initialize(source)
     cfg = Hopsa::Config['varmap'][source]
     raise "Not found config for #{source}" if cfg.nil?
-    defcfg = Hopsa::Config['dbmap']['csvdir'] || Hash.new
 
-    @split_field=cfg['split'] || defcfg['split']
-    @root_dir=cfg['base_dir'] || defcfg['base_dir']
-    if @root_dir.nil?
-      @root_dir=cfg['dir']
-    else
-      @root_dir += '/'+source
-    end
-    @fields=cfg['fields'] || defcfg['fields']
+    @split_field=cfg['split']
+    @root_dir=cfg['dir']
+    @fields=cfg['fields'].map {|x| x.to_s}
     @saved_count=0
     @file=nil
 
@@ -28,7 +22,7 @@ class CsvDirWriter
   end
 
   def put(data)
-    @field_value = data[@split_field.to_sym].to_i.to_s
+    @field_value = data[@split_field.to_s].to_i.to_s
 
     if @saved_count>MAX_SAVE_COUNT
       @file.close
@@ -36,15 +30,23 @@ class CsvDirWriter
     end
 
     if @file.nil?
+      first_attempt=true
       begin
         @file=File::open("#{@root_dir}/#{@field_value}.csv",'a')
-      rescue Errno::ENOENT
+      rescue Errno::ENOENT => e
 #        puts ">>>> #{e.class} #{e.message}"
+        raise e unless first_attempt
         Dir::mkdir @root_dir
+        first_attempt=false
+        retry
       end
     end
 
-    @file.puts @fields.map{ |index| data[index] }.join ';'
+#    $logger.warn @fields.map{ |index| index.to_s }.join ';'
+#    $logger.puts @fields.map{ |index| data[index.to_s] }.join ';'
+#    $logger.warn data.inspect
+#    exit 0
+    @file.puts @fields.map{ |index| data[index.to_s] }.join ';'
   end
 
   def close

@@ -7,6 +7,8 @@ if [ "x$1" = "xrbenv" ]; then
   fi
 fi
 
+ln -s 'tests/db' .
+
 bundle install
 rake
 

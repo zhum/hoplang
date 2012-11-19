@@ -1,5 +1,6 @@
 require 'rspec'
 require 'hoplang'
+require 'hop_csv_writer'
 
 include Hopsa
 
@@ -24,7 +25,7 @@ describe 'CSV driver' do
     system 'ln -s tests/hopsa_test.conf hopsa.conf'
   end
 
-  it 'do load two csv in, belongs to range 100..250' do
+  it 'loads two csv in, belongs to range 100..250' do
     ranges=[Range.new(100,200), Range.new(150,250)]
     #h=Hopsa::PlainHopstance.new('.', ranges,'f',nil,nil)
 
@@ -32,18 +33,29 @@ describe 'CSV driver' do
     files.should == ["#{ROOT}/100.csv","#{ROOT}/200.csv"]
   end
 
-  it 'do load no files if ranges not cover them' do
+  it 'loads no files if ranges not cover them' do
     ranges=[Range.new(10,50), Range.new(30,99)]
     files=Hopsa::CsvdirDBDriver::IndexedIterator.get_files(ROOT,ranges)
     files.should == []
   end
 
-  it 'do read proper test data' do
+  it 'reads proper test data' do
 #    pending
     ex=load_file('tests/csv_test.hpl',:stdout => false)
     ex.hop
     Hopsa::OUT.grep(/999997,999998/).size.should == 1
     Hopsa::OUT.grep(/998000/).size.should == 0
+  end
+  
+  it 'writes 2000 recordsrds into two files with 1000 records by default' do
+    system '-d db/cpu_user && rm -rf db/cpu_user'
+    
+    writer = CsvDirWriter.new('cpu_user_c')
+    1.upto 2000 do |i|
+      x={'node' => "node-#{i/20}", 'value' => "#{i%100}", 'time' => 1234567+i, 'n' => 0}
+      writer.put  x
+    end
+    Dir.entries('db/cpu_user').should have(4).items
   end
 end
 

@@ -165,6 +165,20 @@ module Hopsa  # :nodoc:
       return ret
     end
 
+    def inset(ex1, ex2)
+      return nil unless ex1 =~ /^\w+$/
+      ranges = (NodeSet.by_str ex2).ranges
+      and_exprs = ranges.map do |r|
+        case r
+        when String
+          {ex1 => r}
+        when Range
+          {ex1 => {'$gte' => r.min, '$lte' => r.max}}
+        end
+      end
+      [and_exprs].flatten
+    end
+
     #
     # Called on value substitution
     #

@@ -49,6 +49,7 @@ module Hopsa
 
     # initialize a nodeset from a nodeset string
     def initialize(nodeset_str)
+      nodeset_str.gsub!(/^'(.*?)'$/,'\1') || nodeset_str.gsub!(/^"(.*?)"$/,'\1')
       @root = NodeSet.parse_ns_str nodeset_str
     end
     

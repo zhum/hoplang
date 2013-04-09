@@ -252,7 +252,7 @@ module Hopsa
       unless(line =~ /print(\(\s*(\S*)\s*\))?\s*(.*)/)
         raise SyntaxError.new(line)
       end
-      opts,src=$1,$3
+      opts,src=$2,$3
 
       if opts.nil?
         opts=[]

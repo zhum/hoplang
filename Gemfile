@@ -9,4 +9,4 @@ gem 'mongo'
 gem 'bson_ext'
 gem 'citrus'
 gem 'home_run', :require=>'date'
-
+gem 'hopcsv', :path => './hopcsv'

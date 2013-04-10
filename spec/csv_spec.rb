@@ -48,9 +48,9 @@ describe 'CSV driver' do
   end
   
   it 'writes 2000 recordsrds into two files with 1000 records by default' do
-    system '-d db/cpu_user && rm -rf db/cpu_user'
+    system 'test -d db/cpu_user && rm -rf db/cpu_user'
     
-    writer = CsvDirWriter.new('cpu_user_c')
+    writer = CsvDirWriter.new('cpu_user')
     1.upto 2000 do |i|
       x={'node' => "node-#{i/20}", 'value' => "#{i%100}", 'time' => 1234567+i, 'n' => 0}
       writer.put  x

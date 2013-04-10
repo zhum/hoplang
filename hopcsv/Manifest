@@ -1,0 +1,12 @@
+CHANGELOG
+LICENSE
+Manifest
+README.rdoc
+Rakefile
+ext/extconf.rb
+ext/hopcsv.c
+ext/hopcsv.h
+hopcsv.gemspec
+test/data.csv
+test/data_small.csv
+test/unit/test_hopcsv.rb
